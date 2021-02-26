@@ -1,1 +1,1 @@
-# arualcms
+# arualCMS

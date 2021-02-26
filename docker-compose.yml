@@ -1,0 +1,21 @@
+version: '3'
+services:
+    php:
+        container_name: arualcms_server
+        build: ./app/docker
+        volumes:
+            - ".:/var/www/html:delegated"
+        ports:
+            - 8000:80
+        environment:
+            HTTPD__DocumentRoot: '/var/www/html/www/'
+            HTTPD__ServerAdmin: 'ales.jandera@gmail.com'
+            HTTPD_a2enmod:  'rewrite status expires'
+    vue-ui:
+        build: ./app
+        ports:
+            - "8080:8080"
+        container_name: arualcms_ui
+        volumes:
+            - ./app:/usr/src/app
+            - /usr/src/app/node_modules

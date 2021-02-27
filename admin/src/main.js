@@ -4,9 +4,7 @@ import VueRouter from 'vue-router'
 import VueCookie from 'vue-cookies'
 import VueSession from 'vue-session'
 import VModal from 'vue-js-modal'
-
 import App from './App.vue'
-
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'

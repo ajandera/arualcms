@@ -3,7 +3,15 @@
     <div class="row mt-3">
       <div class="col-12">
         <input type="text" class="form-control" v-model="post.title" />
-        <vue-summernote ref="editer"></vue-summernote>
+        <!-- Two-way Data-Binding -->
+        <quill-editor
+          ref="myQuillEditor"
+          v-model="content"
+          :options="editorOption"
+          @blur="onEditorBlur($event)"
+          @focus="onEditorFocus($event)"
+          @ready="onEditorReady($event)"
+        />
       </div>
     </div>
     <div class="row mt-3">
@@ -22,19 +30,28 @@
 <script>
 
 import axios from "axios";
-import VueSummernote from 'vue-summernote'
+
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
+import { quillEditor } from 'vue-quill-editor'
 
 export default {
   name: 'Editor',
   components: {
-    VueSummernote
+    quillEditor
   },
   data() {
     return {
       messageClass: null,
       message: null,
       loggedUser: window.localStorage.getItem("user"),
-      post: {}
+      post: {},
+      content: '<h2>I am Example</h2>',
+      editorOption: {
+        // Some Quill options...
+      }
     }
   },
   mounted() {
@@ -74,6 +91,24 @@ export default {
           this.messageClass = null;
         }, 1000);
       }
+    },
+    onEditorBlur(quill) {
+      console.log('editor blur!', quill)
+    },
+    onEditorFocus(quill) {
+      console.log('editor focus!', quill)
+    },
+    onEditorReady(quill) {
+      console.log('editor ready!', quill)
+    },
+    onEditorChange({ quill, html, text }) {
+      console.log('editor change!', quill, html, text)
+      this.content = html
+    }
+  },
+  computed: {
+    editor() {
+      return this.$refs.myQuillEditor.quill
     }
   }
 }

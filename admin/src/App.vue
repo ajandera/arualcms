@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <Header/>
-    <section class="main mt-3">
+    <section class="main  ">
       <div class="container-fluid">
         <div class="row">
           <div class="col-2">
@@ -59,14 +59,14 @@ html, body {
 
 .main {
   overflow:auto;
-  padding-bottom:20%; /* this needs to be bigger than footer height*/
+  padding-bottom: 70px; /* this needs to be bigger than footer height*/
 }
 
 #footer {
   position: relative;
-  margin-top: -10%; /* negative value of footer height */
-  height: 150px;
+  margin-top: -65px; /* negative value of footer height */
+  height: 60px;
   clear:both;
-  padding-top:20px;
+  padding-top:10px;
 }
 </style>

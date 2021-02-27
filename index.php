@@ -15,8 +15,8 @@ Router::get('/post/([0-9]*)', function (Request $req, Response $res) {
     (new PostsController())->getPost($req->params[0], $res);
 });
 
-Router::get('/post/([0-9]*)', function (Request $req, Response $res) {
-    (new PostsController())->getPost($req->params[0], $res);
+Router::put('/post/([0-9]*)', function (Request $req, Response $res) {
+    (new PostsController())->save($req->getBody(), $res);
 });
 
 App::run();

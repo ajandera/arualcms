@@ -16,6 +16,7 @@ class Response
     {
         http_response_code($this->status);
         header('Content-Type: application/json');
+        header('Access-Control-Allow-Origin: *');
         echo json_encode($data);
     }
 }

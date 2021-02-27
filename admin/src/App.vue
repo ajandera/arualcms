@@ -7,7 +7,7 @@
           <div class="col-2">
             <Menu/>
           </div>
-          <div class="col-1O">
+          <div class="col-10">
             <component :is="selected" class="tab"></component>
           </div>
         </div>
@@ -29,19 +29,21 @@ import Editor from '@/components/Editor.vue';
 import Setting from '@/components/Setting';
 import Header from "@/components/Header";
 import Menu from "@/components/Menu";
+import Posts from "@/components/Posts";
 
 export default {
   name: 'App',
   data() {
     return {
-      selected: "Editor",
+      selected: "Posts",
     }
   },
   components: {
     Header,
     Editor,
     Setting,
-    Menu
+    Menu,
+    Posts
   }
 }
 </script>

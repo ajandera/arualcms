@@ -14,7 +14,9 @@ class PostsController
 
     public function getPosts(Response $res)
     {
-        $res->toJSON(Posts::all());
+        $data['posts'] = Posts::all();
+        $data['success'] = true;
+        $res->toJSON($data);
     }
 
     public function getPost(int $id, Response $res)

@@ -15,10 +15,18 @@ class Posts
 
     public static function add($post)
     {
-        $post->id = count(self::$DATA) + 1;
+        $post->id = self::getNextId();
         self::$DATA[] = $post;
         self::save();
-        return $post;
+    }
+
+    private static function getNextId()
+    {
+        $ids = [];
+        foreach (self::$DATA as $data) {
+            $ids[] = $data->id;
+        }
+        return max($ids) + 1;
     }
 
     public static function findById(int $id)
@@ -33,29 +41,44 @@ class Posts
 
     public static function load()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../app/database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
         self::$DATA = json_decode(file_get_contents($DB_PATH . 'posts.json'));
     }
 
     public static function save()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
         file_put_contents($DB_PATH . 'posts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
     }
 
     public static function edit($post)
     {
-        self::remove($post->id);
-        self::add($post);
-    }
-
-    public static function remove($id)
-    {
-        foreach (self::$DATA as $post) {
-            if ($post->id === $id) {
-                unset($post);
+        if (!isset($post->id)) {
+            self::add($post);
+            return;
+        }
+        $data = [];
+        foreach (self::$DATA as $item) {
+            if ($item->id === $post->id) {
+                $data[] = $post;
+            } else {
+                $data[] = $item;
             }
         }
+        self::$DATA = $data;
+        self::save();
+    }
+
+    public static function remove(int $id)
+    {
+        $new = [];
+        foreach (self::$DATA as $post) {
+            if ($post->id !== $id) {
+                $new[] = $post;
+            }
+        }
+
+        self::$DATA = $new;
         self::save();
     }
 }

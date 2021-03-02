@@ -8,14 +8,22 @@ services:
         ports:
             - 8000:80
         environment:
-            HTTPD__DocumentRoot: '/var/www/html/www/'
+            HTTPD__DocumentRoot: '/var/www/html/'
             HTTPD__ServerAdmin: 'ales.jandera@gmail.com'
             HTTPD_a2enmod:  'rewrite status expires'
     vue-ui:
-        build: ./app
+        build: ./admin
         ports:
             - "8080:8080"
         container_name: arualcms_ui
         volumes:
-            - ./app:/usr/src/app
+            - ./admin:/usr/src/app
+            - /usr/src/app/node_modules
+    vue-front:
+        build: ./site
+        ports:
+            - "9000:9000"
+        container_name: arualcms_front
+        volumes:
+            - ./site:/usr/src/app
             - /usr/src/app/node_modules

@@ -29,21 +29,21 @@ class PostsController
         }
     }
 
-    public function save($post, Response $res)
+    public function add($post, Response $res)
     {
         Posts::add($post);
-        $res->status(200)->toJSON(['success' => true]);
+        $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }
 
     public function edit($post, Response $res)
     {
         Posts::edit($post);
-        $res->status(200)->toJSON(['success' => true]);
+        $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 
     public function remove($id, Response $res)
     {
         Posts::remove($id);
-        $res->status(200)->toJSON(['success' => true]);
+        $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 }

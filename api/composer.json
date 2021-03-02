@@ -9,7 +9,8 @@
     },
     "require": {
         "php": ">=7.0",
-        "monolog/monolog": "1.25.*"
+        "monolog/monolog": "1.25.*",
+        "firebase/php-jwt": "v5.2.*"
     },
     "license": "MIT",
     "authors": [

@@ -1,29 +1,75 @@
 <template>
-  <div id="editor">
-    <div class="row mt-3">
-      <div class="col-12">
-        <input type="text" class="form-control" v-model="post.title" />
-        <!-- Two-way Data-Binding -->
-        <quill-editor
-          ref="myQuillEditor"
-          v-model="content"
-          :options="editorOption"
-          @blur="onEditorBlur($event)"
-          @focus="onEditorFocus($event)"
-          @ready="onEditorReady($event)"
-        />
+  <div id="texts">
+    <div class="row">
+      <div class="col-11">
+        <h1>Texts</h1>
+        <hr>
       </div>
     </div>
-    <div class="row mt-3">
-      <div class="col-6 mt-3">
-        <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
+    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
+      <div class="col-1">
+        <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
-      <div class="col-6 mt-3">
+      <div class="col-3">
+        <input type="text" v-model="item.key" class="form-control">
+      </div>
+      <div class="col-6">
+        <input type="text" v-model="item.value" class="form-control">
+      </div>
+      <div class="col-1">
         <div class="float-right">
-          <button v-on:click="save" class="btn btn-lg btn-success">Save</button>
+          <button v-on:click="openEditor(item)" class="btn btn-success"><font-awesome-icon icon="edit" /></button>
+          <button v-on:click="remove(item)" class="btn btn-danger"><font-awesome-icon icon="times" /></button>
         </div>
       </div>
     </div>
+    <div class="row mt-4">
+      <div class="col-6">
+        <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
+      </div>
+      <div class="col-5">
+        <div class="float-right">
+          <button v-on:click="save" class="btn btn-success">Save</button>
+        </div>
+      </div>
+    </div>
+    <modal name="form" :width="800" height="auto" :scrollable="true">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">{{ modalTitle }}</h3>
+            <button @click="hide" type="button" class="close" data-dismiss="modal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-12">
+                <div v-if="error" class="danger">{{ error }}</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div id="editor">
+                  <!-- Two-way Data-Binding -->
+                  <quill-editor
+                      ref="myQuillEditor"
+                      v-model="text.value"
+                      :options="editorOption"
+                      @blur="onEditorBlur($event)"
+                      @focus="onEditorFocus($event)"
+                      @ready="onEditorReady($event)"
+                  />
+                  <hr>
+                  <div class="float-right mt-3">
+                    <button v-on:click="hide" class="btn btn-lg btn-default">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </modal>
   </div>
 </template>
 
@@ -35,62 +81,61 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
-import { quillEditor } from 'vue-quill-editor'
+import { quillEditor } from "vue-quill-editor";
 
 export default {
-  name: 'Editor',
+  name: 'Texts',
   components: {
     quillEditor
   },
-  data() {
+  data: function() {
     return {
+      texts: [],
+      text: {},
       messageClass: null,
       message: null,
       loggedUser: window.localStorage.getItem("user"),
-      post: {},
-      content: '<h2>I am Example</h2>',
-      editorOption: {
-        // Some Quill options...
-      }
+      editorOption: {}
     }
   },
   mounted() {
-    let localApp = window.localStorage.getItem("app");
-    if (localApp) {
-      this.code = JSON.parse(localApp);
-    }
-    setInterval(() => {
-      this.save();
-    }, 5000);
+    this.load();
   },
   methods: {
     save() {
-      if (this.loggedUser) {
-        let id = window.localStorage.getItem("userId");
-        axios.post("http://localhost:9000/api/v1/app/save", {"code": this.code, "user": id, "name": this.loggedUser})
-            .then(response => {
-              if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
-              } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
-              }
-
-              setTimeout(() => {
-                this.message = null;
-                this.messageClass = null;
-              }, 1000);
-            });
-      } else {
-        window.localStorage.setItem("app", JSON.stringify(this.code));
-        this.message = "Application saved."
-        this.messageClass = "alert alert-success";
-        setTimeout(() => {
-          this.message = null;
-          this.messageClass = null;
-        }, 1000);
-      }
+      axios.put(this.$hostname + "text", this.texts)
+          .then(response => {
+            if (response.data.success) {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-success";
+            } else {
+              this.message = response.data.error;
+              this.messageClass = 'danger';
+            }
+          });
+    },
+    load() {
+      axios.get(this.$hostname + "text")
+          .then(response => {
+            if (response.data.success === true) {
+              this.texts = response.data.texts;
+            } else {
+              this.message = response.data.error;
+              this.messageClass = 'danger';
+            }
+          });
+    },
+    add() {
+      this.texts.push({'key': '', 'value': ''});
+    },
+    remove(item) {
+      var index = this.texts.indexOf(item);
+      this.texts.splice(1, index);
+    },
+    openEditor(item) {
+      this.text = item;
+      this.modalTitle = item.key;
+      this.show();
     },
     onEditorBlur(quill) {
       console.log('editor blur!', quill)
@@ -104,20 +149,23 @@ export default {
     onEditorChange({ quill, html, text }) {
       console.log('editor change!', quill, html, text)
       this.content = html
-    }
-  },
-  computed: {
-    editor() {
-      return this.$refs.myQuillEditor.quill
+    },
+    show() {
+      this.$modal.show('form')
+    },
+    hide() {
+      this.$modal.hide('form')
     }
   }
 }
 </script>
 
 <style lang="css" scoped>
-
-#editor {
-
+.modal-dialog {
+  max-width: 800px;
+  margin: 10px;
 }
-
+.modal-content {
+  border: none;
+}
 </style>

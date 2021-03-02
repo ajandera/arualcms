@@ -1,14 +1,13 @@
 <template>
 <div class="table-wrap">
-    <h1>Posts</h1>
+    <h1>Users</h1>
     <hr>
     <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
           <th>#</th>
-          <th>Title</th>
-          <th>Published</th>
+          <th>Username</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
               <i class="fa fa-plus"></i>Create</button>
@@ -16,12 +15,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="post in posts" :key="post.id" v-on:click="edit(post.id)" class="actRow">
-          <td>{{ post.id }}</td>
-          <td>{{ post.title }}</td>
-          <td>{{ post.published | formatDate}}</td>
+        <tr v-for="user in users" :key="user.id" v-on:click="edit(user.id)" class="actRow">
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
           <td class="text-right">
-            <button v-on:click.stop.prevent="remove(post.id)" type="button" class="btn btn-secondary btn-danger">
+            <button v-on:click.stop.prevent="remove(user.id)" type="button" class="btn btn-secondary btn-danger">
               <i class="fa fa-trash"></i>Delete</button>
           </td>
         </tr>
@@ -44,30 +42,11 @@
           <div class="row">
             <div class="col-12">
               <div id="editor">
-                <label>Title</label>
-                <input type="text" class="form-control" v-model="post.title" />
+                <label>Username</label>
+                <input type="email" class="form-control" v-model="user.username" :disabled="this.user.id !== undefined"/>
                 <hr>
-                <label>Published</label><br>
-                <date-picker v-model="post.published" :lang="lang" type="datetime" :time-picker-options="timePickerOptions"></date-picker>
-                <hr>
-                <!-- Two-way Data-Binding -->
-                <quill-editor
-                    ref="myQuillEditor"
-                    v-model="post.body"
-                    :options="editorOption"
-                    @blur="onEditorBlur($event)"
-                    @focus="onEditorFocus($event)"
-                    @ready="onEditorReady($event)"
-                />
-                <label class="mt-4">Meta title</label>
-                <input type="text" class="form-control" v-model="post.meta.title" />
-                <hr>
-                <label>Meta description</label>
-                <input type="text" class="form-control" v-model="post.meta.description" />
-                <hr>
-                <label>Meta keywords</label>
-                <input type="text" class="form-control" v-model="post.meta.keywords" />
-                <hr>
+                <label>Password</label><br>
+                <input type="password" class="form-control" v-model="user.password" />
                 <div class="float-right mt-3">
                   <button v-on:click="save" class="btn btn-lg btn-success">Save</button>
                 </div>
@@ -85,55 +64,21 @@
 
 import axios from "axios";
 
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
-
-import {quillEditor} from "vue-quill-editor";
-import DatePicker from "vue2-datepicker2";
-
 export default {
-  name: 'Posts',
-  components: {
-    quillEditor,
-    DatePicker
-  },
+  name: 'Users',
+  components: {},
   data() {
     return {
       messageClass: null,
       message: null,
       loggedUser: window.localStorage.getItem("user"),
-      posts: [],
-      post: {
-        title: "",
-        body: "",
-        published: "",
-        meta: {
-          title: "",
-          keywords: "",
-          description: ""
-        }
+      users: [],
+      user: {
+        username: "",
+        password: ""
       },
       modalTitle: "",
-      error: "",
-      editorOption: {
-        // Some Quill options...
-      },
-      // custom lang
-      lang: {
-        days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        pickers: ['next 7 days', 'next 30 days', 'previous 7 days', 'previous 30 days'],
-        placeholder: {
-          date: 'Select Date',
-          dateRange: 'Select Date Range'
-        }
-      },
-      timePickerOptions:{
-        start: '00:00',
-        step: '00:30',
-        end: '23:30'
-      }
+      error: ""
     }
   },
   mounted() {
@@ -141,12 +86,12 @@ export default {
   },
   methods: {
     edit(id) {
-      this.post = this.posts.filter(x => x.id === id)[0];
-      this.modalTitle = this.post.title;
+      this.user = this.users.filter(x => x.id === id)[0];
+      this.modalTitle = this.user.username;
       this.show();
     },
     remove(id) {
-      axios.delete(this.$hostname + "post/" + id)
+      axios.delete(this.$hostname + "user/" + id)
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;
@@ -165,15 +110,9 @@ export default {
           });
     },
     create() {
-      this.post = {
-        title: "",
-        body: "",
-        published: "",
-        meta: {
-          title: "",
-          keywords: "",
-          description: ""
-        }
+      this.user = {
+        username: "",
+        password: ""
       };
       this.show();
     },
@@ -184,8 +123,8 @@ export default {
       this.$modal.hide('form')
     },
     save() {
-      if (this.post.id !== undefined) {
-        axios.put(this.$hostname + "post/" + this.post.id, this.post)
+      if (this.user.id !== undefined) {
+        axios.put(this.$hostname + "user/" + this.user.id, this.user)
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -202,7 +141,7 @@ export default {
               }, 2000);
             });
       } else {
-        axios.post(this.$hostname + "post", this.post)
+        axios.post(this.$hostname + "user", this.user)
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -221,28 +160,12 @@ export default {
             });
       }
     },
-    onEditorBlur(quill) {
-      console.log('editor blur!', quill)
-    },
-    onEditorFocus(quill) {
-      console.log('editor focus!', quill)
-    },
-    onEditorReady(quill) {
-      console.log('editor ready!', quill)
-    },
-    onEditorChange({ quill, html, text }) {
-      console.log('editor change!', quill, html, text)
-      this.content = html
-    },
     load() {
-      this.posts = [];
-      axios.get(this.$hostname + "post")
+      this.users = [];
+      axios.get(this.$hostname + "user")
           .then(response => {
             if (response.data.success === true) {
-              for (let index in response.data.posts) {
-                response.data.posts[index].published = new Date(response.data.posts[index].published);
-                this.posts.push(response.data.posts[index]);
-              }
+              this.users = response.data.users;
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';

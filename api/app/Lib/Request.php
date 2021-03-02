@@ -31,11 +31,18 @@ class Request
 
     public function getJSON()
     {
-        if ($this->reqMethod !== 'POST') {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, PUT, POST, DELETE, OPTIONS');
+        header('Access-Control-Max-Age: 1000');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept');
+        header('Access-Control-Allow-Credentials: true');
+        header('Content-Type: application/json;charset=utf-8');
+
+        if ($this->reqMethod !== 'POST' && $this->reqMethod !== 'PUT' ) {
             return [];
         }
 
-        if (strcasecmp($this->contentType, 'application/json') !== 0) {
+        if (strcasecmp($this->contentType, 'application/json;charset=utf-8') !== 0) {
             return [];
         }
 

@@ -22,7 +22,7 @@ class Users
     public static function findByUsername(string $username)
     {
         foreach (self::$DATA as $user) {
-            if ($user->key === $username) {
+            if ($user->username === $username) {
                 return $user;
             }
         }
@@ -88,13 +88,13 @@ class Users
 
     public static function load()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         self::$DATA = json_decode(file_get_contents($DB_PATH . 'users.json'));
     }
 
     public static function save()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         file_put_contents($DB_PATH . 'users.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
     }
 }

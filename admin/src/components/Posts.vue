@@ -146,8 +146,9 @@ export default {
       this.show();
     },
     remove(id) {
-      axios.delete(this.$hostname + "post/" + id)
-          .then(response => {
+      axios.delete(this.$hostname + "post/" + id, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
+        )
+          .then((response) => {
             if (response.data.success) {
               this.message = response.data.message;
               this.messageClass = "alert alert-success";
@@ -162,6 +163,14 @@ export default {
               this.message = null;
               this.messageClass = null;
             }, 2000);
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.loggedUser = false;
+              window.location.reload();
+            }
           });
     },
     create() {
@@ -185,7 +194,7 @@ export default {
     },
     save() {
       if (this.post.id !== undefined) {
-        axios.put(this.$hostname + "post/" + this.post.id, this.post)
+        axios.put(this.$hostname + "post/" + this.post.id, this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -200,9 +209,17 @@ export default {
                 this.message = null;
                 this.messageClass = null;
               }, 2000);
-            });
+            }, (error) => {
+                  if (error.response.status === 401) {
+                    window.localStorage.removeItem("userId");
+                    window.localStorage.removeItem("user");
+                    window.localStorage.removeItem("jwt");
+                    this.loggedUser = false;
+                    window.location.reload();
+                  }
+                });
       } else {
-        axios.post(this.$hostname + "post", this.post)
+        axios.post(this.$hostname + "post", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -218,26 +235,33 @@ export default {
                 this.message = null;
                 this.messageClass = null;
               }, 2000);
+            }, (error) => {
+              if (error.response.status === 401) {
+                window.localStorage.removeItem("userId");
+                window.localStorage.removeItem("user");
+                window.localStorage.removeItem("jwt");
+                this.loggedUser = false;
+                window.location.reload();
+              }
             });
       }
     },
     onEditorBlur(quill) {
-      console.log('editor blur!', quill)
+
     },
     onEditorFocus(quill) {
-      console.log('editor focus!', quill)
+
     },
     onEditorReady(quill) {
-      console.log('editor ready!', quill)
+
     },
     onEditorChange({ quill, html, text }) {
-      console.log('editor change!', quill, html, text)
       this.content = html
     },
     load() {
       this.posts = [];
       axios.get(this.$hostname + "post")
-          .then(response => {
+          .then((response) => {
             if (response.data.success === true) {
               for (let index in response.data.posts) {
                 response.data.posts[index].published = new Date(response.data.posts[index].published);
@@ -247,7 +271,9 @@ export default {
               this.message = response.data.error;
               this.messageClass = 'danger';
             }
-          });
+          }, (err) => {
+            console.log(err);
+      });
     }
   },
   computed: {

@@ -4,7 +4,7 @@ namespace ArualCms\Model;
 
 use ArualCms\Lib\Config;
 
-class Posts
+class Files
 {
     private static $DATA = [];
 
@@ -13,10 +13,10 @@ class Posts
         return self::$DATA;
     }
 
-    public static function add($post)
+    public static function add($file)
     {
-        $post->id = self::getNextId();
-        self::$DATA[] = $post;
+        $file['id'] = self::getNextId();
+        self::$DATA[] = $file;
         self::save();
     }
 
@@ -42,39 +42,30 @@ class Posts
     public static function load()
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'posts.json'));
+        $images = json_decode(file_get_contents($DB_PATH . 'storage.json'));
+        $response = [];
+        foreach ($images as $image){
+            $image->src = "http://" . $_SERVER["HTTP_HOST"] . '/storage/' . $image->name;
+            $response[] = $image;
+        }
+        self::$DATA = $response;
     }
 
     public static function save()
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'posts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
-    }
-
-    public static function edit($post)
-    {
-        if (!isset($post->id)) {
-            self::add($post);
-            return;
-        }
-        $data = [];
-        foreach (self::$DATA as $item) {
-            if ($item->id === $post->id) {
-                $data[] = $post;
-            } else {
-                $data[] = $item;
-            }
-        }
-        self::$DATA = $data;
-        self::save();
+        file_put_contents($DB_PATH . 'storage.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
     }
 
     public static function remove(int $id)
     {
         $new = [];
-        foreach (self::$DATA as $post) {
-            if ($post->id !== $id) {
-                $new[] = $post;
+        foreach (self::$DATA as $file) {
+            if ($file->id !== $id) {
+                $new[] = $file;
+            } else {
+                $STORAGE_PATH = Config::get('STORAGE_PATH', __DIR__ . '/../../storage/');
+                unlink($STORAGE_PATH . $file->name);
             }
         }
 

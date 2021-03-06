@@ -31,13 +31,13 @@ class Settings
 
     public static function load()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         self::$DATA = json_decode(file_get_contents($DB_PATH . 'settings.json'));
     }
 
     public static function save()
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../database/');
+        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         file_put_contents($DB_PATH . 'settings.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
     }
 }

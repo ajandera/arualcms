@@ -16,9 +16,10 @@ class Response
     {
         http_response_code($this->status);
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        header('Access-Control-Allow-Headers: Content-Type, X-Requested-With, Authorization');
         header('Access-Control-Max-Age: 1000');
         header('Content-Type: application/json');
         echo json_encode($data);
+        exit();
     }
 }

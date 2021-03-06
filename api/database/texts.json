@@ -1,0 +1,10 @@
+[
+    {
+        "key": "text1",
+        "value": "value1"
+    },
+    {
+        "key": "text2",
+        "value": "<p><strong>asdfasdasdsadsad<\/strong><\/p>"
+    }
+]

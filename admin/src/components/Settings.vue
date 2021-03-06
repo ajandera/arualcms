@@ -58,7 +58,7 @@ export default {
           });
     },
     save() {
-      axios.put(this.$hostname + "setting", this.setting)
+      axios.put(this.$hostname + "setting", this.setting, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;
@@ -66,6 +66,14 @@ export default {
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';
+            }
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.loggedUser = false;
+              window.location.reload();
             }
           });
     }

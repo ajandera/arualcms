@@ -3,13 +3,21 @@ require __DIR__ . '/vendor/autoload.php';
 
 use ArualCms\App;
 use ArualCms\Controller\AuthController;
+use ArualCms\Controller\FileController;
 use ArualCms\Controller\PostsController;
 use ArualCms\Controller\SettingsController;
 use ArualCms\Controller\TextsController;
 use ArualCms\Controller\UsersController;
+use ArualCms\Lib\Guard;
 use ArualCms\Lib\Request;
 use ArualCms\Lib\Response;
 use ArualCms\Lib\Router;
+
+Router::get('/', function (Request $req, Response $res) {
+    $data['message'] = 'arualCMS is running';
+    $data['success'] = true;
+    $res->toJSON($data);
+});
 
 //posts
 Router::get('/post', function (Request $req, Response $res) {
@@ -21,14 +29,20 @@ Router::get('/post/([0-9]*)', function (Request $req, Response $res) {
 });
 
 Router::put('/post/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new PostsController())->edit($req->getJSON(), $res);
 });
 
 Router::post('/post', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new PostsController())->add($req->getJSON(), $res);
 });
 
 Router::delete('/post/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new PostsController())->remove($req->params[0], $res);
 });
 
@@ -42,6 +56,8 @@ Router::get('/setting/([a-z]*)', function (Request $req, Response $res) {
 });
 
 Router::put('/setting', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new SettingsController())->save($req->getJSON(), $res);
 });
 
@@ -55,6 +71,8 @@ Router::get('/text/([a-z]*)', function (Request $req, Response $res) {
 });
 
 Router::put('/text', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new TextsController())->save($req->getJSON(), $res);
 });
 
@@ -67,20 +85,47 @@ Router::get('/users/id/([0-9]*)', function (Request $req, Response $res) {
     (new UsersController())->getUser($req->params[0], $res);
 });
 
-Router::get('/users/username/([a-z]*)', function (Request $req, Response $res) {
+Router::get('/users/username/([a-zA-Z]*)', function (Request $req, Response $res) {
     (new UsersController())->getUserByUsername($req->params[0], $res);
 });
 
 Router::put('/user/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new UsersController())->edit($req->getJSON(), $res);
 });
 
 Router::post('/user', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new UsersController())->add($req->getJSON(), $res);
 });
 
 Router::delete('/user/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
     (new UsersController())->remove($req->params[0], $res);
+});
+
+// files
+Router::get('/files', function (Request $req, Response $res) {
+    (new FileController())->getFiles($res);
+});
+
+Router::get('/files/([0-9]*)', function (Request $req, Response $res) {
+    (new FileController())->getFile($req->params[0], $res);
+});
+
+Router::post('/files/upload', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
+    (new FileController())->save($res);
+});
+
+Router::delete('/files/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
+    (new FileController())->remove($req->params[0], $res);
 });
 
 // authorization

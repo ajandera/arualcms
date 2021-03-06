@@ -6,7 +6,7 @@
         <hr>
       </div>
     </div>
-    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
+    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="item.key">
       <div class="col-1">
         <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
@@ -95,7 +95,9 @@ export default {
       messageClass: null,
       message: null,
       loggedUser: window.localStorage.getItem("user"),
-      editorOption: {}
+      editorOption: {},
+      modalTitle: "",
+      error: ""
     }
   },
   mounted() {
@@ -103,7 +105,7 @@ export default {
   },
   methods: {
     save() {
-      axios.put(this.$hostname + "text", this.texts)
+      axios.put(this.$hostname + "text", this.texts, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;
@@ -111,6 +113,14 @@ export default {
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';
+            }
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.loggedUser = false;
+              window.location.reload();
             }
           });
     },
@@ -138,16 +148,15 @@ export default {
       this.show();
     },
     onEditorBlur(quill) {
-      console.log('editor blur!', quill)
+
     },
     onEditorFocus(quill) {
-      console.log('editor focus!', quill)
+
     },
     onEditorReady(quill) {
-      console.log('editor ready!', quill)
+
     },
     onEditorChange({ quill, html, text }) {
-      console.log('editor change!', quill, html, text)
       this.content = html
     },
     show() {

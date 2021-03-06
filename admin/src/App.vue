@@ -75,11 +75,13 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <label for="username">Username</label>
-                  <input type="text" v-model="username" class="form-control" id="username">
-                  <label for="username">Password</label>
-                  <input type="password" v-model="password" class="form-control" id="password">
-                  <button class="float-right btn btn-success mt-3" v-on:click="login">Sign In</button>
+                  <form id="signin" v-on:submit="login">
+                    <label for="username">Username</label>
+                    <input type="text" v-model="username" class="form-control" id="username">
+                    <label for="username">Password</label>
+                    <input type="password" v-model="password" class="form-control" id="password">
+                    <button class="float-right btn btn-success mt-3" type="submit">Sign In</button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -96,6 +98,7 @@ import Settings from '@/components/Settings';
 import Posts from "@/components/Posts";
 import Texts from "@/components/Texts";
 import Users from "@/components/Users";
+import Files from "@/components/Files";
 import axios from "axios";
 
 export default {
@@ -111,7 +114,11 @@ export default {
         {
           component: "Texts",
           label: "Texts"
-        }
+        },
+        {
+          component: "Files",
+          label: "Files"
+        },
       ],
       extra: [
         {
@@ -135,7 +142,8 @@ export default {
     Settings,
     Posts,
     Texts,
-    Users
+    Users,
+    Files
   },
   mounted() {
     if (!this.loggedUser) {
@@ -156,9 +164,10 @@ export default {
               this.messageClass = "alert alert-success";
               this.username = null;
               this.password = null;
-              window.localStorage.setItem('userId', res.id);
               this.loggedUser = res.username;
+              window.localStorage.setItem('userId', res.id);
               window.localStorage.setItem("user", res.username)
+              window.localStorage.setItem('jwt', res.jwt);
               this.hide();
             } else {
               this.message = res.message;
@@ -169,6 +178,7 @@ export default {
     logout() {
       window.localStorage.removeItem("userId");
       window.localStorage.removeItem("user");
+      window.localStorage.removeItem("jwt");
       this.loggedUser = false;
       window.location.reload();
     },

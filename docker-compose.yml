@@ -2,9 +2,9 @@ version: '3'
 services:
     php:
         container_name: arualcms_server
-        build: ./app/docker
+        build: ./api/docker
         volumes:
-            - ".:/var/www/html:delegated"
+            - ./api:/var/www/html:delegated
         ports:
             - 8000:80
         environment:
@@ -19,11 +19,11 @@ services:
         volumes:
             - ./admin:/usr/src/app
             - /usr/src/app/node_modules
-    vue-front:
-        build: ./site
-        ports:
-            - "9000:9000"
-        container_name: arualcms_front
-        volumes:
-            - ./site:/usr/src/app
-            - /usr/src/app/node_modules
+#    vue-front:
+#        build: ./site
+#        ports:
+#            - "9000:9000"
+#        container_name: arualcms_front
+#        volumes:
+#            - ./site:/usr/src/app
+#            - /usr/src/app/node_modules

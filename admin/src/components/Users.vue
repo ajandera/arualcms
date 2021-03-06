@@ -91,7 +91,7 @@ export default {
       this.show();
     },
     remove(id) {
-      axios.delete(this.$hostname + "user/" + id)
+      axios.delete(this.$hostname + "user/" + id, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;
@@ -107,6 +107,14 @@ export default {
               this.message = null;
               this.messageClass = null;
             }, 2000);
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.loggedUser = false;
+              window.location.reload();
+            }
           });
     },
     create() {
@@ -124,7 +132,7 @@ export default {
     },
     save() {
       if (this.user.id !== undefined) {
-        axios.put(this.$hostname + "user/" + this.user.id, this.user)
+        axios.put(this.$hostname + "user/" + this.user.id, this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -139,9 +147,17 @@ export default {
                 this.message = null;
                 this.messageClass = null;
               }, 2000);
+            }, (error) => {
+              if (error.response.status === 401) {
+                window.localStorage.removeItem("userId");
+                window.localStorage.removeItem("user");
+                window.localStorage.removeItem("jwt");
+                this.loggedUser = false;
+                window.location.reload();
+              }
             });
       } else {
-        axios.post(this.$hostname + "user", this.user)
+        axios.post(this.$hostname + "user", this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -157,6 +173,14 @@ export default {
                 this.message = null;
                 this.messageClass = null;
               }, 2000);
+            }, (error) => {
+              if (error.response.status === 401) {
+                window.localStorage.removeItem("userId");
+                window.localStorage.removeItem("user");
+                window.localStorage.removeItem("jwt");
+                this.loggedUser = false;
+                window.location.reload();
+              }
             });
       }
     },

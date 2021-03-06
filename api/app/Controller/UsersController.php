@@ -3,7 +3,6 @@
 namespace ArualCms\Controller;
 
 use ArualCms\Lib\Response;
-use ArualCms\Model\Posts;
 use ArualCms\Model\Users;
 
 class UsersController
@@ -42,6 +41,7 @@ class UsersController
 
     public function add($user, Response $res)
     {
+        $user->password = $password_hash = password_hash($user->password, PASSWORD_BCRYPT);
         Users::add($user);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }

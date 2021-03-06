@@ -41,14 +41,15 @@ class UsersController
 
     public function add($user, Response $res)
     {
-        $user->password = $password_hash = password_hash($user->password, PASSWORD_BCRYPT);
+        $user->password = password_hash($user->password, PASSWORD_BCRYPT);
         Users::add($user);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }
 
-    public function edit($post, Response $res)
+    public function edit($user, Response $res)
     {
-        Users::edit($post);
+        $user->password = password_hash($user->password, PASSWORD_BCRYPT);
+        Users::edit($user);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 

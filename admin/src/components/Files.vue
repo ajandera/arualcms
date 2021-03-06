@@ -83,7 +83,7 @@ export default {
   },
   methods: {
     remove(id) {
-      axios.delete(this.$hostname + "files/" + id)
+      axios.delete(this.$hostname + "files/" + id, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;

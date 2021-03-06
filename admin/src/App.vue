@@ -77,9 +77,9 @@
                 <div class="col-12">
                   <form id="signin" v-on:submit="login">
                     <label for="username">Username</label>
-                    <input type="text" v-model="username" class="form-control" id="username">
+                    <input type="email" v-model="username" class="form-control" id="username" required>
                     <label for="username">Password</label>
-                    <input type="password" v-model="password" class="form-control" id="password">
+                    <input type="password" v-model="password" class="form-control" id="password" required>
                     <button class="float-right btn btn-success mt-3" type="submit">Sign In</button>
                   </form>
                 </div>

@@ -2,3 +2,4 @@
 admin/node_modules
 /vendor/
 composer.lock
+admin/dist

@@ -33,7 +33,7 @@ class AuthController
             $data['success'] = true;
         } else {
             $data['success'] = false;
-            $data['message'] = "Bad credential.";
+            $data['message'] = "Bad credentials.";
         }
 
         $res->toJSON($data);

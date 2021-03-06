@@ -6,7 +6,7 @@
         <hr>
       </div>
     </div>
-    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="item.key">
+    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="item.id">
       <div class="col-1">
         <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
@@ -14,7 +14,7 @@
         <input type="text" v-model="item.key" class="form-control">
       </div>
       <div class="col-6">
-        <input type="text" v-model="item.value" class="form-control">
+        <textarea v-model="item.value" class="form-control"></textarea>
       </div>
       <div class="col-1">
         <div class="float-right">

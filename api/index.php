@@ -122,6 +122,12 @@ Router::post('/files/upload', function (Request $req, Response $res) {
     (new FileController())->save($res);
 });
 
+Router::put('/files/gallery/([0-9]*)', function (Request $req, Response $res) {
+    $bearer = explode(" ", getallheaders()['Authorization']);
+    Guard::check($bearer[1], $res);
+    (new FileController())->addGallery($req->params[0], $req->getJSON(), $res);
+});
+
 Router::delete('/files/([0-9]*)', function (Request $req, Response $res) {
     $bearer = explode(" ", getallheaders()['Authorization']);
     Guard::check($bearer[1], $res);

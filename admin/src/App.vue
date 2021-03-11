@@ -60,7 +60,7 @@
     </section>
   </div>
     <div id="sign" v-if="!loggedUser">
-      <modal name="sign" height="auto">
+      <modal name="sign" height="auto" :clickToClose="false">
         <div class="modal-dialog">
           <!-- Modal content-->
           <div class="modal-content">
@@ -75,13 +75,13 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <form id="signin" v-on:submit="login">
+                  <div id="signin">
                     <label for="username">Username</label>
-                    <input type="text" v-model="username" class="form-control" id="username">
+                    <input type="email" v-model="username" class="form-control" id="username" required>
                     <label for="username">Password</label>
-                    <input type="password" v-model="password" class="form-control" id="password">
-                    <button class="float-right btn btn-success mt-3" type="submit">Sign In</button>
-                  </form>
+                    <input type="password" v-model="password" class="form-control" id="password" required>
+                    <button class="float-right btn btn-success mt-3" type="submit" v-on:click="login()">Sign In</button>
+                  </div>
                 </div>
               </div>
             </div>

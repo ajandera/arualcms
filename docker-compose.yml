@@ -19,11 +19,11 @@ services:
         volumes:
             - ./admin:/usr/src/app
             - /usr/src/app/node_modules
-#    vue-front:
-#        build: ./site
-#        ports:
-#            - "9000:9000"
-#        container_name: arualcms_front
-#        volumes:
-#            - ./site:/usr/src/app
-#            - /usr/src/app/node_modules
+    vue-front:
+        build: ./site
+        ports:
+            - "9000:9000"
+        container_name: arualcms_front
+        volumes:
+            - ./site:/usr/src/app
+            - /usr/src/app/node_modules

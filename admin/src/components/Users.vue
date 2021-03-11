@@ -132,8 +132,11 @@ export default {
     },
     save() {
       if (this.user.id !== undefined) {
-        axios.put(this.$hostname + "user/" + this.user.id, this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
-            .then(response => {
+        axios.put(
+            this.$hostname + "user/" + this.user.id,
+            this.user,
+            {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
+            ).then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
                 this.messageClass = "alert alert-success";

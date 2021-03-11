@@ -8,6 +8,7 @@
         <tr>
           <th>#</th>
           <th>Title</th>
+          <th>Excerpt</th>
           <th>Published</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
@@ -19,6 +20,7 @@
         <tr v-for="post in posts" :key="post.id" v-on:click="edit(post.id)" class="actRow">
           <td>{{ post.id }}</td>
           <td>{{ post.title }}</td>
+          <td>{{ post.excerpt }}</td>
           <td>{{ post.published | formatDate}}</td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(post.id)" type="button" class="btn btn-secondary btn-danger">
@@ -43,12 +45,24 @@
           </div>
           <div class="row">
             <div class="col-12">
+                <img v-bind:src="post.src" class="img-fluid" />
+                <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
+                <div class="float-right mt-3">
+                  <button v-on:click="upload()" class="btn btn-lg btn-success">Add Cover</button>
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
               <div id="editor">
                 <label>Title</label>
                 <input type="text" class="form-control" v-model="post.title" />
                 <hr>
                 <label>Published</label><br>
                 <date-picker v-model="post.published" :lang="lang" type="datetime" :time-picker-options="timePickerOptions"></date-picker>
+                <hr>
+                <label>Excerpt</label>
+                <textarea class="form-control" v-model="post.excerpt"></textarea>
                 <hr>
                 <!-- Two-way Data-Binding -->
                 <quill-editor
@@ -69,7 +83,7 @@
                 <input type="text" class="form-control" v-model="post.meta.keywords" />
                 <hr>
                 <div class="float-right mt-3">
-                  <button v-on:click="save" class="btn btn-lg btn-success">Save</button>
+                  <button v-on:click="save(true)" class="btn btn-lg btn-success">Save</button>
                 </div>
               </div>
             </div>
@@ -192,7 +206,7 @@ export default {
     hide() {
       this.$modal.hide('form')
     },
-    save() {
+    save(close) {
       if (this.post.id !== undefined) {
         axios.put(this.$hostname + "post/" + this.post.id, this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
@@ -204,7 +218,9 @@ export default {
                 this.messageClass = "alert alert-danger";
               }
               this.load();
-              this.hide();
+              if (close === true) {
+                this.hide();
+              }
               setTimeout(() => {
                 this.message = null;
                 this.messageClass = null;
@@ -274,7 +290,45 @@ export default {
           }, (err) => {
             console.log(err);
       });
-    }
+    },
+    handleFileUpload(){
+      this.file = this.$refs.file.files[0];
+    },
+    upload() {
+      let formData = new FormData();
+      formData.append('file', this.file);
+      axios.post( this.$hostname + 'files/upload',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': "Bearer " + window.localStorage.getItem('jwt')
+            }
+          }
+      ).then(response => {
+        if (response.data.success) {
+          this.post.file = response.data.file.name;
+          this.post.src = response.data.file.link;
+          this.save(false);
+        } else {
+          this.message = response.data.message;
+          this.messageClass = "alert alert-danger";
+        }
+
+        setTimeout(() => {
+          this.message = null;
+          this.messageClass = null;
+        }, 2000);
+      }, (error) => {
+        if (error.response.status === 401) {
+          window.localStorage.removeItem("userId");
+          window.localStorage.removeItem("user");
+          window.localStorage.removeItem("jwt");
+          this.loggedUser = false;
+          window.location.reload();
+        }
+      });
+    },
   },
   computed: {
     editor() {

@@ -32,8 +32,8 @@ class FileController
 
     public function save(Response $res)
     {
-        self::upload();
-        $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
+        $file = self::upload();
+        $res->toJSON(['success' => true, 'message' => 'Record added successfully', 'file' => $file]);
     }
 
     public function remove($id, Response $res)
@@ -48,8 +48,15 @@ class FileController
         $targetFile = $targetDir . basename($_FILES["file"]["name"]);
         $imageFileType = strtolower(pathinfo($targetFile,PATHINFO_EXTENSION)); // todo check filesize
         move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile);
-        Files::add([
-            "name" => basename($_FILES["file"]["name"])
+        return Files::add([
+            "name" => basename($_FILES["file"]["name"]),
+            "gallery" => ""
         ]);
+    }
+
+    public function addGallery($id, $data, Response $res)
+    {
+        Files::edit($id, $data->gallery);
+        $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 }

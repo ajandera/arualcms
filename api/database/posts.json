@@ -1,18 +1,22 @@
 [
     {
         "title": "Post 1",
-        "body": "<p>asdsad<\/p><p><strong>asdsad<\/strong><\/p><p>asdsa<\/p>",
+        "body": "<p>asdsad<\/p><p><strong>asdsad<\/strong><\/p>",
+        "excerpt": "Excerpt 1",
         "published": "2021-03-02T10:00:00.000Z",
         "meta": {
             "title": "Post 1",
             "keywords": "mock keywords 1",
             "description": "Mock post 1"
         },
-        "id": 1
+        "id": 1,
+        "file": "154154879_354719135650311_7324051498172828998_n-2.png",
+        "src": "http:\/\/localhost:8000\/storage\/154154879_354719135650311_7324051498172828998_n-2.png"
     },
     {
         "title": "Post 2",
         "body": "<p>Content post 2<\/p>",
+        "excerpt": "Excerpt 2",
         "published": "2021-03-03T06:30:00.000Z",
         "meta": {
             "title": "Post 2",
@@ -24,6 +28,7 @@
     {
         "title": "Post 3",
         "body": "<p>Content post 3<\/p>",
+        "excerpt": "Excerpt 3",
         "published": "2021-03-03T18:30:00.000Z",
         "meta": {
             "title": "Meta title 3",

@@ -6,7 +6,7 @@
         <hr>
       </div>
     </div>
-    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="item.id">
+    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
       <div class="col-1">
         <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
@@ -140,7 +140,7 @@ export default {
     },
     remove(item) {
       var index = this.texts.indexOf(item);
-      this.texts.splice(1, index);
+      this.texts.splice(index, 1);
     },
     openEditor(item) {
       this.text = item;

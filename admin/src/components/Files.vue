@@ -20,6 +20,9 @@
           <td>{{ file.id }}</td>
           <td><img v-bind:src="file.src" class="img-thumbnail"></td>
           <td>{{ file.name }}</td>
+          <td>
+            <input v-model="file.gallery" type="text" v-on:change="saveGallery(file.id, file.gallery)" class="form-control" placeholder="Gallery">
+          </td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(file.id)" type="button" class="btn btn-secondary btn-danger">
               <i class="fa fa-trash"></i>Delete</button>
@@ -48,7 +51,7 @@
                   <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
                 </label>
                 <div class="float-right mt-3">
-                  <button v-on:click="save" class="btn btn-lg btn-success">Save</button>
+                  <button v-on:click="save()" class="btn btn-lg btn-success">Save</button>
                 </div>
               </div>
             </div>
@@ -165,6 +168,37 @@ export default {
               this.messageClass = 'danger';
             }
           });
+    },
+    saveGallery(id, gallery) {
+      axios.put( this.$hostname + 'files/gallery/'+id,
+          {'gallery': gallery},
+          {
+            headers: {
+              'Authorization': "Bearer " + window.localStorage.getItem('jwt')
+            }
+          }
+      ).then(response => {
+        if (response.data.success) {
+          this.message = response.data.message;
+          this.messageClass = "alert alert-success";
+        } else {
+          this.message = response.data.message;
+          this.messageClass = "alert alert-danger";
+        }
+
+        setTimeout(() => {
+          this.message = null;
+          this.messageClass = null;
+        }, 2000);
+      }, (error) => {
+        if (error.response.status === 401) {
+          window.localStorage.removeItem("userId");
+          window.localStorage.removeItem("user");
+          window.localStorage.removeItem("jwt");
+          this.loggedUser = false;
+          window.location.reload();
+        }
+      });
     }
   }
 }

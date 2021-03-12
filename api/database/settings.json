@@ -30,5 +30,21 @@
     {
         "key": "metaKeywords",
         "value": "cms, arualcms, content management system"
+    },
+    {
+        "key": "smtp",
+        "value": "smtp.gmail.com"
+    },
+    {
+        "key": "smtp_user",
+        "value": "arualcms@ajandera.com"
+    },
+    {
+        "key": "smtp_password",
+        "value": "password"
+    },
+    {
+        "key": "smtp_port",
+        "value": "567"
     }
 ]

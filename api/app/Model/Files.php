@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
@@ -16,7 +17,7 @@ class Files
     /**
      * @return array
      */
-    public static function all()
+    public static function all(): array
     {
         return self::$DATA;
     }
@@ -38,7 +39,7 @@ class Files
     /**
      * @return int|mixed
      */
-    private static function getNextId()
+    private static function getNextId(): int
     {
         $ids = [];
         foreach (self::$DATA as $data) {
@@ -51,7 +52,7 @@ class Files
      * @param int $id
      * @return array|mixed
      */
-    public static function findById(int $id)
+    public static function findById(int $id): array
     {
         foreach (self::$DATA as $post) {
             if ($post->id === $id) {

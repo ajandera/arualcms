@@ -5,10 +5,17 @@ import VueCookie from 'vue-cookies'
 import VueSession from 'vue-session'
 import VModal from 'vue-js-modal'
 import App from './App.vue'
+import Settings from '@/components/Settings';
+import Posts from "@/components/Posts";
+import Texts from "@/components/Texts";
+import Users from "@/components/Users";
+import Files from "@/components/Files";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import moment from 'moment'
+import Sign from "@/components/Sign";
+import Recovery from "@/components/Recovery";
 
 library.add(fas)
 Vue.use(VueMoment)
@@ -26,7 +33,14 @@ Vue.filter('formatDate', function(value) {
 })
 
 const routes = [
-  { path: '/', component: App }
+  { path: '/', component: App },
+  { path: '/posts', component: Posts },
+  { path: '/files', component: Files },
+  { path: '/settings', component: Settings },
+  { path: '/texts', component: Texts },
+  { path: '/users', component: Users },
+  { path: '/signin', component: Sign },
+  { path: '/recovery/:username', component: Recovery }
 ]
 const router = new VueRouter({
   mode: 'history',

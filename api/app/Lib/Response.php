@@ -1,18 +1,31 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Lib;
 
+/**
+ * Class Response
+ * @package ArualCms\Lib
+ */
 class Response
 {
+    /** @var int  */
     private $status = 200;
 
-    public function status(int $code)
+    /**
+     * @param int $code
+     * @return $this
+     */
+    public function status(int $code): Response
     {
         $this->status = $code;
         return $this;
     }
 
-    public function toJSON($data = [])
+    /**
+     * @param array $data
+     */
+    public function toJSON(array $data = []): void
     {
         http_response_code($this->status);
         header('Access-Control-Allow-Origin: *');

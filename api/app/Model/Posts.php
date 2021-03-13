@@ -1,26 +1,41 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
 use ArualCms\Lib\Config;
 
+/**
+ * Class Posts
+ * @package ArualCms\Model
+ */
 class Posts
 {
+    /** @var array  */
     private static $DATA = [];
 
-    public static function all()
+    /**
+     * @return array
+     */
+    public static function all(): array
     {
         return self::$DATA;
     }
 
-    public static function add($post)
+    /**
+     * @param $post
+     */
+    public static function add($post): void
     {
         $post->id = self::getNextId();
         self::$DATA[] = $post;
         self::save();
     }
 
-    private static function getNextId()
+    /**
+     * @return int|mixed
+     */
+    private static function getNextId(): int
     {
         $ids = [];
         foreach (self::$DATA as $data) {
@@ -29,7 +44,11 @@ class Posts
         return max($ids) + 1;
     }
 
-    public static function findById(int $id)
+    /**
+     * @param int $id
+     * @return array|mixed
+     */
+    public static function findById(int $id): array
     {
         foreach (self::$DATA as $post) {
             if ($post->id === $id) {
@@ -39,19 +58,28 @@ class Posts
         return [];
     }
 
-    public static function load()
+    /**
+     * Load posts from storage
+     */
+    public static function load(): void
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         self::$DATA = json_decode(file_get_contents($DB_PATH . 'posts.json'));
     }
 
-    public static function save()
+    /**
+     * Persist post to storage
+     */
+    public static function save(): void
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         file_put_contents($DB_PATH . 'posts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
     }
 
-    public static function edit($post)
+    /**
+     * @param $post
+     */
+    public static function edit($post): void
     {
         if (!isset($post->id)) {
             self::add($post);
@@ -69,7 +97,10 @@ class Posts
         self::save();
     }
 
-    public static function remove(int $id)
+    /**
+     * @param int $id
+     */
+    public static function remove(int $id): void
     {
         $new = [];
         foreach (self::$DATA as $post) {

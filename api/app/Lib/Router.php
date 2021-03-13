@@ -1,10 +1,19 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Lib;
 
+/**
+ * Class Router
+ * @package ArualCms\Lib
+ */
 class Router
 {
-    public static function get($route, $callback)
+    /**
+     * @param $route
+     * @param $callback
+     */
+    public static function get(string $route, callable $callback)
     {
         self::isOption();
         if (strcasecmp($_SERVER['REQUEST_METHOD'], 'GET') !== 0) {
@@ -14,7 +23,11 @@ class Router
         self::on($route, $callback);
     }
 
-    public static function post($route, $callback)
+    /**
+     * @param $route
+     * @param $callback
+     */
+    public static function post(string $route, callable $callback)
     {
         self::isOption();
         if (strcasecmp($_SERVER['REQUEST_METHOD'], 'POST') !== 0) {
@@ -24,7 +37,11 @@ class Router
         self::on($route, $callback);
     }
 
-    public static function put($route, $callback)
+    /**
+     * @param $route
+     * @param $callback
+     */
+    public static function put(string $route, callable $callback)
     {
         self::isOption();
         if (strcasecmp($_SERVER['REQUEST_METHOD'], 'PUT') !== 0) {
@@ -34,7 +51,11 @@ class Router
         self::on($route, $callback);
     }
 
-    public static function delete($route, $callback)
+    /**
+     * @param $route
+     * @param $callback
+     */
+    public static function delete(string $route, callable $callback)
     {
         self::isOption();
         if (strcasecmp($_SERVER['REQUEST_METHOD'], 'DELETE') !== 0) {
@@ -44,7 +65,11 @@ class Router
         self::on($route, $callback);
     }
 
-    public static function on($regex, $cb)
+    /**
+     * @param $regex
+     * @param $cb
+     */
+    public static function on(string $regex, callable $cb): void
     {
         $params = $_SERVER['REQUEST_URI'];
         $params = (stripos($params, "/") !== 0) ? "/" . $params : $params;
@@ -62,7 +87,10 @@ class Router
         }
     }
 
-    public static function isOption()
+    /**
+     * Handle option pre-request.
+     */
+    public static function isOption(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             header('Access-Control-Allow-Origin: *');

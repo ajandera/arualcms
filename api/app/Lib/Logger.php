@@ -1,14 +1,25 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Lib;
 
 use Monolog\ErrorHandler;
 use Monolog\Handler\StreamHandler;
 
+/**
+ * Class Logger
+ * @package ArualCms\Lib
+ */
 class Logger extends \Monolog\Logger
 {
+    /** @var array  */
     private static $loggers = [];
 
+    /**
+     * Logger constructor.
+     * @param string $key
+     * @param null $config
+     */
     public function __construct($key = "app", $config = null)
     {
         parent::__construct($key);
@@ -28,7 +39,12 @@ class Logger extends \Monolog\Logger
         }
     }
 
-    public static function getInstance($key = "app", $config = null)
+    /**
+     * @param string $key
+     * @param null $config
+     * @return Logger|mixed
+     */
+    public static function getInstance(string $key = "app", $config = null): array
     {
         if (empty(self::$loggers[$key])) {
             self::$loggers[$key] = new Logger($key, $config);
@@ -37,7 +53,10 @@ class Logger extends \Monolog\Logger
         return self::$loggers[$key];
     }
 
-    public static function enableSystemLogs()
+    /**
+     * Enable logged system.
+     */
+    public static function enableSystemLogs(): void
     {
 
         $LOG_PATH = Config::get('LOG_PATH', __DIR__ . '/../../logs');

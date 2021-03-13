@@ -1,10 +1,15 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Controller;
 
 use ArualCms\Lib\Response;
 use ArualCms\Model\Texts;
 
+/**
+ * Class TextsController
+ * @package ArualCms\Controller
+ */
 class TextsController
 {
     public function __construct()
@@ -12,14 +17,21 @@ class TextsController
         Texts::load();
     }
 
-    public function getTexts(Response $res)
+    /**
+     * @param Response $res
+     */
+    public function getTexts(Response $res): void
     {
         $data['texts'] = Texts::all();
         $data['success'] = true;
         $res->toJSON($data);
     }
 
-    public function getText(string $key, Response $res)
+    /**
+     * @param string $key
+     * @param Response $res
+     */
+    public function getText(string $key, Response $res): void
     {
         $text = Texts::findByKey($key);
         if ($text) {
@@ -29,7 +41,11 @@ class TextsController
         }
     }
 
-    public function save($texts, Response $res)
+    /**
+     * @param $texts
+     * @param Response $res
+     */
+    public function save($texts, Response $res): void
     {
         Texts::update($texts);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);

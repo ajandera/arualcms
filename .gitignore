@@ -1,7 +1,8 @@
 .idea
-admin/node_modules
-/vendor/
+api/vendor/
 composer.lock
+api/database
+admin/node_modules
 admin/dist
-dist
-database/
+site/node_modules
+site/dist

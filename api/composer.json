@@ -10,7 +10,8 @@
     "require": {
         "php": ">=7.1",
         "monolog/monolog": "1.25.*",
-        "firebase/php-jwt": "v5.2.*"
+        "firebase/php-jwt": "v5.2.*",
+        "phpmailer/phpmailer": "^6.2"
     },
     "license": "MIT",
     "authors": [

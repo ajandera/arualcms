@@ -1,25 +1,40 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Controller;
 
 use ArualCms\Lib\Response;
 use ArualCms\Model\Settings;
 
+/**
+ * Class SettingsController
+ * @package ArualCms\Controller
+ */
 class SettingsController
 {
+    /**
+     * SettingsController constructor.
+     */
     public function __construct()
     {
         Settings::load();
     }
 
-    public function getSettings(Response $res)
+    /**
+     * @param Response $res
+     */
+    public function getSettings(Response $res): void
     {
         $data['settings'] = Settings::all();
         $data['success'] = true;
         $res->toJSON($data);
     }
 
-    public function getSetting(string $key, Response $res)
+    /**
+     * @param string $key
+     * @param Response $res
+     */
+    public function getSetting(string $key, Response $res): void
     {
         $setting = Settings::findByKey($key);
         if ($setting) {
@@ -29,7 +44,11 @@ class SettingsController
         }
     }
 
-    public function save($settings, Response $res)
+    /**
+     * @param $settings
+     * @param Response $res
+     */
+    public function save($settings, Response $res): void
     {
         Settings::update($settings);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);

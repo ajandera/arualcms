@@ -1,11 +1,10 @@
 <template>
-  <div>
-    <div id="app" v-if="loggedUser">
+  <div id="app">
     <section class="main">
       <div class="container-fluid">
         <div class="row">
           <div class="col-2 padding-0">
-            <div class="page-wrapper">
+            <div class="page-wrapper" v-if="loggedUser">
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
                   <div class="sidebar-header">
@@ -16,7 +15,7 @@
                     <div class="user-info">
                       <span class="user-name">{{ loggedUser }}</span>
                       <span class="user-role">Administrator</span>
-                      <a href="#" @click="logout">Sign out</a>
+                      <a href="#" @click="logout()">Sign out</a>
                     </div>
                   </div>
                   <!-- sidebar-header  -->
@@ -26,17 +25,13 @@
                         <span>General</span>
                       </li>
                       <li class="sidebar-dropdown" v-for="item in general" :key="item.component">
-                        <a href="#" v-on:click="chooseComponent(item.component)" :class="item.component === selected ? 'active' : ''">
-                          <span>{{ item.label}}</span>
-                        </a>
+                        <router-link :to="item.component">{{ item.label }}</router-link>
                       </li>
                       <li class="header-menu">
                         <span>Extra</span>
                       </li>
                       <li v-for="item in extra" :key="item.component">
-                        <a href="#" v-on:click="chooseComponent(item.component)" :class="item.component === selected ? 'active' : ''">
-                          <span>{{ item.label }}</span>
-                        </a>
+                        <router-link :to="item.component">{{ item.label }}</router-link>
                       </li>
                     </ul>
                   </div>
@@ -50,144 +45,69 @@
             </div>
           </div>
           <div class="col-10">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header" v-if="loggedUser">
               <a class="navbar-brand" href="/">arualCMS</a>
             </nav>
-            <component :is="selected" class="tab"></component>
+            <router-view></router-view>
           </div>
         </div>
       </div>
     </section>
   </div>
-    <div id="sign" v-if="!loggedUser">
-      <modal name="sign" height="auto" :clickToClose="false">
-        <div class="modal-dialog">
-          <!-- Modal content-->
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3 class="modal-title">arualCMS</h3>
-            </div>
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-12">
-                  <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-12">
-                  <div id="signin">
-                    <label for="username">Username</label>
-                    <input type="email" v-model="username" class="form-control" id="username" required>
-                    <label for="username">Password</label>
-                    <input type="password" v-model="password" class="form-control" id="password" required>
-                    <button class="float-right btn btn-success mt-3" type="submit" v-on:click="login()">Sign In</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </modal>
-    </div>
-  </div>
 </template>
 
 <script>
-
-import Settings from '@/components/Settings';
-import Posts from "@/components/Posts";
-import Texts from "@/components/Texts";
-import Users from "@/components/Users";
-import Files from "@/components/Files";
-import axios from "axios";
 
 export default {
   name: 'App',
   data() {
     return {
-      selected: "Posts",
       general: [
         {
-          component: "Posts",
+          component: "/posts",
           label: "Posts"
         },
         {
-          component: "Texts",
+          component: "/texts",
           label: "Texts"
         },
         {
-          component: "Files",
+          component: "/files",
           label: "Files"
         },
       ],
       extra: [
         {
-          component: "Settings",
+          component: "/settings",
           label: "Settings"
         },
         {
-          component: "Users",
+          component: "/users",
           label: "Users"
         }
       ],
       loggedUser: window.localStorage.getItem("user"),
       message: null,
       messageClass: null,
-      username: null,
-      password: null,
-      error: null,
+      error: null
     }
   },
-  components: {
-    Settings,
-    Posts,
-    Texts,
-    Users,
-    Files
-  },
+  components: {},
   mounted() {
-    if (!this.loggedUser) {
-      this.show();
+    if (this.loggedUser === null) {
+      this.$router.push('signin');
+    } else {
+      this.$router.push('posts');
     }
   },
   methods: {
-    chooseComponent(component) {
-      this.selected = component;
-    },
-    login() {
-      axios.post(this.$hostname+"auth", {"username": this.username, "password": this.password})
-          .then(response => {
-            let res = response.data;
-            this.message = res.message;
-            if (res.success) {
-              this.message = res.message;
-              this.messageClass = "alert alert-success";
-              this.username = null;
-              this.password = null;
-              this.loggedUser = res.username;
-              window.localStorage.setItem('userId', res.id);
-              window.localStorage.setItem("user", res.username)
-              window.localStorage.setItem('jwt', res.jwt);
-              this.hide();
-            } else {
-              this.message = res.message;
-              this.messageClass = "alert alert-danger";
-            }
-          });
-    },
     logout() {
       window.localStorage.removeItem("userId");
       window.localStorage.removeItem("user");
       window.localStorage.removeItem("jwt");
-      this.loggedUser = false;
-      window.location.reload();
-    },
-    show() {
-      this.$modal.show('sign')
-    },
-    hide() {
-      this.$modal.hide('sign')
-    },
+      this.loggedUser = null;
+      this.$router.push('signin');
+    }
   }
 }
 </script>
@@ -277,7 +197,7 @@ export default {
   color: green;
 }
 
-.sidebar-wrapper a.active {
+.sidebar-wrapper a.router-link-active {
   color: green;
 }
 

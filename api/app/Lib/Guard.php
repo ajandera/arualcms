@@ -1,12 +1,21 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Lib;
 
 use Firebase\JWT\JWT;
 
+/**
+ * Class Guard
+ * @package ArualCms\Lib
+ */
 class Guard
 {
-    public static function check(string $jwt, Response $response)
+    /**
+     * @param string $jwt
+     * @param Response $response
+     */
+    public static function check(string $jwt, Response $response): void
     {
         // if jwt is not empty
         if ($jwt) {

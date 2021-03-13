@@ -9,6 +9,7 @@
           <th>#</th>
           <th>Image</th>
           <th>Name</th>
+          <th>Gallery</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
               <i class="fa fa-plus"></i>Create</button>

@@ -1,24 +1,37 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Lib;
 
+/**
+ * Class Request
+ * @package ArualCms\Lib
+ */
 class Request
 {
+    /** @var array|mixed  */
     public $params;
+
+    /** @var string  */
     public $reqMethod;
+
+    /** @var string  */
     public $contentType;
 
-    public function __construct($params = [])
+    public function __construct(array $params = [])
     {
         $this->params = $params;
         $this->reqMethod = trim($_SERVER['REQUEST_METHOD']);
         $this->contentType = !empty($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
     }
 
-    public function getBody()
+    /**
+     * @return array
+     */
+    public function getBody(): array
     {
         if ($this->reqMethod !== 'POST') {
-            return '';
+            return [];
         }
 
         $body = [];
@@ -29,6 +42,9 @@ class Request
         return $body;
     }
 
+    /**
+     * @return array|mixed
+     */
     public function getJSON()
     {
         header('Access-Control-Allow-Origin: *');
@@ -39,11 +55,11 @@ class Request
         header('Content-Type: application/json;charset=utf-8');
 
         if ($this->reqMethod !== 'POST' && $this->reqMethod !== 'PUT' ) {
-            return [];
+            return '';
         }
 
         if (strcasecmp($this->contentType, 'application/json;charset=utf-8') !== 0) {
-            return [];
+            return '';
         }
 
         // Receive the RAW post data.

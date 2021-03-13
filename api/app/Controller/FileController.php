@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Controller;
 
@@ -6,6 +7,10 @@ use ArualCms\Lib\Config;
 use ArualCms\Lib\Response;
 use ArualCms\Model\Files;
 
+/**
+ * Class FileController
+ * @package ArualCms\Controller
+ */
 class FileController
 {
     public function __construct()
@@ -13,14 +18,21 @@ class FileController
         Files::load();
     }
 
-    public function getFiles(Response $res)
+    /**
+     * @param Response $res
+     */
+    public function getFiles(Response $res): void
     {
         $data['files'] = Files::all();
         $data['success'] = true;
         $res->toJSON($data);
     }
 
-    public function getFile(string $id, Response $res)
+    /**
+     * @param string $id
+     * @param Response $res
+     */
+    public function getFile(int $id, Response $res): void
     {
         $file = Files::findById($id);
         if ($file) {
@@ -30,19 +42,29 @@ class FileController
         }
     }
 
-    public function save(Response $res)
+    /**
+     * @param Response $res
+     */
+    public function save(Response $res): void
     {
         $file = self::upload();
         $res->toJSON(['success' => true, 'message' => 'Record added successfully', 'file' => $file]);
     }
 
-    public function remove($id, Response $res)
+    /**
+     * @param $id
+     * @param Response $res
+     */
+    public function remove($id, Response $res): void
     {
         Files::remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 
-    public function upload()
+    /**
+     * @return array
+     */
+    public function upload(): array
     {
         $targetDir = Config::get('STORAGE_PATH',__DIR__ . '../../storage/');
         $targetFile = $targetDir . basename($_FILES["file"]["name"]);
@@ -54,7 +76,12 @@ class FileController
         ]);
     }
 
-    public function addGallery($id, $data, Response $res)
+    /**
+     * @param $id
+     * @param $data
+     * @param Response $res
+     */
+    public function addGallery($id, $data, Response $res): void
     {
         Files::edit($id, $data->gallery);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);

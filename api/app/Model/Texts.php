@@ -1,25 +1,41 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
 use ArualCms\Lib\Config;
 
+/**
+ * Class Texts
+ * @package ArualCms\Model
+ */
 class Texts
 {
+    /** @var array  */
     private static $DATA = [];
 
-    public static function all()
+    /**
+     * @return array
+     */
+    public static function all(): array
     {
         return self::$DATA;
     }
 
-    public static function update($texts)
+    /**
+     * @param $texts
+     */
+    public static function update($texts): void
     {
         self::$DATA = $texts;
         self::save();
     }
 
-    public static function findByKey(string $key)
+    /**
+     * @param string $key
+     * @return array|mixed
+     */
+    public static function findByKey(string $key): array
     {
         foreach (self::$DATA as $text) {
             if ($text->key === $key) {
@@ -29,13 +45,19 @@ class Texts
         return [];
     }
 
-    public static function load()
+    /**
+     * Load texts from storage
+     */
+    public static function load(): void
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         self::$DATA = json_decode(file_get_contents($DB_PATH . 'texts.json'));
     }
 
-    public static function save()
+    /**
+     * Save data to storage
+     */
+    public static function save(): void
     {
         $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
         file_put_contents($DB_PATH . 'texts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));

@@ -1,25 +1,40 @@
 <?php
+declare(strict_types = 1);
 
 namespace ArualCms\Controller;
 
 use ArualCms\Lib\Response;
 use ArualCms\Model\Users;
 
+/**
+ * Class UsersController
+ * @package ArualCms\Controller
+ */
 class UsersController
 {
+    /**
+     * UsersController constructor.
+     */
     public function __construct()
     {
         Users::load();
     }
 
-    public function getUsers(Response $res)
+    /**
+     * @param Response $res
+     */
+    public function getUsers(Response $res): void
     {
         $data['users'] = Users::all();
         $data['success'] = true;
         $res->toJSON($data);
     }
 
-    public function getUserByUsername(string $key, Response $res)
+    /**
+     * @param string $key
+     * @param Response $res
+     */
+    public function getUserByUsername(string $key, Response $res): void
     {
         $user = Users::findByUsername($key);
         if ($user) {
@@ -29,7 +44,11 @@ class UsersController
         }
     }
 
-    public function getUser(int $id, Response $res)
+    /**
+     * @param int $id
+     * @param Response $res
+     */
+    public function getUser(int $id, Response $res): void
     {
         $user = Users::findById($id);
         if ($user) {
@@ -39,21 +58,33 @@ class UsersController
         }
     }
 
-    public function add($user, Response $res)
+    /**
+     * @param $user
+     * @param Response $res
+     */
+    public function add($user, Response $res): void
     {
         $user->password = password_hash($user->password, PASSWORD_BCRYPT);
         Users::add($user);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }
 
-    public function edit($user, Response $res)
+    /**
+     * @param $user
+     * @param Response $res
+     */
+    public function edit($user, Response $res): void
     {
         $user->password = password_hash($user->password, PASSWORD_BCRYPT);
         Users::edit($user);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 
-    public function remove($id, Response $res)
+    /**
+     * @param $id
+     * @param Response $res
+     */
+    public function remove($id, Response $res): void
     {
         Users::remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);

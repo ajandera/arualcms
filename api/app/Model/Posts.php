@@ -48,7 +48,7 @@ class Posts
      * @param int $id
      * @return array|mixed
      */
-    public static function findById(int $id): array
+    public static function findById(int $id)
     {
         foreach (self::$DATA as $post) {
             if ($post->id === $id) {

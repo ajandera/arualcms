@@ -38,7 +38,7 @@ class PostsController
     {
         $post = Posts::findById($id);
         if ($post) {
-            $res->toJSON($post);
+            $res->toJSON(['success' => true, 'post' => $post]);
         } else {
             $res->status(404)->toJSON(['error' => "Not Found"]);
         }

@@ -39,7 +39,7 @@ class App
         });
 
         Router::get('/post/([0-9]*)', function (Request $req, Response $res) {
-            (new PostsController())->getPost($req->params[0], $res);
+            (new PostsController())->getPost((int) $req->params[0], $res);
         });
 
         Router::put('/post/([0-9]*)', function (Request $req, Response $res) {
@@ -96,7 +96,7 @@ class App
         });
 
         Router::get('/users/id/([0-9]*)', function (Request $req, Response $res) {
-            (new UsersController())->getUser($req->params[0], $res);
+            (new UsersController())->getUser((int) $req->params[0], $res);
         });
 
         Router::get('/users/username/([a-zA-Z]*)', function (Request $req, Response $res) {
@@ -127,7 +127,7 @@ class App
         });
 
         Router::get('/files/([0-9]*)', function (Request $req, Response $res) {
-            (new FileController())->getFile($req->params[0], $res);
+            (new FileController())->getFile((int) $req->params[0], $res);
         });
 
         Router::post('/files/upload', function (Request $req, Response $res) {
@@ -139,7 +139,7 @@ class App
         Router::put('/files/gallery/([0-9]*)', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new FileController())->addGallery($req->params[0], $req->getJSON(), $res);
+            (new FileController())->addGallery((int) $req->params[0], $req->getJSON(), $res);
         });
 
         Router::delete('/files/([0-9]*)', function (Request $req, Response $res) {

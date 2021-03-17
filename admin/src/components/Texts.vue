@@ -7,16 +7,16 @@
       </div>
     </div>
     <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
-      <div class="col-1">
+      <div class="col-sm-1 col-xs-12">
         <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
-      <div class="col-3">
+      <div class="col-sm-3 col-xs-6">
         <input type="text" v-model="item.key" class="form-control">
       </div>
-      <div class="col-6">
+      <div class="col-sm-6 col-xs-6">
         <textarea v-model="item.value" class="form-control"></textarea>
       </div>
-      <div class="col-1">
+      <div class="col-sm-1 col-xs-12">
         <div class="float-right">
           <button v-on:click="openEditor(item)" class="btn btn-success"><font-awesome-icon icon="edit" /></button>
           <button v-on:click="remove(item)" class="btn btn-danger"><font-awesome-icon icon="times" /></button>

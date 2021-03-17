@@ -3,7 +3,7 @@
     <section class="main">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-2 padding-0">
+          <div class="col-2 padding-0 d-none d-sm-block">
             <div class="page-wrapper" v-if="loggedUser">
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
@@ -44,9 +44,26 @@
               </nav>
             </div>
           </div>
-          <div class="col-10">
+          <div class="col-xs-10 col-sm-10">
             <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header" v-if="loggedUser">
               <a class="navbar-brand" href="/">arualCMS</a>
+              <div class="topnav d-block d-sm-none">
+                <!-- Navigation links (hidden by default) -->
+                <div id="myLinks" v-if="menu === true">
+                  <ul>
+                    <li class="sidebar-dropdown" v-for="item in general" :key="item.component">
+                      <router-link :to="item.component">{{ item.label }}</router-link>
+                    </li>
+                    <li v-for="item in extra" :key="item.component">
+                      <router-link :to="item.component">{{ item.label }}</router-link>
+                    </li>
+                  </ul>
+                </div>
+                <!-- "Hamburger menu" / "Bar icon" to toggle the navigation links -->
+                <a href="#" class="icon" v-on:click="hamburger()">
+                  <font-awesome-icon :icon="['fas', 'bars']" />
+                </a>
+              </div>
             </nav>
             <router-view></router-view>
           </div>
@@ -89,7 +106,8 @@ export default {
       loggedUser: window.localStorage.getItem("user"),
       message: null,
       messageClass: null,
-      error: null
+      error: null,
+      menu: false
     }
   },
   components: {},
@@ -107,6 +125,9 @@ export default {
       window.localStorage.removeItem("jwt");
       this.loggedUser = null;
       this.$router.push('signin');
+    },
+    hamburger() {
+      this.menu = !this.menu;
     }
   }
 }
@@ -333,5 +354,48 @@ export default {
 }
 .padding-0 {
   padding: 0;
+}
+/* Style the navigation menu */
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+  width: 200px;
+  z-index: 999;
+}
+
+/* Style navigation menu links */
+.topnav a {
+  color: white;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+}
+
+/* Style the hamburger menu */
+.topnav a.icon {
+  background: black;
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+  z-index: 999;
+}
+
+/* Add a grey background color on mouse-over */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+#myLinks {
+  position: absolute;
+  background: #000;
+  width: 216px;
+  top: 53px;
+}
+#myLinks ul {
+  list-style: none;
+  padding-left: 0;
 }
 </style>

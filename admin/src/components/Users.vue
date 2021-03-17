@@ -25,7 +25,7 @@
         </tr>
       </tbody>
     </table>
-    <modal name="form" :width="800" height="auto" :scrollable="true">
+    <modal name="form" height="auto" :scrollable="true" :resizable="true" :adaptive="true">
     <div class="modal-dialog">
       <!-- Modal content-->
       <div class="modal-content">

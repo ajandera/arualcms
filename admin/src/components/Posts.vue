@@ -8,7 +8,7 @@
         <tr>
           <th>#</th>
           <th>Title</th>
-          <th>Excerpt</th>
+          <th class="d-none d-sm-table-cell"><br>Excerpt</th>
           <th>Published</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
@@ -20,7 +20,7 @@
         <tr v-for="post in posts" :key="post.id" v-on:click="edit(post.id)" class="actRow">
           <td>{{ post.id }}</td>
           <td>{{ post.title }}</td>
-          <td>{{ post.excerpt }}</td>
+          <td class="d-none d-sm-table-cell">{{ post.excerpt }}</td>
           <td>{{ post.published | formatDate}}</td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(post.id)" type="button" class="btn btn-secondary btn-danger">
@@ -29,7 +29,7 @@
         </tr>
       </tbody>
     </table>
-    <modal name="form" :width="800" height="auto" :scrollable="true">
+    <modal name="form" height="auto" :scrollable="true" :resizable="true" :adaptive="true">
     <div class="modal-dialog">
       <!-- Modal content-->
       <div class="modal-content">
@@ -45,7 +45,7 @@
           </div>
           <div class="row">
             <div class="col-12">
-                <img v-bind:src="post.src" class="img-fluid" />
+                <img v-bind:src="post.src" class="img-fluid" /><br>
                 <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
                 <div class="float-right mt-3">
                   <button v-on:click="upload()" class="btn btn-lg btn-success">Add Cover</button>

@@ -1,7 +1,7 @@
 ![Screenshot 2021-03-25 at 13 56 24](https://user-images.githubusercontent.com/4760295/112476277-04b9b680-8d72-11eb-8433-fb53ddb9f78a.png)
 
 
-# Simple CMS made with love in vuejs and PHP
+# Simple CMS made with love in VueJS and PHP
 
 
 ## Instalation
@@ -30,3 +30,10 @@ For development clone repository to your local machine and simple run docker-com
 - frontend http://localhost:9000
 
 ### API description
+TO DO
+### Storage description
+TO DO
+### VueJS environment
+TO DO
+### Security
+TO DO

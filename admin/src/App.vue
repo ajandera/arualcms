@@ -4,7 +4,7 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-2 padding-0 d-none d-sm-block">
-            <div class="page-wrapper" v-if="loggedUser">
+            <div class="page-wrapper">
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
                   <div class="sidebar-header">
@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="col-xs-10 col-sm-10">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header" v-if="loggedUser">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
               <a class="navbar-brand" href="/">arualCMS</a>
               <div class="topnav d-block d-sm-none">
                 <!-- Navigation links (hidden by default) -->

@@ -72,7 +72,7 @@ export default {
               window.localStorage.setItem("user", res.username)
               window.localStorage.setItem('jwt', res.jwt);
               this.hide();
-              this.$router.go('/posts');
+              this.$router.push('/posts');
             } else {
               this.message = res.message;
               this.messageClass = "alert alert-danger";
@@ -118,5 +118,8 @@ export default {
 }
 .modal-content {
   border: none;
+}
+.v--modal-overlay {
+  background: rgb(134, 134, 134) !important;
 }
 </style>

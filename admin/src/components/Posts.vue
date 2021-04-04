@@ -208,7 +208,7 @@ export default {
     },
     save(close) {
       if (this.post.id !== undefined) {
-        axios.put(this.$hostname + "post/" + this.post.id, this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+        axios.put(this.$hostname + "post/", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;

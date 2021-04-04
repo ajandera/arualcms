@@ -30,14 +30,197 @@ For development clone repository to your local machine and simple run docker-com
 - frontend http://localhost:9000
 
 ### API description
-endpoint: 
-method:
-parameters:
+## POSTS
+endpoint: http://localhost:8000/post
 
-endpoint: 
-method:
-parameters:
+method: GET
 
+parameters: -
+
+endpoint: http://localhost:8000/post/ID
+
+method: GET
+
+parameters: int ID
+
+endpoint: http://localhost:8000/post
+
+method: PUT
+
+parameters: {
+    id: 1
+    title: "Test",
+    body: "Test content",
+    published: "2021-01-01",
+    meta: {
+        title: "Test",
+        keywords: "test, arualCMS",
+        description: "description"
+    }
+}
+
+endpoint: http://localhost:8000/post
+
+method: POST
+
+parameters: {
+    title: "Test",
+    body: "Test content",
+    published: "2021-01-01",
+    meta: {
+        title: "Test",
+        keywords: "test, arualCMS",
+        description: "description"
+    }
+}
+
+endpoint: http://localhost:8000/post/ID
+
+method: DELETE
+
+parameters: int ID
+
+## SETTINGS
+endpoint: http://localhost:8000/setting
+
+method: GET
+
+parameters: -
+
+endpoint: http://localhost:8000/setting/KEY
+
+method: GET
+
+parameters: string KEY
+
+endpoint: http://localhost:8000/setting
+
+method: PUT
+
+parameters: [{
+        "key": "author",
+        "value": "Ales Jandera, shopyCRM"
+    },
+    {
+        "key": "title",
+        "value": "arualCMS"
+    }
+]
+
+## TEXTS
+endpoint: http://localhost:8000/text
+
+method: GET
+
+parameters: -
+
+
+endpoint: http://localhost:8000/text/KEY
+
+method: GET
+
+parameters: string KEY
+
+endpoint: http://localhost:8000/text
+
+method: PUT
+
+parameters: [{
+        "key": "what_we_do",
+        "value": "Lorem ipsum dolor sit amet."
+    },
+    {
+        "key": "contact",
+        "value": "name@example.com"
+    }
+]
+
+## USERS
+endpoint: http://localhost:8000/user
+
+method: GET
+
+parameters: -
+
+endpoint: http://localhost:8000/user/ID
+
+method: GET
+
+parameters: int ID
+
+endpoint: http://localhost:8000/user/username/USERNAME
+
+method: GET
+
+parameters: string USERNAME
+
+endpoint: http://localhost:8000/user/ID
+
+method: PUT
+
+parameters: {
+    "id": 1
+    "username": "arualcms@arualcms.com",
+    "password": "sdsdkjfhdskjfh4325234",
+}
+
+endpoint: http://localhost:8000/user
+
+method: POST
+
+parameters: {
+    "username": "arualcms@arualcms.com",
+    "password": "sdsdkjfhdskjfh4325234",
+}
+
+endpoint: http://localhost:8000/user/ID
+
+method: DELETE
+
+parameters: int ID
+
+## FILES
+endpoint: http://localhost:8000/files
+
+method: GET
+
+parameters: -
+
+endpoint: http://localhost:8000/files/ID
+
+method: GET
+
+parameters: int ID
+
+endpoint: http://localhost:8000/files/upload
+
+method: POST
+
+parameters: FormData with uploaded file
+
+endpoint: http://localhost:8000/files/gallery/ID
+
+method: PUT
+
+parameters: int ID, {
+    "gallery": "gallery 1",
+}
+
+endpoint: http://localhost:8000/files/ID
+
+method: DELETE
+
+parameters: int ID
+
+## AUTHORIZATION
+endpoint: http://localhost:8000/files/post
+
+method: POST
+
+parameters: {
+    username: "registered email",
+    password: "user password"
+}
 
 ### Storage description
 As a storage are use json files stored in database folder. For running arualCMS you not need any database server.
@@ -45,7 +228,7 @@ For getting information from database are used api endpoints. In arualCMS are de
 - posts
 - texts
 - users
-- files
+- storage
 - settings
 With each entity you can read, create, edit and delete.
 

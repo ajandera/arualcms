@@ -133,7 +133,7 @@ export default {
     save() {
       if (this.user.id !== undefined) {
         axios.put(
-            this.$hostname + "user/" + this.user.id,
+            this.$hostname + "user/",
             this.user,
             {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
             ).then(response => {

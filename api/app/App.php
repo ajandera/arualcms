@@ -42,7 +42,7 @@ class App
             (new PostsController())->getPost((int) $req->params[0], $res);
         });
 
-        Router::put('/post/([0-9]*)', function (Request $req, Response $res) {
+        Router::put('/post', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
             (new PostsController())->edit($req->getJSON(), $res);
@@ -103,7 +103,7 @@ class App
             (new UsersController())->getUserByUsername($req->params[0], $res);
         });
 
-        Router::put('/user/([0-9]*)', function (Request $req, Response $res) {
+        Router::put('/user', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
             (new UsersController())->edit($req->getJSON(), $res);

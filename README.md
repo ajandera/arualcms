@@ -30,10 +30,28 @@ For development clone repository to your local machine and simple run docker-com
 - frontend http://localhost:9000
 
 ### API description
-TO DO
+endpoint: 
+method:
+parameters:
+
+endpoint: 
+method:
+parameters:
+
+
 ### Storage description
-TO DO
+As a storage are use json files stored in database folder. For running arualCMS you not need any database server.
+For getting information from database are used api endpoints. In arualCMS are defined this entities:
+- posts
+- texts
+- users
+- files
+- settings
+With each entity you can read, create, edit and delete.
+
 ### VueJS environment
-TO DO
+Admin part is using standart VueJS cli to build the application or run in development mode.
+For development start dev server from admin folder: npm run serve
+For production build after chnages use: npm run build
 ### Security
-TO DO
+To secure communication between api and vuejs parst is using standard jwt token.

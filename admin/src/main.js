@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import moment from 'moment'
 import Sign from "@/components/Sign";
 import Recovery from "@/components/Recovery";
+import Languages from "@/components/Languages";
 
 library.add(fas)
 Vue.use(VueMoment)
@@ -40,6 +41,7 @@ const routes = [
   { path: '/texts', component: Texts },
   { path: '/users', component: Users },
   { path: '/signin', component: Sign },
+  { path: '/languages', component: Languages },
   { path: '/recovery/:username', component: Recovery }
 ]
 const router = new VueRouter({

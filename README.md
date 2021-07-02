@@ -4,7 +4,7 @@
 # Simple CMS made with love in VueJS and PHP
 
 
-## Instalation
+## Installation
 ### Use Docker
 Copy content of production folder to your destination and run **docker-compose up**, it will create container and app will be running on next urls:
 
@@ -211,6 +211,34 @@ endpoint: http://localhost:8000/files/ID
 method: DELETE
 
 parameters: int ID
+
+## LANGUAGES
+endpoint: http://localhost:8000/languages
+
+method: GET
+
+parameters: -
+
+
+endpoint: http://localhost:8000/languages/KEY
+
+method: GET
+
+parameters: string KEY
+
+endpoint: http://localhost:8000/languages
+
+method: PUT
+
+parameters: [{
+"key": "en",
+"value": "English"
+},
+{
+"key": "cz",
+"value": "Čeština"
+}
+]
 
 ## AUTHORIZATION
 endpoint: http://localhost:8000/files/post

@@ -99,6 +99,10 @@ export default {
           label: "Settings"
         },
         {
+          component: "/languages",
+          label: "Languages"
+        },
+        {
           component: "/users",
           label: "Users"
         }

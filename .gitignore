@@ -1,7 +1,7 @@
 .idea
 api/vendor/
 composer.lock
-api/database
+#api/database
 admin/node_modules
 admin/dist
 site/node_modules

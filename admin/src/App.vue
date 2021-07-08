@@ -75,6 +75,8 @@
 
 <script>
 
+import axios from "axios";
+
 export default {
   name: 'App',
   data() {
@@ -111,7 +113,8 @@ export default {
       message: null,
       messageClass: null,
       error: null,
-      menu: false
+      menu: false,
+      language: null
     }
   },
   components: {},
@@ -132,6 +135,17 @@ export default {
     },
     hamburger() {
       this.menu = !this.menu;
+    },
+    getDefaultLanguage() {
+      axios.get(this.$hostname + "languages")
+          .then(response => {
+            if (response.data.success === true) {
+              this.language = response.data.languages.find(item => item.default === 1);
+            } else {
+              this.message = response.data.error;
+              this.messageClass = 'danger';
+            }
+          });
     }
   }
 }

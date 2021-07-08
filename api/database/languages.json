@@ -1,10 +1,12 @@
 [
     {
         "key": "en",
-        "value": "English"
+        "value": "English",
+        "default": 1
     },
     {
         "key": "cz",
-        "value": "Čeština"
+        "value": "Čeština",
+        "default": 0
     }
 ]

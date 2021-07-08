@@ -11,6 +11,7 @@
       <tr>
         <th>Code</th>
         <th>Name</th>
+        <th>Default</th>
         <th></th>
       </tr>
       </thead>
@@ -18,9 +19,12 @@
       <tr v-for="language in languages" :key="language.key" v-on:click="edit(language.id)" class="actRow">
         <td>{{ language.key }}</td>
         <td>{{ language.value }}</td>
+        <td>
+          <div v-if="language.default === 1"><font-awesome-icon icon="check" /></div>
+        </td>
         <td class="text-right">
           <button v-on:click.stop.prevent="remove(language.key)" type="button" class="btn btn-secondary btn-danger">
-            <i class="fa fa-trash"></i>Delete</button>
+            <font-awesome-icon icon="trash" /> Delete</button>
         </td>
       </tr>
       </tbody>
@@ -80,11 +84,13 @@ export default {
           });
     },
     add() {
-      this.languages.push({'key': '', 'value': ''});
+      // todo
+    },
+    edit() {
+      // todo
     },
     remove(item) {
-      let index = this.languages.indexOf(item);
-      this.languages.splice(index, 1);
+      // todo
     }
   }
 }

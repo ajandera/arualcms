@@ -18,8 +18,10 @@
       </div>
       <div class="col-sm-1 col-xs-12">
         <div class="float-right">
-          <button v-on:click="openEditor(item)" class="btn btn-success"><font-awesome-icon icon="edit" /></button>
-          <button v-on:click="remove(item)" class="btn btn-danger"><font-awesome-icon icon="times" /></button>
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <button v-on:click="openEditor(item)" class="btn btn-success"><font-awesome-icon icon="edit" /></button>
+            <button v-on:click="remove(item)" class="btn btn-danger"><font-awesome-icon icon="times" /></button>
+          </div>
         </div>
       </div>
     </div>
@@ -125,6 +127,7 @@ export default {
           });
     },
     load() {
+      console.log(this.language);
       axios.get(this.$hostname + "text")
           .then(response => {
             if (response.data.success === true) {

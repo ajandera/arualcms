@@ -5,6 +5,7 @@ namespace ArualCms;
 
 use ArualCms\Controller\AuthController;
 use ArualCms\Controller\FileController;
+use ArualCms\Controller\LanguagesController;
 use ArualCms\Controller\MailController;
 use ArualCms\Controller\PostsController;
 use ArualCms\Controller\SettingsController;
@@ -28,7 +29,7 @@ class App
     public static function run(): void
     {
         Router::get('/', function (Request $req, Response $res) {
-            $data['message'] = 'arualCMS is running';
+            $data['message'] = password_hash('Password123', PASSWORD_BCRYPT);//'arualCMS is running';
             $data['success'] = true;
             $res->toJSON($data);
         });
@@ -161,6 +162,21 @@ class App
         // email
         Router::post('/mail', function (Request $req, Response $res) {
             (new MailController())->send($req->getJSON(), $res);
+        });
+
+        //languages
+        Router::get('/languages', function (Request $req, Response $res) {
+            (new LanguagesController())->getLanguages($res);
+        });
+
+        Router::get('/languages/([a-z]*)', function (Request $req, Response $res) {
+            (new LanguagesController())->getLanguage($req->params[0], $res);
+        });
+
+        Router::put('/languages', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new LanguagesController())->save($req->getJSON(), $res);
         });
 
         Logger::enableSystemLogs();

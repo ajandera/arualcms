@@ -3,6 +3,11 @@
     <div class="row">
       <div class="col-11">
         <h1>Texts</h1>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button
+              v-on:click="setLanguage(lang)"
+              v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
+        </div>
         <hr>
       </div>
     </div>
@@ -14,7 +19,7 @@
         <input type="text" v-model="item.key" class="form-control">
       </div>
       <div class="col-sm-6 col-xs-6">
-        <textarea v-model="item.value" class="form-control"></textarea>
+        <textarea v-model="item.value[language]" class="form-control"></textarea>
       </div>
       <div class="col-sm-1 col-xs-12">
         <div class="float-right">
@@ -51,11 +56,11 @@
             </div>
             <div class="row">
               <div class="col-12">
-                <div id="editor">
+                <div id="editor" v-if="text.value !== undefined">
                   <!-- Two-way Data-Binding -->
                   <quill-editor
                       ref="myQuillEditor"
-                      v-model="text.value"
+                      v-model="text.value[language]"
                       :options="editorOption"
                       @blur="onEditorBlur($event)"
                       @focus="onEditorFocus($event)"
@@ -99,7 +104,9 @@ export default {
       loggedUser: window.localStorage.getItem("user"),
       editorOption: {},
       modalTitle: "",
-      error: ""
+      error: "",
+      language: window.localStorage.getItem("language"),
+      languages: window.localStorage.getItem("languages").split(',')
     }
   },
   mounted() {
@@ -127,7 +134,6 @@ export default {
           });
     },
     load() {
-      console.log(this.language);
       axios.get(this.$hostname + "text")
           .then(response => {
             if (response.data.success === true) {
@@ -167,6 +173,10 @@ export default {
     },
     hide() {
       this.$modal.hide('form')
+    },
+    setLanguage(lang) {
+      this.language = lang;
+      window.localStorage.setItem('language', this.language);
     }
   }
 }

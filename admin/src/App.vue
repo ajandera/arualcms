@@ -122,8 +122,11 @@ export default {
     if (this.loggedUser === null) {
       this.$router.push('signin');
     } else {
-      this.$router.push('posts');
+      if (this.$router.currentRoute.name !== 'posts') {
+        this.$router.push('posts');
+      }
     }
+    this.getDefaultLanguage();
   },
   methods: {
     logout() {
@@ -140,7 +143,8 @@ export default {
       axios.get(this.$hostname + "languages")
           .then(response => {
             if (response.data.success === true) {
-              this.language = response.data.languages.find(item => item.default === 1);
+              window.localStorage.setItem('languages', response.data.languages.map(item => item = item.key));
+              window.localStorage.setItem('language', response.data.languages.find(item => item.default === 1).key);
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';

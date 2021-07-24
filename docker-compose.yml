@@ -11,6 +11,19 @@ services:
             HTTPD__DocumentRoot: '/var/www/html/'
             HTTPD__ServerAdmin: 'ales.jandera@gmail.com'
             HTTPD_a2enmod:  'rewrite status expires'
+    mongo:
+        container_name: arualcms_mongo
+        image: mongo
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: 3FSFSDFDFrew
+            MONGO_INITDB_DATABASE: arualcms
+        ports:
+            - "27017:27017"
+        volumes:
+            - ./data:/data/db
+            - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
     vue-ui:
         build: ./admin
         ports:

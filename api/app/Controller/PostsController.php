@@ -12,31 +12,25 @@ use ArualCms\Model\Posts;
  */
 class PostsController
 {
-    /**
-     * PostsController constructor.
-     */
-    public function __construct()
-    {
-        Posts::load();
-    }
+    use Posts;
 
     /**
      * @param Response $res
      */
     public function getPosts(Response $res): void
     {
-        $data['posts'] = Posts::all();
+        $data['posts'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
 
     /**
-     * @param int $id
+     * @param string $id
      * @param Response $res
      */
-    public function getPost(int $id, Response $res): void
+    public function getPost(string $id, Response $res): void
     {
-        $post = Posts::findById($id);
+        $post = $this->findById($id);
         if ($post) {
             $res->toJSON(['success' => true, 'post' => $post]);
         } else {
@@ -48,9 +42,9 @@ class PostsController
      * @param $post
      * @param Response $res
      */
-    public function add($post, Response $res): void
+    public function addPost($post, Response $res): void
     {
-        Posts::add($post);
+        $this->add($post);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }
 
@@ -58,19 +52,19 @@ class PostsController
      * @param $post
      * @param Response $res
      */
-    public function edit($post, Response $res): void
+    public function editPost($post, Response $res): void
     {
-        Posts::edit($post);
+        $this->edit($post);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 
     /**
-     * @param $id
+     * @param string $id
      * @param Response $res
      */
-    public function remove($id, Response $res): void
+    public function removePost(string $id, Response $res): void
     {
-        Posts::remove($id);
+        $this->remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 }

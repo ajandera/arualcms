@@ -10,13 +10,13 @@ namespace ArualCms\Lib;
 class Request
 {
     /** @var array|mixed  */
-    public $params;
+    public mixed $params;
 
     /** @var string  */
-    public $reqMethod;
+    public string $reqMethod;
 
     /** @var string  */
-    public $contentType;
+    public string $contentType;
 
     public function __construct(array $params = [])
     {
@@ -64,8 +64,6 @@ class Request
 
         // Receive the RAW post data.
         $content = trim(file_get_contents("php://input"));
-        $decoded = json_decode($content);
-
-        return $decoded;
+        return json_decode($content);
     }
 }

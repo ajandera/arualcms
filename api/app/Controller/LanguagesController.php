@@ -12,17 +12,14 @@ use ArualCms\Model\Languages;
  */
 class LanguagesController
 {
-    public function __construct()
-    {
-        Languages::load();
-    }
+    use Languages;
 
     /**
      * @param Response $res
      */
     public function getLanguages(Response $res): void
     {
-        $data['languages'] = Languages::all();
+        $data['languages'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -33,7 +30,7 @@ class LanguagesController
      */
     public function getLanguage(string $key, Response $res): void
     {
-        $text = Languages::findByKey($key);
+        $text = $this->findByKey($key);
         if ($text) {
             $res->toJSON($text);
         } else {
@@ -42,12 +39,32 @@ class LanguagesController
     }
 
     /**
-     * @param $languages
+     * @param \stdClass $language
      * @param Response $res
      */
-    public function save($languages, Response $res): void
+    public function addLanguage(\stdClass $language, Response $res): void
     {
-        Languages::update($languages);
+        $this->add($language);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
+    }
+
+    /**
+     * @param \stdClass $language
+     * @param Response $res
+     */
+    public function editLanguage(\stdClass $language, Response $res): void
+    {
+        $this->edit($language);
+        $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
+    }
+
+    /**
+     * @param string $id
+     * @param Response $res
+     */
+    public function removeLanguage(string $id, Response $res): void
+    {
+        $this->remove($id);
+        $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 }

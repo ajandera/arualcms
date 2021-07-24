@@ -29,7 +29,7 @@ class App
     public static function run(): void
     {
         Router::get('/', function (Request $req, Response $res) {
-            $data['message'] = password_hash('Password123', PASSWORD_BCRYPT);//'arualCMS is running';
+            $data['message'] = 'arualCMS API is running';
             $data['success'] = true;
             $res->toJSON($data);
         });
@@ -39,26 +39,26 @@ class App
             (new PostsController())->getPosts($res);
         });
 
-        Router::get('/post/([0-9]*)', function (Request $req, Response $res) {
-            (new PostsController())->getPost((int) $req->params[0], $res);
+        Router::get('/post/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
+            (new PostsController())->getPost($req->params[0], $res);
         });
 
         Router::put('/post', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new PostsController())->edit($req->getJSON(), $res);
+            (new PostsController())->editPost($req->getJSON(), $res);
         });
 
         Router::post('/post', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new PostsController())->add($req->getJSON(), $res);
+            (new PostsController())->addPost($req->getJSON(), $res);
         });
 
-        Router::delete('/post/([0-9]*)', function (Request $req, Response $res) {
+        Router::delete('/post/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new PostsController())->remove((int) $req->params[0], $res);
+            (new PostsController())->removePost($req->params[0], $res);
         });
 
         //settings
@@ -68,6 +68,12 @@ class App
 
         Router::get('/setting/([a-z]*)', function (Request $req, Response $res) {
             (new SettingsController())->getSetting($req->params[0], $res);
+        });
+
+        Router::post('/setting', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new SettingsController())->save($req->getJSON(), $res);
         });
 
         Router::put('/setting', function (Request $req, Response $res) {
@@ -85,41 +91,53 @@ class App
             (new TextsController())->getText($req->params[0], $res);
         });
 
+        Router::post('/text', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new TextsController())->addText($req->getJSON(), $res);
+        });
+
         Router::put('/text', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new TextsController())->save($req->getJSON(), $res);
+            (new TextsController())->editText($req->getJSON(), $res);
+        });
+
+        Router::delete('/text/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new TextsController())->removeText($req->params[0], $res);
         });
 
         //users
-        Router::get('/user', function (Request $req, Response $res) {
+        Router::get('/users', function (Request $req, Response $res) {
             (new UsersController())->getUsers($res);
         });
 
-        Router::get('/users/id/([0-9]*)', function (Request $req, Response $res) {
-            (new UsersController())->getUser((int) $req->params[0], $res);
+        Router::get('/users/id/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
+            (new UsersController())->getUser($req->params[0], $res);
         });
 
         Router::get('/users/username/([a-zA-Z]*)', function (Request $req, Response $res) {
             (new UsersController())->getUserByUsername($req->params[0], $res);
         });
 
-        Router::put('/user', function (Request $req, Response $res) {
+        Router::put('/users', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new UsersController())->edit($req->getJSON(), $res);
+            (new UsersController())->editUser($req->getJSON(), $res);
         });
 
-        Router::post('/user', function (Request $req, Response $res) {
+        Router::post('/users', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new UsersController())->add($req->getJSON(), $res);
+            (new UsersController())->addUser($req->getJSON(), $res);
         });
 
-        Router::delete('/user/([0-9]*)', function (Request $req, Response $res) {
+        Router::delete('/users/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new UsersController())->remove((int) $req->params[0], $res);
+            (new UsersController())->removeUser($req->params[0], $res);
         });
 
         // files
@@ -127,8 +145,8 @@ class App
             (new FileController())->getFiles($res);
         });
 
-        Router::get('/files/([0-9]*)', function (Request $req, Response $res) {
-            (new FileController())->getFile((int) $req->params[0], $res);
+        Router::get('/files/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
+            (new FileController())->getFile($req->params[0], $res);
         });
 
         Router::post('/files/upload', function (Request $req, Response $res) {
@@ -137,16 +155,16 @@ class App
             (new FileController())->save($res);
         });
 
-        Router::put('/files/gallery/([0-9]*)', function (Request $req, Response $res) {
+        Router::put('/files/gallery/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new FileController())->addGallery((int) $req->params[0], $req->getJSON(), $res);
+            (new FileController())->addGallery($req->params[0], $req->getJSON(), $res);
         });
 
-        Router::delete('/files/([0-9]*)', function (Request $req, Response $res) {
+        Router::delete('/files/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new FileController())->remove((int) $req->params[0], $res);
+            (new FileController())->removeFile($req->params[0], $res);
         });
 
         // authorization
@@ -173,10 +191,22 @@ class App
             (new LanguagesController())->getLanguage($req->params[0], $res);
         });
 
+        Router::post('/languages', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new LanguagesController())->addLanguage($req->getJSON(), $res);
+        });
+
         Router::put('/languages', function (Request $req, Response $res) {
             $bearer = explode(" ", getallheaders()['Authorization']);
             Guard::check($bearer[1], $res);
-            (new LanguagesController())->save($req->getJSON(), $res);
+            (new LanguagesController())->editLanguage($req->getJSON(), $res);
+        });
+
+        Router::delete('/languages/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
+            $bearer = explode(" ", getallheaders()['Authorization']);
+            Guard::check($bearer[1], $res);
+            (new LanguagesController())->removeLanguage($req->params[0], $res);
         });
 
         Logger::enableSystemLogs();

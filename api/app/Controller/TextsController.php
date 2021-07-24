@@ -12,17 +12,14 @@ use ArualCms\Model\Texts;
  */
 class TextsController
 {
-    public function __construct()
-    {
-        Texts::load();
-    }
+    use Texts;
 
     /**
      * @param Response $res
      */
     public function getTexts(Response $res): void
     {
-        $data['texts'] = Texts::all();
+        $data['texts'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -33,7 +30,7 @@ class TextsController
      */
     public function getText(string $key, Response $res): void
     {
-        $text = Texts::findByKey($key);
+        $text = $this->findByKey($key);
         if ($text) {
             $res->toJSON($text);
         } else {
@@ -42,12 +39,32 @@ class TextsController
     }
 
     /**
-     * @param $texts
+     * @param \stdClass $text
      * @param Response $res
      */
-    public function save($texts, Response $res): void
+    public function addText(\stdClass $text, Response $res): void
     {
-        Texts::update($texts);
+        $this->add($text);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
+    }
+
+    /**
+     * @param \stdClass $text
+     * @param Response $res
+     */
+    public function editText(\stdClass $text, Response $res): void
+    {
+        $this->edit($text);
+        $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
+    }
+
+    /**
+     * @param string $id
+     * @param Response $res
+     */
+    public function removeText(string $id, Response $res): void
+    {
+        $this->remove($id);
+        $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 }

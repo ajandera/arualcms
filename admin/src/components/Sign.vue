@@ -4,7 +4,9 @@
       <!-- Modal content-->
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="modal-title">arualCMS</h3>
+          <h3 class="modal-title">
+            <img src="https://user-images.githubusercontent.com/4760295/112476277-04b9b680-8d72-11eb-8433-fb53ddb9f78a.png">
+          </h3>
         </div>
         <div class="modal-body">
           <div class="row">

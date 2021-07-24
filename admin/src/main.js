@@ -5,18 +5,18 @@ import VueCookie from 'vue-cookies'
 import VueSession from 'vue-session'
 import VModal from 'vue-js-modal'
 import App from './App.vue'
-import Settings from '@/components/Settings';
-import Posts from "@/components/Posts";
-import Texts from "@/components/Texts";
-import Users from "@/components/Users";
-import Files from "@/components/Files";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import moment from 'moment'
-import Sign from "@/components/Sign";
-import Recovery from "@/components/Recovery";
-import Languages from "@/components/Languages";
+import Settings from '@/components/Settings'
+import Posts from "@/components/Posts"
+import Texts from "@/components/Texts"
+import Users from "@/components/Users"
+import Files from "@/components/Files"
+import Sign from "@/components/Sign"
+import Recovery from "@/components/Recovery"
+import Languages from "@/components/Languages"
 
 library.add(fas)
 Vue.use(VueMoment)

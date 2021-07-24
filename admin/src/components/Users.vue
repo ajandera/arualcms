@@ -1,26 +1,23 @@
 <template>
 <div class="table-wrap">
     <h1>Users</h1>
-    <hr>
     <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
-          <th>#</th>
           <th>Username</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <i class="fa fa-plus"></i>Create</button>
+              <font-awesome-icon icon="plus" /> Create</button>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id" v-on:click="edit(user.id)" class="actRow">
-          <td>{{ user.id }}</td>
+        <tr v-for="user in users" :key="user.id">
           <td>{{ user.username }}</td>
           <td class="text-right">
-            <button v-on:click.stop.prevent="remove(user.id)" type="button" class="btn btn-secondary btn-danger">
-              <i class="fa fa-trash"></i>Delete</button>
+            <button v-on:click.stop.prevent="remove(user._id.$oid)" type="button" class="btn btn-secondary btn-danger">
+              <font-awesome-icon icon="trash" /> Delete</button>
           </td>
         </tr>
       </tbody>
@@ -91,7 +88,7 @@ export default {
       this.show();
     },
     remove(id) {
-      axios.delete(this.$hostname + "user/" + id, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+      axios.delete(this.$hostname + "users/" + id, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
           .then(response => {
             if (response.data.success) {
               this.message = response.data.message;
@@ -133,7 +130,7 @@ export default {
     save() {
       if (this.user.id !== undefined) {
         axios.put(
-            this.$hostname + "user/",
+            this.$hostname + "users/",
             this.user,
             {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
             ).then(response => {
@@ -160,7 +157,7 @@ export default {
               }
             });
       } else {
-        axios.post(this.$hostname + "user", this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+        axios.post(this.$hostname + "users", this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -189,7 +186,7 @@ export default {
     },
     load() {
       this.users = [];
-      axios.get(this.$hostname + "user")
+      axios.get(this.$hostname + "users")
           .then(response => {
             if (response.data.success === true) {
               this.users = response.data.users;

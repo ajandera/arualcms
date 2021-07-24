@@ -8,14 +8,18 @@
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
                   <div class="sidebar-header">
-                    <div class="user-pic">
-                      <img class="img-responsive img-rounded" src="https://raw.githubusercontent.com/azouaoui-med/pro-sidebar-template/gh-pages/src/img/user.jpg"
-                           alt="User picture">
-                    </div>
-                    <div class="user-info">
-                      <span class="user-name">{{ loggedUser }}</span>
-                      <span class="user-role">Administrator</span>
-                      <a href="#" @click="logout()">Sign out</a>
+                    <div class="row">
+                      <div class="col-3">
+                        <h1>
+                          <font-awesome-icon icon="user" />
+                        </h1>
+                      </div>
+                      <div class="col-9">
+                        <div class="user-info">
+                          <span class="user-name">{{ loggedUser }}</span>
+                          <a href="#" @click="logout()">Sign out</a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <!-- sidebar-header  -->
@@ -260,31 +264,17 @@ export default {
   overflow: hidden;
 }
 
-.sidebar-wrapper .sidebar-header .user-pic {
-  float: left;
-  width: 60px;
-  padding: 2px;
-  border-radius: 12px;
-  margin-right: 15px;
-  overflow: hidden;
-}
-
-.sidebar-wrapper .sidebar-header .user-pic img {
-  object-fit: cover;
-  height: 100%;
-  width: 100%;
-}
-
 .sidebar-wrapper .sidebar-header .user-info {
   float: left;
 }
 
-.sidebar-wrapper .sidebar-header .user-info > span {
-  display: block;
+.sidebar-wrapper .sidebar-header .user-info .user-name {
+  margin-top: 10px;
+  font-size: 12px;
 }
 
-.sidebar-wrapper .sidebar-header .user-info .user-role {
-  font-size: 12px;
+.sidebar-wrapper .sidebar-header .user-info > span {
+  display: block;
 }
 
 /*----------------------sidebar-menu-------------------------*/

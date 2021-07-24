@@ -4,62 +4,56 @@ declare(strict_types = 1);
 namespace ArualCms\Model;
 
 use ArualCms\Lib\Config;
+use ArualCms\Lib\MongoTrait;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Class Languages
  * @package ArualCms\Model
  */
-class Languages
+trait Languages
 {
-    /** @var array  */
-    private static $DATA = [];
+    use MongoTrait;
 
     /**
      * @return array
      */
-    public static function all(): array
+    public function all(): array
     {
-        return self::$DATA;
+        return $this->findBy('languages');
     }
 
     /**
-     * @param $texts
+     * @param \stdClass $language
      */
-    public static function update($texts): void
+    public function add(\stdClass $language): void
     {
-        self::$DATA = $texts;
-        self::save();
+        $this->insert('languages', $language);
+    }
+
+    /**
+     * @param \stdClass $language
+     */
+    public function edit(\stdClass $language): void
+    {
+        $oid = '$oid';
+        $this->update('languages', $language, new ObjectID($language->_id->$oid));
+    }
+
+    /**
+     * @param string $id
+     */
+    public function remove(string $id): void
+    {
+        $this->delete('languages', ["_id" => new ObjectID($id)]);
     }
 
     /**
      * @param string $key
-     * @return array|mixed
+     * @return array
      */
-    public static function findByKey(string $key): array
+    public function findByKey(string $key): array
     {
-        foreach (self::$DATA as $text) {
-            if ($text->key === $key) {
-                return $text;
-            }
-        }
-        return [];
-    }
-
-    /**
-     * Load texts from storage
-     */
-    public static function load(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'languages.json'));
-    }
-
-    /**
-     * Save data to storage
-     */
-    public static function save(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'languages.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
+        return $this->findBy('languages',["key" => $key]);
     }
 }

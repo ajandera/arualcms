@@ -15,10 +15,7 @@ use PHPMailer\PHPMailer\Exception;
  */
 class MailController
 {
-    public function __construct()
-    {
-        Settings::load();
-    }
+    use Settings;
 
     /**
      * @param $email
@@ -26,10 +23,10 @@ class MailController
      */
     public function send($email, Response $res): void
     {
-        $smtp = Settings::findByKey('smtp');
-        $smtpUser = Settings::findByKey('smtp_user');
-        $smtpPassword = Settings::findByKey('smtp_password');
-        $smtpPort = Settings::findByKey('smtp_port');
+        $smtp = $this->findByKey('smtp');
+        $smtpUser = $this->findByKey('smtp_user');
+        $smtpPassword = $this->findByKey('smtp_password');
+        $smtpPort = $this->findByKey('smtp_port');
 
         //Instantiation and passing `true` enables exceptions
         $mail = new PHPMailer(true);

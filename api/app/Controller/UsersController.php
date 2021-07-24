@@ -12,20 +12,15 @@ use ArualCms\Model\Users;
  */
 class UsersController
 {
-    /**
-     * UsersController constructor.
-     */
-    public function __construct()
-    {
-        Users::load();
-    }
+    use Users;
 
     /**
      * @param Response $res
+     * @throws \Exception
      */
     public function getUsers(Response $res): void
     {
-        $data['users'] = Users::all();
+        $data['users'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -33,10 +28,11 @@ class UsersController
     /**
      * @param string $key
      * @param Response $res
+     * @throws \Exception
      */
     public function getUserByUsername(string $key, Response $res): void
     {
-        $user = Users::findByUsername($key);
+        $user = $this->findByUsername($key);
         if ($user) {
             $res->toJSON($user);
         } else {
@@ -50,7 +46,7 @@ class UsersController
      */
     public function getUser(int $id, Response $res): void
     {
-        $user = Users::findById($id);
+        $user = $this->findById($id);
         if ($user) {
             $res->toJSON($user);
         } else {
@@ -62,10 +58,10 @@ class UsersController
      * @param $user
      * @param Response $res
      */
-    public function add($user, Response $res): void
+    public function addUser($user, Response $res): void
     {
         $user->password = password_hash($user->password, PASSWORD_BCRYPT);
-        Users::add($user);
+        $this->add($user);
         $res->toJSON(['success' => true, 'message' => 'Record added successfully']);
     }
 
@@ -73,10 +69,10 @@ class UsersController
      * @param $user
      * @param Response $res
      */
-    public function edit($user, Response $res): void
+    public function editUser($user, Response $res): void
     {
         $user->password = password_hash($user->password, PASSWORD_BCRYPT);
-        Users::edit($user);
+        $this->edit($user);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 
@@ -84,9 +80,9 @@ class UsersController
      * @param $id
      * @param Response $res
      */
-    public function remove($id, Response $res): void
+    public function removeUser($id, Response $res): void
     {
-        Users::remove($id);
+        $this->remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 }

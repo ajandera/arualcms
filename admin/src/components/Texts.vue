@@ -1,13 +1,19 @@
 <template>
   <div id="texts">
     <div class="row">
-      <div class="col-11">
+      <div class="col-9">
         <h1>Texts</h1>
-        <div class="btn-group" role="group" aria-label="Basic example">
+      </div>
+      <div class="col-3 text-right">
+        <div class="btn-group mt-3" role="group" aria-label="Basic example">
           <button
               v-on:click="setLanguage(lang)"
               v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
         </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
         <hr>
       </div>
     </div>
@@ -16,10 +22,10 @@
         <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
       </div>
       <div class="col-sm-3 col-xs-6">
-        <input type="text" v-model="item.key" class="form-control">
+        <input type="text" v-model="item.key" class="form-control" v-on:change="save(item)">
       </div>
-      <div class="col-sm-6 col-xs-6">
-        <textarea v-model="item.value[language]" class="form-control"></textarea>
+      <div class="col-sm-7 col-xs-6">
+        <textarea v-model="item.value[language]" class="form-control" v-on:change="save(item)"></textarea>
       </div>
       <div class="col-sm-1 col-xs-12">
         <div class="float-right">
@@ -31,13 +37,8 @@
       </div>
     </div>
     <div class="row mt-4">
-      <div class="col-6">
+      <div class="col-12">
         <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
-      </div>
-      <div class="col-5">
-        <div class="float-right">
-          <button v-on:click="save" class="btn btn-success">Save</button>
-        </div>
       </div>
     </div>
     <modal name="form" :width="800" height="auto" :scrollable="true">
@@ -68,7 +69,7 @@
                   />
                   <hr>
                   <div class="float-right mt-3">
-                    <button v-on:click="hide" class="btn btn-lg btn-default">Close</button>
+                    <button v-on:click="save(text)" class="btn btn-lg btn-success">Save</button>
                   </div>
                 </div>
               </div>
@@ -113,25 +114,47 @@ export default {
     this.load();
   },
   methods: {
-    save() {
-      axios.put(this.$hostname + "text", this.texts, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
-          .then(response => {
-            if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
-            } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
-            }
-          }, (error) => {
-            if (error.response.status === 401) {
-              window.localStorage.removeItem("userId");
-              window.localStorage.removeItem("user");
-              window.localStorage.removeItem("jwt");
-              this.loggedUser = false;
-              window.location.reload();
-            }
-          });
+    save(text) {
+      if (text._id !== undefined) {
+        axios.put(this.$hostname + "text", text, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+            .then(response => {
+              if (response.data.success) {
+                this.message = response.data.message;
+                this.messageClass = "alert alert-success";
+              } else {
+                this.message = response.data.error;
+                this.messageClass = 'danger';
+              }
+            }, (error) => {
+              if (error.response.status === 401) {
+                window.localStorage.removeItem("userId");
+                window.localStorage.removeItem("user");
+                window.localStorage.removeItem("jwt");
+                this.loggedUser = false;
+                window.location.reload();
+              }
+            });
+      } else {
+        axios.post(this.$hostname + "text", text, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+            .then(response => {
+              if (response.data.success) {
+                this.message = response.data.message;
+                this.messageClass = "alert alert-success";
+                this.load();
+              } else {
+                this.message = response.data.error;
+                this.messageClass = 'danger';
+              }
+            }, (error) => {
+              if (error.response.status === 401) {
+                window.localStorage.removeItem("userId");
+                window.localStorage.removeItem("user");
+                window.localStorage.removeItem("jwt");
+                this.loggedUser = false;
+                window.location.reload();
+              }
+            });
+      }
     },
     load() {
       axios.get(this.$hostname + "text")
@@ -145,11 +168,40 @@ export default {
           });
     },
     add() {
-      this.texts.push({'key': '', 'value': ''});
+      let text = {};
+      text.key = "";
+      text.value = {};
+      for (const lang of this.languages) {
+        text.value[lang] = "";
+      }
+      this.texts.push(text);
     },
     remove(item) {
-      var index = this.texts.indexOf(item);
-      this.texts.splice(index, 1);
+      axios.delete(this.$hostname + "text/" + item._id.$oid, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+          .then(response => {
+            if (response.data.success) {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-success";
+              this.load();
+            } else {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-danger";
+            }
+
+            this.hide();
+            setTimeout(() => {
+              this.message = null;
+              this.messageClass = null;
+            }, 2000);
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.loggedUser = false;
+              window.location.reload();
+            }
+          });
     },
     openEditor(item) {
       this.text = item;

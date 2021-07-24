@@ -1,7 +1,6 @@
 <template>
 <div class="table-wrap">
     <h1>Files</h1>
-    <hr>
     <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
     <table class="table table-stripped mt-3">
       <thead>
@@ -12,7 +11,7 @@
           <th>Gallery</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <i class="fa fa-plus"></i>Create</button>
+              <font-awesome-icon icon="plus" /> Create</button>
           </th>
         </tr>
       </thead>
@@ -22,10 +21,10 @@
           <td><img v-bind:src="file.src" class="img-thumbnail"></td>
           <td>{{ file.name }}</td>
           <td>
-            <input v-model="file.gallery" type="text" v-on:change="saveGallery(file.id, file.gallery)" class="form-control" placeholder="Gallery">
+            <input v-model="file.gallery" type="text" v-on:change="saveGallery(file._id.$oid, file.gallery)" class="form-control" placeholder="Gallery">
           </td>
           <td class="text-right">
-            <button v-on:click.stop.prevent="remove(file.id)" type="button" class="btn btn-secondary btn-danger">
+            <button v-on:click.stop.prevent="remove(file._id.$oid)" type="button" class="btn btn-secondary btn-danger">
               <i class="fa fa-trash"></i>Delete</button>
           </td>
         </tr>

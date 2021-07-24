@@ -3,136 +3,66 @@ declare(strict_types= 1);
 
 namespace ArualCms\Model;
 
-use ArualCms\Lib\Config;
+use ArualCms\Lib\MongoTrait;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Class Users
  * @package ArualCms\Model
  */
-class Users
+trait Users
 {
-    /** @var array  */
-    private static $DATA = [];
+    use MongoTrait;
 
     /**
      * @return array
+     * @throws \Exception
      */
-    public static function all(): array
+    public function all(): array
     {
-        return self::$DATA;
-    }
-
-    /**
-     * @param $texts
-     */
-    public static function update($texts): void
-    {
-        self::$DATA = $texts;
-        self::save();
+        return $this->findBy('users');
     }
 
     /**
      * @param string $username
-     * @return array|mixed
+     * @return array
+     * @throws \Exception
      */
-    public static function findByUsername(string $username)
+    public function findByUsername(string $username): array
     {
-        foreach (self::$DATA as $user) {
-            if ($user->username === $username) {
-                return $user;
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @return int|mixed
-     */
-    private static function getNextId()
-    {
-        $ids = [];
-        foreach (self::$DATA as $data) {
-            $ids[] = $data->id;
-        }
-        return max($ids) + 1;
+        return $this->findBy('users',["username" => $username]);
     }
 
     /**
      * @param int $id
-     * @return array|mixed
+     * @return array
      */
-    public static function findById(int $id)
+    public function findById(string $id): array
     {
-        foreach (self::$DATA as $user) {
-            if ($user->id === $id) {
-                return $user;
-            }
-        }
-        return [];
+        return $this->findBy('users',["_id" => new ObjectID($id)]);
     }
 
     /**
-     * @param $user
+     * @param \stdClass $user
      */
-    public static function add($user): void
+    public function add(\stdClass $user): void
     {
-        $user->id = self::getNextId();
-        self::$DATA[] = $user;
-        self::save();
+        $this->insert('users', $user);
     }
 
     /**
-     * @param $user
+     * @param array $user
      */
-    public static function edit($user): void
+    public function edit(\stdClass $user): void
     {
-        if (!isset($user->id)) {
-            self::add($user);
-            return;
-        }
-        $data = [];
-        foreach (self::$DATA as $item) {
-            if ($item->id === $user->id) {
-                $data[] = $user;
-            } else {
-                $data[] = $item;
-            }
-        }
-        self::$DATA = $data;
-        self::save();
+        $this->update('users', $user, $user['id']);
     }
 
     /**
-     * @param int $id
+     * @param string $id
      */
-    public static function remove(int $id): void
+    public function remove(string $id): void
     {
-        $new = [];
-        foreach (self::$DATA as $user) {
-            if ($user->id !== $id) {
-                $new[] = $user;
-            }
-        }
-
-        self::$DATA = $new;
-        self::save();
-    }
-
-    /**
-     * Load users from storage
-     */
-    public static function load(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'users.json'));
-    }
-
-    /**
-     * Save users to storage
-     */
-    public static function save(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'users.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
+        $this->delete('users', ["_id" => new ObjectID($id)]);
     }
 }

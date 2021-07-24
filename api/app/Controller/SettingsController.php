@@ -12,20 +12,14 @@ use ArualCms\Model\Settings;
  */
 class SettingsController
 {
-    /**
-     * SettingsController constructor.
-     */
-    public function __construct()
-    {
-        Settings::load();
-    }
+    use Settings;
 
     /**
      * @param Response $res
      */
     public function getSettings(Response $res): void
     {
-        $data['settings'] = Settings::all();
+        $data['settings'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -36,7 +30,7 @@ class SettingsController
      */
     public function getSetting(string $key, Response $res): void
     {
-        $setting = Settings::findByKey($key);
+        $setting = $this->findByKey($key);
         if ($setting) {
             $res->toJSON($setting);
         } else {
@@ -50,7 +44,7 @@ class SettingsController
      */
     public function save($settings, Response $res): void
     {
-        Settings::update($settings);
+        $this->edit($settings);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 }

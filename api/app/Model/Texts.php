@@ -3,63 +3,56 @@ declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
-use ArualCms\Lib\Config;
+use ArualCms\Lib\MongoTrait;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Class Texts
  * @package ArualCms\Model
  */
-class Texts
+trait Texts
 {
-    /** @var array  */
-    private static $DATA = [];
+    use MongoTrait;
 
     /**
      * @return array
      */
-    public static function all(): array
+    public function all(): array
     {
-        return self::$DATA;
+        return $this->findBy('texts');
     }
 
     /**
-     * @param $texts
+     * @param \stdClass $text
      */
-    public static function update($texts): void
+    public function add(\stdClass $text): void
     {
-        self::$DATA = $texts;
-        self::save();
+        $this->insert('texts', $text);
+    }
+
+    /**
+     * @param \stdClass $text
+     */
+    public function edit(\stdClass $text): void
+    {
+        $oid = '$oid';
+        $this->update('texts', $text, new ObjectID($text->_id->$oid));
+    }
+
+    /**
+     * @param string $id
+     */
+    public function remove(string $id): void
+    {
+        $this->delete('texts', ["_id" => new ObjectID($id)]);
     }
 
     /**
      * @param string $key
-     * @return array|mixed
+     * @return array
      */
-    public static function findByKey(string $key): array
+    public function findByKey(string $key): array
     {
-        foreach (self::$DATA as $text) {
-            if ($text->key === $key) {
-                return $text;
-            }
-        }
-        return [];
-    }
-
-    /**
-     * Load texts from storage
-     */
-    public static function load(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'texts.json'));
-    }
-
-    /**
-     * Save data to storage
-     */
-    public static function save(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'texts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
+        return $this->findBy('texts',["key" => $key]);
     }
 }

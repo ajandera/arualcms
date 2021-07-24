@@ -3,63 +3,48 @@ declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
-use ArualCms\Lib\Config;
+use ArualCms\Lib\MongoTrait;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Class Settings
  * @package ArualCms\Model
  */
-class Settings
+trait Settings
 {
-    /** @var array  */
-    private static $DATA = [];
+    use MongoTrait;
 
     /**
      * @return array
      */
-    public static function all(): array
+    public function all(): array
     {
-        return self::$DATA;
+        return $this->findBy('settings');
     }
 
     /**
-     * @param $settings
+     * @param \stdClass $setting
      */
-    public static function update($settings): void
+    public function edit(\stdClass $setting): void
     {
-        self::$DATA = $settings;
-        self::save();
+        $oid = '$oid';
+        $this->update('settings', $setting, new ObjectID($setting->_id->$oid));
+    }
+
+    /**
+     * @param \stdClass $setting
+     */
+    public function add(\stdClass $setting): void
+    {
+        $this->insert('users', $setting);
     }
 
     /**
      * @param string $key
-     * @return array|mixed
+     * @return array
      */
-    public static function findByKey(string $key)
+    public function findByKey(string $key): array
     {
-        foreach (self::$DATA as $setting) {
-            if ($setting->key === $key) {
-                return $setting;
-            }
-        }
-        return [];
-    }
-
-    /**
-     * Load setting from storage
-     */
-    public static function load(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'settings.json'));
-    }
-
-    /**
-     * Save setting to storage
-     */
-    public static function save(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'settings.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
+        return $this->findBy('settings',["key" => $key]);
     }
 }

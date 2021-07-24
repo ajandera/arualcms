@@ -3,113 +3,56 @@ declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
-use ArualCms\Lib\Config;
+use ArualCms\Lib\MongoTrait;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Class Posts
  * @package ArualCms\Model
  */
-class Posts
+trait Posts
 {
-    /** @var array  */
-    private static $DATA = [];
+    use MongoTrait;
 
     /**
      * @return array
      */
-    public static function all(): array
+    public function all(): array
     {
-        return self::$DATA;
+        return $this->findBy('posts');
     }
 
     /**
-     * @param $post
+     * @param \stdClass $post
      */
-    public static function add($post): void
+    public function add(\stdClass $post): void
     {
-        $post->id = self::getNextId();
-        self::$DATA[] = $post;
-        self::save();
+        $this->insert('posts', $post);
     }
 
     /**
-     * @return int|mixed
+     * @param string $id
+     * @return array
      */
-    private static function getNextId(): int
+    public function findById(string $id): array
     {
-        $ids = [];
-        foreach (self::$DATA as $data) {
-            $ids[] = $data->id;
-        }
-        return max($ids) + 1;
+        return $this->findBy('posts',["_id" => new ObjectID($id)]);
     }
 
     /**
-     * @param int $id
-     * @return array|mixed
+     * @param \stdClass $post
      */
-    public static function findById(int $id)
+    public function edit(\stdClass $post): void
     {
-        foreach (self::$DATA as $post) {
-            if ($post->id === $id) {
-                return $post;
-            }
-        }
-        return [];
+        $oid = '$oid';
+        $this->update('posts', $post, new ObjectID($post->_id->$oid));
     }
 
     /**
-     * Load posts from storage
+     * @param string $id
      */
-    public static function load(): void
+    public function remove(string $id): void
     {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        self::$DATA = json_decode(file_get_contents($DB_PATH . 'posts.json'));
-    }
-
-    /**
-     * Persist post to storage
-     */
-    public static function save(): void
-    {
-        $DB_PATH = Config::get('DB_PATH', __DIR__ . '/../../database/');
-        file_put_contents($DB_PATH . 'posts.json', json_encode(self::$DATA, JSON_PRETTY_PRINT));
-    }
-
-    /**
-     * @param $post
-     */
-    public static function edit($post): void
-    {
-        if (!isset($post->id)) {
-            self::add($post);
-            return;
-        }
-        $data = [];
-        foreach (self::$DATA as $item) {
-            if ($item->id === $post->id) {
-                $data[] = $post;
-            } else {
-                $data[] = $item;
-            }
-        }
-        self::$DATA = $data;
-        self::save();
-    }
-
-    /**
-     * @param int $id
-     */
-    public static function remove(int $id): void
-    {
-        $new = [];
-        foreach (self::$DATA as $post) {
-            if ($post->id !== $id) {
-                $new[] = $post;
-            }
-        }
-
-        self::$DATA = $new;
-        self::save();
+        $this->delete('posts', ["_id" => new ObjectID($id)]);
     }
 }

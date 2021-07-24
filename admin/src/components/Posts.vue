@@ -1,38 +1,48 @@
 <template>
 <div class="table-wrap">
-    <h1>Posts</h1>
-    <hr>
+    <div class="row">
+      <div class="col-9">
+        <h1>Posts</h1>
+      </div>
+      <div class="col-3 text-right">
+      <div class="btn-group mt-3" role="group" aria-label="Basic example">
+        <button
+            v-on:click="setLanguage(lang)"
+            v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
+      </div>
+    </div>
+    </div>
     <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
-          <th>#</th>
           <th>Title</th>
           <th class="d-none d-sm-table-cell"><br>Excerpt</th>
           <th>Published</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <i class="fa fa-plus"></i>Create</button>
+              <font-awesome-icon icon="plus" /> Create</button>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="post in posts" :key="post.id" v-on:click="edit(post.id)" class="actRow">
-          <td>{{ post.id }}</td>
-          <td>{{ post.title }}</td>
-          <td class="d-none d-sm-table-cell">{{ post.excerpt }}</td>
+        <tr v-for="post in posts" :key="post.id" v-on:click="edit(post)" class="actRow">
+          <td>{{ post.title[language] }}</td>
+          <td class="d-none d-sm-table-cell">{{ post.excerpt[language] }}</td>
           <td>{{ post.published | formatDate}}</td>
           <td class="text-right">
-            <button v-on:click.stop.prevent="remove(post.id)" type="button" class="btn btn-secondary btn-danger">
-              <i class="fa fa-trash"></i>Delete</button>
+            <button v-on:click.stop.prevent="remove(post._id.$oid)" type="button" class="btn btn-secondary btn-danger">
+              <font-awesome-icon icon="trash" /> Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
-    <modal name="form" height="auto" :scrollable="true" :resizable="true" :adaptive="true">
-    <div class="modal-dialog">
+    <modal v-if="post !== null" name="form" height="auto"
+           :scrollable="true" :resizable="true" :adaptive="false"
+           :width="1000" >
+      <div class="modal-dialog">
       <!-- Modal content-->
-      <div class="modal-content">
+        <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title">{{ modalTitle }}</h3>
           <button @click="hide" type="button" class="close" data-dismiss="modal">×</button>
@@ -56,31 +66,31 @@
             <div class="col-12">
               <div id="editor">
                 <label>Title</label>
-                <input type="text" class="form-control" v-model="post.title" />
+                <input type="text" class="form-control" v-model="post.title[language]" />
                 <hr>
                 <label>Published</label><br>
                 <date-picker v-model="post.published" :lang="lang" type="datetime" :time-picker-options="timePickerOptions"></date-picker>
                 <hr>
                 <label>Excerpt</label>
-                <textarea class="form-control" v-model="post.excerpt"></textarea>
+                <textarea class="form-control" v-model="post.excerpt[language]"></textarea>
                 <hr>
                 <!-- Two-way Data-Binding -->
                 <quill-editor
                     ref="myQuillEditor"
-                    v-model="post.body"
+                    v-model="post.body[language]"
                     :options="editorOption"
                     @blur="onEditorBlur($event)"
                     @focus="onEditorFocus($event)"
                     @ready="onEditorReady($event)"
                 />
                 <label class="mt-4">Meta title</label>
-                <input type="text" class="form-control" v-model="post.meta.title" />
+                <input type="text" class="form-control" v-model="post.meta.title[language]" />
                 <hr>
                 <label>Meta description</label>
-                <input type="text" class="form-control" v-model="post.meta.description" />
+                <input type="text" class="form-control" v-model="post.meta.description[language]" />
                 <hr>
                 <label>Meta keywords</label>
-                <input type="text" class="form-control" v-model="post.meta.keywords" />
+                <input type="text" class="form-control" v-model="post.meta.keywords[language]" />
                 <hr>
                 <div class="float-right mt-3">
                   <button v-on:click="save(true)" class="btn btn-lg btn-success">Save</button>
@@ -103,7 +113,7 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
-import {quillEditor} from "vue-quill-editor";
+import { quillEditor } from "vue-quill-editor";
 import DatePicker from "vue2-datepicker2";
 
 export default {
@@ -118,16 +128,7 @@ export default {
       message: null,
       loggedUser: window.localStorage.getItem("user"),
       posts: [],
-      post: {
-        title: "",
-        body: "",
-        published: "",
-        meta: {
-          title: "",
-          keywords: "",
-          description: ""
-        }
-      },
+      post: null,
       modalTitle: "",
       error: "",
       editorOption: {
@@ -147,16 +148,18 @@ export default {
         start: '00:00',
         step: '00:30',
         end: '23:30'
-      }
+      },
+      language: window.localStorage.getItem("language"),
+      languages: window.localStorage.getItem("languages").split(',')
     }
   },
   mounted() {
     this.load();
   },
   methods: {
-    edit(id) {
-      this.post = this.posts.filter(x => x.id === id)[0];
-      this.modalTitle = this.post.title;
+    edit(post) {
+      this.post = post;
+      this.modalTitle = this.post.title[this.language];
       this.show();
     },
     remove(id) {
@@ -189,15 +192,25 @@ export default {
     },
     create() {
       this.post = {
-        title: "",
-        body: "",
+        title: {},
+        excerpt: {},
+        body: {},
         published: "",
         meta: {
-          title: "",
-          keywords: "",
-          description: ""
+          title: {},
+          keywords: {},
+          description: {}
         }
       };
+
+      for (const lang of this.languages) {
+        this.post.title[lang] = "";
+        this.post.excerpt[lang] = "";
+        this.post.body[lang] = "";
+        this.post.meta.title[lang] = "";
+        this.post.meta.keywords[lang] = "";
+        this.post.meta.description[lang] = "";
+      }
       this.show();
     },
     show() {
@@ -207,8 +220,8 @@ export default {
       this.$modal.hide('form')
     },
     save(close) {
-      if (this.post.id !== undefined) {
-        axios.put(this.$hostname + "post/", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+      if (this.post._id !== undefined) {
+        axios.put(this.$hostname + "post", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
             .then(response => {
               if (response.data.success) {
                 this.message = response.data.message;
@@ -329,6 +342,10 @@ export default {
         }
       });
     },
+    setLanguage(lang) {
+      this.language = lang;
+      window.localStorage.setItem('language', this.language);
+    }
   },
   computed: {
     editor() {
@@ -349,7 +366,7 @@ export default {
   background: #f8f8f8;
 }
 .modal-dialog {
-  max-width: 800px;
+  max-width: 980px;
   margin: 10px;
 }
 .modal-content {

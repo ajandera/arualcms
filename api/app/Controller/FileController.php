@@ -13,17 +13,14 @@ use ArualCms\Model\Files;
  */
 class FileController
 {
-    public function __construct()
-    {
-        Files::load();
-    }
+    use Files;
 
     /**
      * @param Response $res
      */
     public function getFiles(Response $res): void
     {
-        $data['files'] = Files::all();
+        $data['files'] = $this->all();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -32,9 +29,9 @@ class FileController
      * @param string $id
      * @param Response $res
      */
-    public function getFile(int $id, Response $res): void
+    public function getFile(string $id, Response $res): void
     {
-        $file = Files::findById($id);
+        $file = $this->findById($id);
         if ($file) {
             $res->toJSON($file);
         } else {
@@ -55,9 +52,9 @@ class FileController
      * @param $id
      * @param Response $res
      */
-    public function remove($id, Response $res): void
+    public function removeFile($id, Response $res): void
     {
-        Files::remove($id);
+        $this->remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }
 
@@ -66,24 +63,23 @@ class FileController
      */
     public function upload(): array
     {
-        $targetDir = Config::get('STORAGE_PATH',__DIR__ . '../../storage/');
+        $targetDir = Config::get('STORAGE_PATH', __DIR__ . '../../storage/');
         $targetFile = $targetDir . basename($_FILES["file"]["name"]);
         $imageFileType = strtolower(pathinfo($targetFile,PATHINFO_EXTENSION)); // todo check filesize
         move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile);
-        return Files::add([
-            "name" => basename($_FILES["file"]["name"]),
-            "gallery" => ""
-        ]);
+        $data = new \stdClass();
+        $data->name = basename($_FILES["file"]["name"]);
+        $data->gallery = "";
+        return $this->add($data);
     }
 
     /**
-     * @param $id
-     * @param $data
+     * @param \stdClass $data
      * @param Response $res
      */
-    public function addGallery($id, $data, Response $res): void
+    public function addGallery(string $id, \stdClass $data, Response $res): void
     {
-        Files::edit($id, $data->gallery);
+        $this->edit($id, $data);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 }

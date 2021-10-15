@@ -5,6 +5,10 @@ namespace ArualCms\Controller;
 
 use ArualCms\Lib\Response;
 use ArualCms\Model\Languages;
+use ArualCms\Model\Files;
+use ArualCms\Model\Posts;
+use ArualCms\Model\Setting;
+use ArualCms\Model\Texts;
 
 /**
  * Class LanguagesController
@@ -63,7 +67,7 @@ class LanguagesController
      * @param Response $res
      */
     public function removeLanguage(string $id, Response $res): void
-    {
+    {   
         $this->remove($id);
         $res->toJSON(['success' => true, 'message' => 'Record removed successfully']);
     }

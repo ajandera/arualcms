@@ -45,6 +45,31 @@ trait Languages
      */
     public function remove(string $id): void
     {
+        $lang = $this->findBy('languages', ["_id" => new ObjectID($id)]);
+        $index = $lang['key'];
+        $oid = '$oid';
+        
+        //posts
+        $posts = $this->findBy('posts');
+        foreach($posts as $post) {
+            delete $post->$index;
+            $this->update('posts', $post, new ObjectID($post->_id->$oid));
+        }
+        
+        // settings
+        $settings = $this->findBy('setings');
+        foreach($settings as $seting) {
+            delete $setting->$index;
+            $this->update('settings', $settting, new ObjectID($setting->_id->$oid));
+        }
+        
+        // texts
+        $texts = $this->findBy('texts');
+        foreach($texts as $textt) {
+            delete $text->$index;
+            $this->update('texts', $text, new ObjectID($post->_id->$oid));
+        }
+        
         $this->delete('languages', ["_id" => new ObjectID($id)]);
     }
 

@@ -148,7 +148,7 @@ export default {
           .then(response => {
             if (response.data.success === true) {
               window.localStorage.setItem('languages', response.data.languages.map(item => item = item.key));
-              window.localStorage.setItem('language', response.data.languages.find(item => item.default === 1).key);
+              window.localStorage.setItem('language', response.data.languages.find(item => item.default === true).key);
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';

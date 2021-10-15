@@ -23,7 +23,7 @@
         <td>{{ language.key }}</td>
         <td>{{ language.value }}</td>
         <td>
-          <div v-if="language.default === 1"><font-awesome-icon icon="check" /></div>
+          <div v-if="language.default === true"><font-awesome-icon icon="check" /></div>
         </td>
         <td class="text-right">
           <button v-on:click.stop.prevent="remove(language._id.$oid)" type="button" class="btn btn-secondary btn-danger">

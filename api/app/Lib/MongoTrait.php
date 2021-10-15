@@ -11,7 +11,8 @@ trait MongoTrait
 {
     private function getClient()
     {
-        return new Client("mongodb://root:3FSFSDFDFrew@mongo:27017");
+        $dsn = Config::get('MONGO_DSN', 'mongodb://root:3FSFSDFDFrew@mongo:27017');
+        return new Client($dsn);
     }
 
     public function findBy(string $collection, array $criteria = []): array

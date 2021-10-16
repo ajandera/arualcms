@@ -13,7 +13,7 @@ use Monolog\Handler\StreamHandler;
 class Logger extends \Monolog\Logger
 {
     /** @var array  */
-    private static $loggers = [];
+    private static array $loggers = [];
 
     /**
      * Logger constructor.

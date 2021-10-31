@@ -26,7 +26,7 @@ Vue.use(VueSession)
 Vue.use(VModal)
 Vue.config.productionTip = true
 Vue.component('font-awesome-icon', FontAwesomeIcon)
-Vue.prototype.$hostname = process.env.APP_API
+Vue.prototype.$hostname = process.env.VUE_APP_API
 Vue.filter('formatDate', function(value) {
   if (value) {
     return moment(String(value)).format('DD/MM/YYYY hh:mm')

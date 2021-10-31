@@ -3,7 +3,7 @@
     <section class="main">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-2 padding-0 d-none d-sm-block">
+          <div class="col-2 padding-0 d-none d-sm-block sideBg">
             <div class="page-wrapper">
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
@@ -215,7 +215,9 @@ export default {
 }
 
 /*----------------page-wrapper----------------*/
-
+.sideBg {
+  background: #1e2229;
+}
 .page-wrapper {
   height: 100vh;
   background: #1e2229;
@@ -226,6 +228,7 @@ export default {
   height: 100%;
   max-height: 100%;
   z-index: 999;
+  position: fixed;
 }
 
 .sidebar-wrapper ul {

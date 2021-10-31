@@ -52,22 +52,22 @@ trait Languages
         //posts
         $posts = $this->findBy('posts');
         foreach($posts as $post) {
-            delete $post->$index;
+            unset($post->$index);
             $this->update('posts', $post, new ObjectID($post->_id->$oid));
         }
         
         // settings
         $settings = $this->findBy('setings');
-        foreach($settings as $seting) {
-            delete $setting->$index;
-            $this->update('settings', $settting, new ObjectID($setting->_id->$oid));
+        foreach($settings as $setting) {
+            unset($setting->$index);
+            $this->update('settings', $setting, new ObjectID($setting->_id->$oid));
         }
         
         // texts
         $texts = $this->findBy('texts');
-        foreach($texts as $textt) {
-            delete $text->$index;
-            $this->update('texts', $text, new ObjectID($post->_id->$oid));
+        foreach($texts as $text) {
+            unset($text->$index);
+            $this->update('texts', $text, new ObjectID($text->_id->$oid));
         }
         
         $this->delete('languages', ["_id" => new ObjectID($id)]);

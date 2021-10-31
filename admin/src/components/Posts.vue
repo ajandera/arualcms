@@ -16,6 +16,7 @@
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
+          <td></td>
           <th>Title</th>
           <th class="d-none d-sm-table-cell"><br>Excerpt</th>
           <th>Published</th>
@@ -27,6 +28,7 @@
       </thead>
       <tbody>
         <tr v-for="post in posts" :key="post.id" v-on:click="edit(post)" class="actRow">
+          <td style="width:150px;"><img v-bind:src="post.src" class="small-cover"></td>
           <td>{{ post.title[language] }}</td>
           <td class="d-none d-sm-table-cell">{{ post.excerpt[language] }}</td>
           <td>{{ post.published | formatDate}}</td>
@@ -356,6 +358,10 @@ export default {
 </script>
 
 <style lang="css" scoped>
+.small-cover {
+  width: 150px;
+  height: auto;
+}
 .table-wrap {
   width: 100%;
 }

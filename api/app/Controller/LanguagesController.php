@@ -59,7 +59,7 @@ class LanguagesController
     public function editLanguage(\stdClass $language, Response $res): void
     {
         if ($language->default === 1) {
-            
+            // todo unset default from others
         }
         $this->edit($language);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);

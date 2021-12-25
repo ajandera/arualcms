@@ -63,7 +63,7 @@ class FileController
      */
     public function upload(): array
     {
-        $targetDir = Config::get('STORAGE_PATH', __DIR__ . '../../storage/');
+        $targetDir = Config::get('STORAGE_PATH', __DIR__ . '../../www/storage/');
         $targetFile = $targetDir . basename($_FILES["file"]["name"]);
         $imageFileType = strtolower(pathinfo($targetFile,PATHINFO_EXTENSION)); // todo check filesize
         move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile);

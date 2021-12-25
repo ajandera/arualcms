@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace ArualCms\Model;
 
-use ArualCms\Lib\Config;
 use ArualCms\Lib\MongoTrait;
 use MongoDB\BSON\ObjectId;
 
@@ -23,17 +22,17 @@ trait Files
         $files = $this->findBy('files');
         $response = [];
         foreach ($files as $image){
-            $image->src = "https://" . $_SERVER["HTTP_HOST"] . $STORAGE_FRONT . '/storage/' . $image->name;
+            $image->src = "https://" . $_SERVER["HTTP_HOST"] . '/storage/' . $image->name;
             $response[] = $image;
         }
         return $response;
     }
 
     /**
-     * @param $file
-     * @return array
+     * @param \stdClass $file
+     * @return string
      */
-    public function add(\stdClass $file): array
+    public function add(\stdClass $file): string
     {
         $this->insert('files', $file);
         return $file->name;

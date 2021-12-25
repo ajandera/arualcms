@@ -4,13 +4,6 @@
       <div class="col-9">
         <h1>Texts</h1>
       </div>
-      <div class="col-3 text-right">
-        <div class="btn-group mt-3" role="group" aria-label="Basic example">
-          <button
-              v-on:click="setLanguage(lang)"
-              v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
-        </div>
-      </div>
     </div>
     <div class="row">
       <div class="col-12">
@@ -93,7 +86,7 @@ import { quillEditor } from "vue-quill-editor";
 
 export default {
   name: 'TextsComponent',
-  props: ['language', 'languages'],
+  props: ['language', 'languages', 'loggedUser'],
   components: {
     quillEditor
   },
@@ -103,7 +96,6 @@ export default {
       text: {},
       messageClass: null,
       message: null,
-      loggedUser: window.localStorage.getItem("user"),
       editorOption: {},
       modalTitle: "",
       error: ""
@@ -129,8 +121,7 @@ export default {
                 window.localStorage.removeItem("userId");
                 window.localStorage.removeItem("user");
                 window.localStorage.removeItem("jwt");
-                this.loggedUser = false;
-                window.location.reload();
+                this.$router.push({name: 'posts'});
               }
             });
       } else {
@@ -149,8 +140,7 @@ export default {
                 window.localStorage.removeItem("userId");
                 window.localStorage.removeItem("user");
                 window.localStorage.removeItem("jwt");
-                this.loggedUser = false;
-                window.location.reload();
+                this.$router.push({name: 'posts'});
               }
             });
       }
@@ -197,8 +187,7 @@ export default {
               window.localStorage.removeItem("userId");
               window.localStorage.removeItem("user");
               window.localStorage.removeItem("jwt");
-              this.loggedUser = false;
-              window.location.reload();
+              this.$router.push({name: 'posts'});
             }
           });
     },

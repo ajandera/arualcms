@@ -16,7 +16,7 @@
                       </div>
                       <div class="col-9">
                         <div class="user-info">
-                          <span class="user-name">{{ loggedUser }}</span>
+                          <span class="user-name" v-if="loggedUser">{{ loggedUser }}</span>
                           <a href="#" @click="logout()">Sign out</a>
                         </div>
                       </div>
@@ -28,13 +28,13 @@
                       <li class="header-menu">
                         <span>General</span>
                       </li>
-                      <li class="sidebar-dropdown" v-for="item in general" :key="item.component">
+                      <li class="sidebar-dropdown" v-for="(item, index) in general" :key="'g'+index">
                         <router-link :to="item.component">{{ item.label }}</router-link>
                       </li>
                       <li class="header-menu">
                         <span>Extra</span>
                       </li>
-                      <li v-for="item in extra" :key="item.component">
+                      <li v-for="(item, index) in extra" :key="'e'+index">
                         <router-link :to="item.component">{{ item.label }}</router-link>
                       </li>
                     </ul>
@@ -51,14 +51,17 @@
           <div class="col-xs-10 col-sm-10">
             <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
               <a class="navbar-brand" href="/">arualCMS</a>
+                <button
+                    v-on:click="setLanguage(lang)"
+                    v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
               <div class="topnav d-block d-sm-none">
                 <!-- Navigation links (hidden by default) -->
                 <div id="myLinks" v-if="menu === true">
                   <ul>
-                    <li class="sidebar-dropdown" v-for="item in general" :key="item.component">
+                    <li class="sidebar-dropdown" v-for="(item, index) in general" :key="'gm'+index">
                       <router-link :to="item.component">{{ item.label }}</router-link>
                     </li>
-                    <li v-for="item in extra" :key="item.component">
+                    <li v-for="(item, index) in extra" :key="'em'+index">
                       <router-link :to="item.component">{{ item.label }}</router-link>
                     </li>
                   </ul>
@@ -69,7 +72,7 @@
                 </a>
               </div>
             </nav>
-            <router-view :language="language" :languages="languages"></router-view>
+            <router-view :language="language" :languages="languages" :loggedUser="loggedUser"></router-view>
           </div>
         </div>
       </div>
@@ -87,29 +90,29 @@ export default {
     return {
       general: [
         {
-          component: "/posts",
+          component: {name: 'posts'},
           label: "Posts"
         },
         {
-          component: "/texts",
+          component: {name: 'texts'},
           label: "Texts"
         },
         {
-          component: "/files",
+          component: {name: 'files'},
           label: "Files"
         },
       ],
       extra: [
         {
-          component: "/settings",
+          component: {name: 'settings'},
           label: "Settings"
         },
         {
-          component: "/languages",
+          component: {name: 'languages'},
           label: "Languages"
         },
         {
-          component: "/users",
+          component: {name: 'users'},
           label: "Users"
         }
       ],
@@ -125,10 +128,10 @@ export default {
   components: {},
   mounted() {
     if (this.loggedUser === null) {
-      this.$router.push('signin');
+      this.$router.push({name: 'sign'});
     } else {
-      if (this.$router.currentRoute.name !== 'posts') {
-        this.$router.push('posts');
+      if (this.$router.currentRoute.name !== 'admin/posts') {
+        this.$router.push({name: 'posts'});
       }
     }
     this.getDefaultLanguage();
@@ -139,7 +142,7 @@ export default {
       window.localStorage.removeItem("user");
       window.localStorage.removeItem("jwt");
       this.loggedUser = null;
-      this.$router.push('signin');
+      this.$router.push({name: 'sign'});
     },
     hamburger() {
       this.menu = !this.menu;

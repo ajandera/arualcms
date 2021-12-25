@@ -1,7 +1,6 @@
 version: '3'
 services:
     php:
-        container_name: arualcms_server
         build: ./api/docker
         volumes:
             - ./api:/var/www/html:delegated
@@ -12,7 +11,6 @@ services:
             HTTPD__ServerAdmin: 'ales.jandera@gmail.com'
             HTTPD_a2enmod:  'rewrite status expires'
     mongo:
-        container_name: arualcms_mongo
         image: mongo
         environment:
             MONGO_INITDB_ROOT_USERNAME: root

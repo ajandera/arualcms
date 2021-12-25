@@ -69,13 +69,12 @@ import axios from "axios";
 
 export default {
   name: 'FilesComponent',
-  props: ['language', 'languages'],
+  props: ['language', 'languages', 'loggedUser'],
   components: {},
   data() {
     return {
       messageClass: null,
       message: null,
-      loggedUser: window.localStorage.getItem("user"),
       files: [],
       file: "",
       modalTitle: "",
@@ -106,8 +105,7 @@ export default {
               window.localStorage.removeItem("userId");
               window.localStorage.removeItem("user");
               window.localStorage.removeItem("jwt");
-              this.loggedUser = false;
-              window.location.reload();
+              this.$router.push({name: 'posts'});
             }
           });
     },
@@ -151,8 +149,7 @@ export default {
           window.localStorage.removeItem("userId");
           window.localStorage.removeItem("user");
           window.localStorage.removeItem("jwt");
-          this.loggedUser = false;
-          window.location.reload();
+          this.$router.push({name: 'posts'});
         }
       });
     },
@@ -196,8 +193,7 @@ export default {
           window.localStorage.removeItem("userId");
           window.localStorage.removeItem("user");
           window.localStorage.removeItem("jwt");
-          this.loggedUser = false;
-          window.location.reload();
+          this.$router.push({name: 'posts'});
         }
       });
     }

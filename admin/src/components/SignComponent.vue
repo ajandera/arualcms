@@ -75,7 +75,7 @@ export default {
               window.localStorage.setItem("user", res.username)
               window.localStorage.setItem('jwt', res.jwt);
               this.hide();
-              this.$router.push('/posts');
+              this.$router.push({name: 'posts'});
             } else {
               this.message = res.message;
               this.messageClass = "alert alert-danger";
@@ -89,7 +89,7 @@ export default {
       this.forgot = !this.forgot;
     },
     requestNewPw() {
-      const link = window.location.protocol + "//" + window.location.hostname + "/recovery/" + this.forgotMail;
+      const link = window.location.protocol + "//" + window.location.hostname + "/admin/recovery/" + this.forgotMail;
       const email = {
         "email": this.forgotMail,
         "subject": "Recovery your password",
@@ -123,6 +123,6 @@ export default {
   border: none;
 }
 .v--modal-overlay {
-  background: rgb(134, 134, 134) !important;
+  background: url("/images/arualbg.jpg") center center !important;
 }
 </style>

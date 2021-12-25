@@ -4,13 +4,6 @@
       <div class="col-9">
         <h1>Posts</h1>
       </div>
-      <div class="col-3 text-right">
-      <div class="btn-group mt-3" role="group" aria-label="Basic example">
-        <button
-            v-on:click="setLanguage(lang)"
-            v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
-      </div>
-    </div>
     </div>
     <div v-if="message" v-bind:class="messageClass">{{ message }}</div>
     <table class="table table-stripped mt-3">
@@ -120,7 +113,7 @@ import DatePicker from "vue2-datepicker2";
 
 export default {
   name: 'PostsComponent',
-  props: ['language', 'languages'],
+  props: ['language', 'languages', 'loggedUser'],
   components: {
     quillEditor,
     DatePicker
@@ -129,7 +122,6 @@ export default {
     return {
       messageClass: null,
       message: null,
-      loggedUser: window.localStorage.getItem("user"),
       posts: [],
       post: null,
       modalTitle: "",
@@ -186,8 +178,7 @@ export default {
               window.localStorage.removeItem("userId");
               window.localStorage.removeItem("user");
               window.localStorage.removeItem("jwt");
-              this.loggedUser = false;
-              window.location.reload();
+              this.$router.push({name: 'posts'});
             }
           });
     },
@@ -244,8 +235,7 @@ export default {
                     window.localStorage.removeItem("userId");
                     window.localStorage.removeItem("user");
                     window.localStorage.removeItem("jwt");
-                    this.loggedUser = false;
-                    window.location.reload();
+                    this.$router.push({name: 'posts'});
                   }
                 });
       } else {
@@ -270,8 +260,7 @@ export default {
                 window.localStorage.removeItem("userId");
                 window.localStorage.removeItem("user");
                 window.localStorage.removeItem("jwt");
-                this.loggedUser = false;
-                window.location.reload();
+                this.$router.push({name: 'posts'});
               }
             });
       }
@@ -338,8 +327,7 @@ export default {
           window.localStorage.removeItem("userId");
           window.localStorage.removeItem("user");
           window.localStorage.removeItem("jwt");
-          this.loggedUser = false;
-          window.location.reload();
+          this.$router.push({name: 'posts'});
         }
       });
     }

@@ -34,15 +34,15 @@ Vue.filter('formatDate', function(value) {
 })
 
 const routes = [
-  { path: '/', component: App },
-  { path: '/posts', component: PostsComponent },
-  { path: '/files', component: FilesComponent },
-  { path: '/settings', component: SettingsComponent },
-  { path: '/texts', component: TextsComponent },
-  { path: '/users', component: UsersComponent },
-  { path: '/signin', component: SignComponent },
-  { path: '/languages', component: LanguagesComponent },
-  { path: '/recovery/:username', component: RecoveryComponent }
+  { path: '/admin', name: 'home', component: App },
+  { path: '/admin/posts', name: 'posts', component: PostsComponent },
+  { path: '/admin/files', name: 'files', component: FilesComponent },
+  { path: '/admin/settings', name: 'settings', component: SettingsComponent },
+  { path: '/admin/texts', name: 'texts', component: TextsComponent },
+  { path: '/admin/users', name: 'users', component: UsersComponent },
+  { path: '/admin/signin', name: 'sign', component: SignComponent },
+  { path: '/admin/languages', name: 'languages', component: LanguagesComponent },
+  { path: '/admin/recovery/:username', name: 'recovery', component: RecoveryComponent }
 ]
 const router = new VueRouter({
   mode: 'history',

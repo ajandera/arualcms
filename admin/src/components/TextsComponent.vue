@@ -92,7 +92,8 @@ import 'quill/dist/quill.bubble.css'
 import { quillEditor } from "vue-quill-editor";
 
 export default {
-  name: 'Texts',
+  name: 'TextsComponent',
+  props: ['language', 'languages'],
   components: {
     quillEditor
   },
@@ -105,9 +106,7 @@ export default {
       loggedUser: window.localStorage.getItem("user"),
       editorOption: {},
       modalTitle: "",
-      error: "",
-      language: window.localStorage.getItem("language"),
-      languages: window.localStorage.getItem("languages").split(',')
+      error: ""
     }
   },
   mounted() {
@@ -225,10 +224,6 @@ export default {
     },
     hide() {
       this.$modal.hide('form')
-    },
-    setLanguage(lang) {
-      this.language = lang;
-      window.localStorage.setItem('language', this.language);
     }
   }
 }

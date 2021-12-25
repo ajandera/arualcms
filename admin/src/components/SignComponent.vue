@@ -43,7 +43,8 @@
 import axios from "axios";
 
 export default {
-  name: 'Sign',
+  name: 'SignComponent',
+  props: ['language', 'languages'],
   components: {},
   data() {
     return {

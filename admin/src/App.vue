@@ -69,7 +69,7 @@
                 </a>
               </div>
             </nav>
-            <router-view></router-view>
+            <router-view :language="language" :languages="languages"></router-view>
           </div>
         </div>
       </div>
@@ -118,7 +118,8 @@ export default {
       messageClass: null,
       error: null,
       menu: false,
-      language: null
+      language: null,
+      languages: []
     }
   },
   components: {},
@@ -147,13 +148,16 @@ export default {
       axios.get(this.$hostname + "languages")
           .then(response => {
             if (response.data.success === true) {
-              window.localStorage.setItem('languages', response.data.languages.map(item => item = item.key));
-              window.localStorage.setItem('language', response.data.languages.find(item => item.default === true).key);
+              this.languages = response.data.languages.map(item => item = item.key);
+              this.language = response.data.languages.find(item => item.default === true).key;
             } else {
               this.message = response.data.error;
               this.messageClass = 'danger';
             }
           });
+    },
+    setLanguage(lang) {
+      this.language = lang;
     }
   }
 }

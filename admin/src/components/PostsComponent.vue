@@ -119,7 +119,8 @@ import { quillEditor } from "vue-quill-editor";
 import DatePicker from "vue2-datepicker2";
 
 export default {
-  name: 'Posts',
+  name: 'PostsComponent',
+  props: ['language', 'languages'],
   components: {
     quillEditor,
     DatePicker
@@ -150,9 +151,7 @@ export default {
         start: '00:00',
         step: '00:30',
         end: '23:30'
-      },
-      language: window.localStorage.getItem("language"),
-      languages: window.localStorage.getItem("languages").split(',')
+      }
     }
   },
   mounted() {
@@ -343,10 +342,6 @@ export default {
           window.location.reload();
         }
       });
-    },
-    setLanguage(lang) {
-      this.language = lang;
-      window.localStorage.setItem('language', this.language);
     }
   },
   computed: {

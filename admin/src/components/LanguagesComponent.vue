@@ -76,7 +76,7 @@
 import axios from "axios";
 
 export default {
-  name: 'Languages',
+  name: 'LanguagesComponent',
   components: {},
   data: function() {
     return {

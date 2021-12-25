@@ -23,19 +23,3 @@ services:
         volumes:
             - ./data:/data/db
             - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
-    vue-ui:
-        build: ./admin
-        ports:
-            - "8080:8080"
-        container_name: arualcms_ui
-        volumes:
-            - ./admin:/usr/src/app
-            - /usr/src/app/node_modules
-    vue-front:
-        build: ./site
-        ports:
-            - "9000:9000"
-        container_name: arualcms_front
-        volumes:
-            - ./site:/usr/src/app
-            - /usr/src/app/node_modules

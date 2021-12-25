@@ -38,16 +38,15 @@
 import axios from "axios";
 
 export default {
-  name: 'Settings',
+  name: 'SettingsComponent',
+  props: ['language', 'languages'],
   components: {},
   data: function() {
     return {
       setting: [],
       messageClass: null,
       message: null,
-      loggedUser: window.localStorage.getItem("user"),
-      language: window.localStorage.getItem("language"),
-      languages: window.localStorage.getItem("languages").split(',')
+      loggedUser: window.localStorage.getItem("user")
     }
   },
   mounted() {
@@ -84,10 +83,6 @@ export default {
               window.location.reload();
             }
           });
-    },
-    setLanguage(lang) {
-      this.language = lang;
-      window.localStorage.setItem('language', this.language);
     }
   }
 }

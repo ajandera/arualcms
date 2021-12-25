@@ -1,18 +1,17 @@
 <template>
   <!-- Page Content -->
   <div class="container">
-
     <div class="row">
       <div class="col-md-8 mb-5">
         <h2>What We Do</h2>
         <hr>
-        <div v-html="texts.find((x) => x.key === 'what_we_do').value"></div><br>
+        <div v-html="texts.find((x) => x.key === 'what_we_do').value[language]"></div><br>
         <a class="btn btn-primary btn-lg mt-1" href="#">Call to Action &raquo;</a>
       </div>
       <div class="col-md-4 mb-5" id="contact">
         <h2>Contact Us</h2>
         <hr>
-        <div v-html="texts.find((x) => x.key === 'contact').value"></div>
+        <div v-html="texts.find((x) => x.key === 'contact').value[language]"></div>
       </div>
     </div>
     <!-- /.row -->
@@ -27,8 +26,8 @@
         <div class="card h-100">
           <img class="card-img-top" src="https://placehold.it/300x200" alt="">
           <div class="card-body">
-            <h4 class="card-title">{{ post.title }}</h4>
-            <p class="card-text">{{ post.excerpt }}</p>
+            <h4 class="card-title">{{ post.title[language] }}</h4>
+            <p class="card-text">{{ post.excerpt[language] }}</p>
           </div>
           <div class="card-footer">
             <a href="#" class="btn btn-primary">Read More!</a>
@@ -37,7 +36,6 @@
       </div>
     </div>
     <!-- /.row -->
-
   </div>
   <!-- /.container -->
 </template>
@@ -48,6 +46,7 @@ import axios from "axios";
 
 export default {
   name: 'Content',
+  props: ['language', 'languages'],
   components: {
   },
   data: function() {

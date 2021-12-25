@@ -34,7 +34,8 @@
 import axios from "axios";
 
 export default {
-  name: 'Recovery',
+  name: 'RecoveryComponent',
+  props: ['language', 'languages'],
   components: {},
   data() {
     return {

@@ -62,7 +62,8 @@
 import axios from "axios";
 
 export default {
-  name: 'Users',
+  name: 'UsersComponent',
+  props: ['language', 'languages'],
   components: {},
   data() {
     return {

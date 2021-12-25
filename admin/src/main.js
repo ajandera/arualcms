@@ -9,14 +9,14 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import moment from 'moment'
-import Settings from '@/components/Settings'
-import Posts from "@/components/Posts"
-import Texts from "@/components/Texts"
-import Users from "@/components/Users"
-import Files from "@/components/Files"
-import Sign from "@/components/Sign"
-import Recovery from "@/components/Recovery"
-import Languages from "@/components/Languages"
+import SettingsComponent from '@/components/SettingsComponent'
+import PostsComponent from "@/components/PostsComponent"
+import TextsComponent from "@/components/TextsComponent"
+import UsersComponent from "@/components/UsersComponent"
+import FilesComponent from "@/components/FilesComponent"
+import SignComponent from "@/components/SignComponent"
+import RecoveryComponent from "@/components/RecoveryComponent"
+import LanguagesComponent from "@/components/LanguagesComponent"
 
 library.add(fas)
 Vue.use(VueMoment)
@@ -35,14 +35,14 @@ Vue.filter('formatDate', function(value) {
 
 const routes = [
   { path: '/', component: App },
-  { path: '/posts', component: Posts },
-  { path: '/files', component: Files },
-  { path: '/settings', component: Settings },
-  { path: '/texts', component: Texts },
-  { path: '/users', component: Users },
-  { path: '/signin', component: Sign },
-  { path: '/languages', component: Languages },
-  { path: '/recovery/:username', component: Recovery }
+  { path: '/posts', component: PostsComponent },
+  { path: '/files', component: FilesComponent },
+  { path: '/settings', component: SettingsComponent },
+  { path: '/texts', component: TextsComponent },
+  { path: '/users', component: UsersComponent },
+  { path: '/signin', component: SignComponent },
+  { path: '/languages', component: LanguagesComponent },
+  { path: '/recovery/:username', component: RecoveryComponent }
 ]
 const router = new VueRouter({
   mode: 'history',

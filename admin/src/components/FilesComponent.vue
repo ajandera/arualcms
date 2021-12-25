@@ -68,7 +68,8 @@
 import axios from "axios";
 
 export default {
-  name: 'Files',
+  name: 'FilesComponent',
+  props: ['language', 'languages'],
   components: {},
   data() {
     return {

@@ -13,6 +13,7 @@
 
 export default {
   name: 'Footer',
+  props: ['language', 'languages'],
   components: {}
 }
 </script>

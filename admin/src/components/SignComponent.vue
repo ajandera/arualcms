@@ -123,6 +123,6 @@ export default {
   border: none;
 }
 .v--modal-overlay {
-  background: url("/images/arualbg.jpg") center center !important;
+  background: url("/admin/images/arualbg.jpg") center center !important;
 }
 </style>

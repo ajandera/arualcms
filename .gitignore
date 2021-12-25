@@ -1,8 +1,8 @@
 .idea
 api/vendor/
 composer.lock
-admin/node_modules
+admin/node_modules/
 admin/dist
-site/node_modules
+site/node_modules/
 site/dist
 api/www/storage/*

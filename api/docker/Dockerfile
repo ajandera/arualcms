@@ -5,7 +5,7 @@ MAINTAINER shopyCRM <jandera@shopycrm.com>
 # Install libraries
 RUN apt-get update && \
     apt-get install -y \
-    openssl libssl-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev cron git
+    openssl libssl-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev git
 
 RUN docker-php-ext-install bcmath zip
 
@@ -17,7 +17,8 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 COPY ./php.ini /usr/local/etc/php/
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- \
+--install-dir=/usr/bin --filename=composer && chmod +x /usr/bin/composer
 
 ADD ./apache.conf /etc/apache2/sites-available/
 RUN ln -s /etc/apache2/sites-available/apache.conf /etc/apache2/sites-enabled/

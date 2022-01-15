@@ -5,19 +5,18 @@
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
-          <th>#</th>
           <th>Image</th>
           <th>Name</th>
           <th>Gallery</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <font-awesome-icon icon="plus" /> Create</button>
+              <font-awesome-icon icon="plus" />
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id" class="actRow">
-          <td>{{ file.id }}</td>
           <td><img v-bind:src="file.src" class="img-thumbnail"></td>
           <td>{{ file.name }}</td>
           <td>
@@ -25,7 +24,8 @@
           </td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(file._id.$oid)" type="button" class="btn btn-secondary btn-danger">
-              <i class="fa fa-trash"></i>Delete</button>
+              <font-awesome-icon icon="trash" />
+            </button>
           </td>
         </tr>
       </tbody>

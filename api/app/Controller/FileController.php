@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace ArualCms\Controller;
 
-use ArualCms\Lib\Config;
 use ArualCms\Lib\Response;
 use ArualCms\Model\Files;
 

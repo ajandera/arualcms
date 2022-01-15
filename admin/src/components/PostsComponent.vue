@@ -9,25 +9,27 @@
     <table class="table table-stripped mt-3">
       <thead>
         <tr>
-          <td></td>
+          <td class="d-none d-sm-block"></td>
           <th>Title</th>
           <th class="d-none d-sm-table-cell"><br>Excerpt</th>
           <th>Published</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <font-awesome-icon icon="plus" /> Create</button>
+              <font-awesome-icon icon="plus" />
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="post in posts" :key="post.id" v-on:click="edit(post)" class="actRow">
-          <td style="width:150px;"><img v-bind:src="post.src" class="small-cover"></td>
+          <td class="d-none d-sm-block"><img v-bind:src="post.src" class="small-cover"></td>
           <td>{{ post.title[language] }}</td>
           <td class="d-none d-sm-table-cell">{{ post.excerpt[language] }}</td>
           <td>{{ post.published | formatDate}}</td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(post._id.$oid)" type="button" class="btn btn-secondary btn-danger">
-              <font-awesome-icon icon="trash" /> Delete</button>
+              <font-awesome-icon icon="trash" />
+            </button>
           </td>
         </tr>
       </tbody>

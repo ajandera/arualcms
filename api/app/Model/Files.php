@@ -52,7 +52,6 @@ trait Files
      */
     public function remove(string $id): void
     {
-        $file = $this->findById($id);
         $this->delete('files', ["_id" => new ObjectID($id)]);
     }
 

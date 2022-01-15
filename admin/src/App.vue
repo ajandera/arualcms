@@ -4,17 +4,18 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-2 padding-0 d-none d-sm-block sideBg">
-            <div class="page-wrapper">
+            <div class="container">
+            <div class="page-wrapper row">
               <nav id="sidebar" class="sidebar-wrapper">
                 <div class="sidebar-content">
                   <div class="sidebar-header">
                     <div class="row">
-                      <div class="col-3">
+                      <div class="col-3 col-sm-12">
                         <h1>
-                          <font-awesome-icon icon="user" />
+                          <font-awesome-icon icon="user"/>
                         </h1>
                       </div>
-                      <div class="col-9">
+                      <div class="col-9 col-sm-12">
                         <div class="user-info">
                           <span class="user-name" v-if="loggedUser">{{ loggedUser }}</span>
                           <a href="#" @click="logout()">Sign out</a>
@@ -22,7 +23,6 @@
                       </div>
                     </div>
                   </div>
-                  <!-- sidebar-header  -->
                   <div class="sidebar-menu">
                     <ul>
                       <li class="header-menu">
@@ -39,24 +39,33 @@
                       </li>
                     </ul>
                   </div>
-                  <!-- sidebar-menu  -->
                 </div>
-                <!-- sidebar-content  -->
                 <div class="sidebar-footer text-center">
-                    <p>2021 &copy; <a href="https://ajandera.com" target="_blank">ajandera.com</a></p>
+                  <div class="row">
+                    <div class="col-12">
+                        <p>2021 &copy; <a href="https://ajandera.com" target="_blank">ajandera.com</a></p>
+                    </div>
+                  </div>
                 </div>
               </nav>
             </div>
+            </div>
           </div>
-          <div class="col-xs-10 col-sm-10">
+          <div class="col-xs-12 col-sm-10">
             <nav class="navbar navbar-expand-lg navbar-light bg-light" id="header">
               <a class="navbar-brand" href="/">arualCMS</a>
+              <div class="btn-group" role="group" aria-label="Language switch">
                 <button
                     v-on:click="setLanguage(lang)"
-                    v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}" v-for="(lang, index) in languages" v-bind:key="index">{{ lang }}</button>
+                    v-bind:class="{'btn btn-default': lang !== language, 'btn btn-primary': lang === language}"
+                    v-for="(lang, index) in languages" v-bind:key="index" >{{ lang }}
+                </button>
+              </div>
+              <a href="#" class="icon d-block d-sm-none" v-on:click="hamburger()">
+                <font-awesome-icon :icon="['fas', 'bars']"/>
+              </a>
               <div class="topnav d-block d-sm-none">
-                <!-- Navigation links (hidden by default) -->
-                <div id="myLinks" v-if="menu === true">
+                <div id="mobileMenu" v-if="menu === true">
                   <ul>
                     <li class="sidebar-dropdown" v-for="(item, index) in general" :key="'gm'+index">
                       <router-link :to="item.component">{{ item.label }}</router-link>
@@ -66,10 +75,6 @@
                     </li>
                   </ul>
                 </div>
-                <!-- "Hamburger menu" / "Bar icon" to toggle the navigation links -->
-                <a href="#" class="icon" v-on:click="hamburger()">
-                  <font-awesome-icon :icon="['fas', 'bars']" />
-                </a>
               </div>
             </nav>
             <router-view :language="language" :languages="languages" :loggedUser="loggedUser"></router-view>
@@ -162,6 +167,11 @@ export default {
     setLanguage(lang) {
       this.language = lang;
     }
+  },
+  watch: {
+    $route(to, from) {
+      this.menu = false;
+    }
   }
 }
 </script>
@@ -209,6 +219,7 @@ export default {
     opacity: 0;
   }
 }
+
 .page-wrapper .sidebar-wrapper,
 .sidebar-wrapper .sidebar-dropdown > a:after,
 .sidebar-wrapper .sidebar-menu .sidebar-dropdown .sidebar-submenu li a:before,
@@ -225,6 +236,7 @@ export default {
 .sideBg {
   background: #1e2229;
 }
+
 .page-wrapper {
   height: 100vh;
   background: #1e2229;
@@ -336,47 +348,59 @@ export default {
   transform: rotate(90deg);
   right: 17px;
 }
+
 /*------scroll bar---------------------*/
 
 ::-webkit-scrollbar {
   width: 5px;
   height: 7px;
 }
+
 ::-webkit-scrollbar-button {
   width: 0px;
   height: 0px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #525965;
   border: 0px none #ffffff;
   border-radius: 0px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #525965;
 }
+
 ::-webkit-scrollbar-thumb:active {
   background: #525965;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
   border: 0px none #ffffff;
   border-radius: 50px;
 }
+
 ::-webkit-scrollbar-track:hover {
   background: transparent;
 }
+
 ::-webkit-scrollbar-track:active {
   background: transparent;
 }
+
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
 .modal-content {
   border: none;
 }
+
 .padding-0 {
   padding: 0;
 }
+
 /* Style the navigation menu */
 .topnav {
   overflow: hidden;
@@ -394,29 +418,21 @@ export default {
   display: block;
 }
 
-/* Style the hamburger menu */
-.topnav a.icon {
-  background: black;
-  display: block;
-  position: absolute;
-  right: 0;
-  top: 0;
-  cursor: pointer;
-  z-index: 999;
-}
-
 /* Add a grey background color on mouse-over */
 .topnav a:hover {
   background-color: #ddd;
   color: black;
 }
-#myLinks {
+
+#mobileMenu {
   position: absolute;
   background: #000;
   width: 216px;
   top: 53px;
+  right: 0;
 }
-#myLinks ul {
+
+#mobileMenu ul {
   list-style: none;
   padding-left: 0;
 }

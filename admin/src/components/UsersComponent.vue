@@ -8,16 +8,18 @@
           <th>Username</th>
           <th>
             <button v-on:click="create()" type="button" class="btn btn-secondary btn-success float-right">
-              <font-awesome-icon icon="plus" /> Create</button>
+              <font-awesome-icon icon="plus" />
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="user in users" :key="user.id">
-          <td>{{ user.username }}</td>
+          <td @click="edit(user)">{{ user.username }}</td>
           <td class="text-right">
             <button v-on:click.stop.prevent="remove(user._id.$oid)" type="button" class="btn btn-secondary btn-danger">
-              <font-awesome-icon icon="trash" /> Delete</button>
+              <font-awesome-icon icon="trash" />
+            </button>
           </td>
         </tr>
       </tbody>
@@ -82,8 +84,8 @@ export default {
     this.load();
   },
   methods: {
-    edit(id) {
-      this.user = this.users.filter(x => x.id === id)[0];
+    edit(user) {
+      this.user = user;
       this.modalTitle = this.user.username;
       this.show();
     },

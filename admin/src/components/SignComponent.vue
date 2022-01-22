@@ -89,13 +89,13 @@ export default {
       this.forgot = !this.forgot;
     },
     requestNewPw() {
-      const link = window.location.protocol + "//" + window.location.hostname + "/admin/recovery/" + this.forgotMail;
-      const email = {
-        "email": this.forgotMail,
-        "subject": "Recovery your password",
-        "body": "For recovery your password use this link: <a href='" + link + "'>" + link + "</a>"
+      const param = {
+        "username": this.forgotMail,
+        "domain": window.location.protocol + "//" + window.location.hostname
       };
-      axios.post(this.$hostname+"mail", email, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+      
+      // send email
+      axios.post(this.$hostname+"sendRecovery", param)
           .then(response => {
             let res = response.data;
             this.message = res.message;
@@ -103,7 +103,6 @@ export default {
               this.message = res.message;
               this.messageClass = "alert alert-success";
               this.forgotMail = null;
-              this.forgot();
             } else {
               this.message = res.message;
               this.messageClass = "alert alert-danger";

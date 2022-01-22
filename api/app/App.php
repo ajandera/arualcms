@@ -28,11 +28,6 @@ class App
      */
     public static function run(): void
     {
-        Router::get('/', function (Request $req, Response $res) {
-            $data['message'] = 'arualCMS API is running';
-            $data['success'] = true;
-            $res->toJSON($data);
-        });
 
         //posts
         Router::get('/post', function (Request $req, Response $res) {
@@ -175,6 +170,10 @@ class App
         // recovery
         Router::post('/recovery', function (Request $req, Response $res) {
             (new AuthController())->recovery($req->getJSON(), $res);
+        });
+        
+        Router::put('/recovery', function (Request $req, Response $res) {
+            (new AuthController())->sendRecovery($req->getJSON(), $res);
         });
 
         // email

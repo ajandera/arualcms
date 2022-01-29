@@ -17,7 +17,7 @@ trait Settings
     /**
      * @return array
      */
-    public function all(): array
+    public function allSetting(): array
     {
         return $this->findBy('settings');
     }
@@ -25,7 +25,7 @@ trait Settings
     /**
      * @param \stdClass $setting
      */
-    public function edit(\stdClass $setting): void
+    public function editSetting(\stdClass $setting): void
     {
         $oid = '$oid';
         $this->update('settings', $setting, new ObjectID($setting->_id->$oid));
@@ -34,7 +34,7 @@ trait Settings
     /**
      * @param \stdClass $setting
      */
-    public function add(\stdClass $setting): void
+    public function addSetting(\stdClass $setting): void
     {
         $this->insert('users', $setting);
     }

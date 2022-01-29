@@ -22,7 +22,7 @@
       </thead>
       <tbody>
         <tr v-for="post in posts" :key="post.id" v-on:click="edit(post)" class="actRow">
-          <td class="d-none d-sm-block"><img v-bind:src="post.src" class="small-cover"></td>
+          <td class="d-none d-sm-block"><img v-bind:src="$hostname + 'storage/' + post.src" class="small-cover"></td>
           <td>{{ post.title[language] }}</td>
           <td class="d-none d-sm-table-cell">{{ post.excerpt[language] }}</td>
           <td>{{ post.published | formatDate}}</td>
@@ -52,7 +52,7 @@
           </div>
           <div class="row">
             <div class="col-12">
-                <img v-bind:src="post.src" class="img-fluid" /><br>
+                <img v-bind:src="$hostname + 'storage/' + post.src" class="img-fluid" /><br>
                 <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
                 <div class="float-right mt-3">
                   <button v-on:click="upload()" class="btn btn-lg btn-success">Add Cover</button>
@@ -208,7 +208,7 @@ export default {
       this.show();
     },
     show() {
-      this.$modal.show('form')
+      this.$modal.show('form');
     },
     hide() {
       this.$modal.hide('form')
@@ -267,6 +267,51 @@ export default {
             });
       }
     },
+    autoSave() {
+      if (this.post._id !== undefined) {
+        this.createSend();
+      } else {
+        this.editSend();
+      }
+    },
+    createSend() {
+      axios.put(this.$hostname + "post", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+          .then(response => {
+            if (response.data.success) {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-success";
+            } else {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-danger";
+            }
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.$router.push({name: 'posts'});
+            }
+          });
+    },
+    editSend() {
+      axios.post(this.$hostname + "post", this.post, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
+          .then(response => {
+            if (response.data.success) {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-success";
+            } else {
+              this.message = response.data.message;
+              this.messageClass = "alert alert-danger";
+            }
+          }, (error) => {
+            if (error.response.status === 401) {
+              window.localStorage.removeItem("userId");
+              window.localStorage.removeItem("user");
+              window.localStorage.removeItem("jwt");
+              this.$router.push({name: 'posts'});
+            }
+          });
+    },
     onEditorBlur(quill) {
 
     },
@@ -312,8 +357,8 @@ export default {
           }
       ).then(response => {
         if (response.data.success) {
-          this.post.file = response.data.file.name;
-          this.post.src = response.data.file.link;
+          this.post.file = response.data.file;
+          this.post.src = response.data.file;
           this.save(false);
         } else {
           this.message = response.data.message;

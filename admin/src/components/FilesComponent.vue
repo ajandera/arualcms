@@ -17,7 +17,7 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id" class="actRow">
-          <td><img v-bind:src="file.src" class="img-thumbnail"></td>
+          <td><img v-bind:src="$hostname+ 'storage/'+file.name" class="img-thumbnail"></td>
           <td>{{ file.name }}</td>
           <td>
             <input v-model="file.gallery" type="text" v-on:change="saveGallery(file._id.$oid, file.gallery)" class="form-control" placeholder="Gallery">

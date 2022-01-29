@@ -19,7 +19,7 @@ class SettingsController
      */
     public function getSettings(Response $res): void
     {
-        $data['settings'] = $this->all();
+        $data['settings'] = $this->allSetting();
         $data['success'] = true;
         $res->toJSON($data);
     }
@@ -44,7 +44,7 @@ class SettingsController
      */
     public function save($settings, Response $res): void
     {
-        $this->edit($settings);
+        $this->editSetting($settings);
         $res->toJSON(['success' => true, 'message' => 'Record updated successfully']);
     }
 }

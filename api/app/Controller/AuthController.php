@@ -5,8 +5,8 @@ namespace ArualCms\Controller;
 
 use ArualCms\Lib\Config;
 use ArualCms\Lib\Response;
+use ArualCms\Model\Settings;
 use ArualCms\Model\Users;
-use ArualCms\Model\Setting;
 use Firebase\JWT\JWT;
 
 /**
@@ -16,7 +16,7 @@ use Firebase\JWT\JWT;
 class AuthController
 {
     use Users;
-    use Setting;
+    use Settings;
 
     /**
      * @param $req

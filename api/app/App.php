@@ -39,19 +39,34 @@ class App
         });
 
         Router::put('/post', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new PostsController())->editPost($req->getJSON(), $res);
         });
 
         Router::post('/post', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new PostsController())->addPost($req->getJSON(), $res);
         });
 
         Router::delete('/post/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new PostsController())->removePost($req->params[0], $res);
         });
@@ -66,13 +81,23 @@ class App
         });
 
         Router::post('/setting', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new SettingsController())->save($req->getJSON(), $res);
         });
 
         Router::put('/setting', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new SettingsController())->save($req->getJSON(), $res);
         });
@@ -87,19 +112,34 @@ class App
         });
 
         Router::post('/text', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new TextsController())->addText($req->getJSON(), $res);
         });
 
         Router::put('/text', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new TextsController())->editText($req->getJSON(), $res);
         });
 
         Router::delete('/text/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new TextsController())->removeText($req->params[0], $res);
         });
@@ -118,7 +158,12 @@ class App
         });
 
         Router::put('/users', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new UsersController())->editUser($req->getJSON(), $res);
         });
@@ -130,7 +175,12 @@ class App
         });
 
         Router::delete('/users/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new UsersController())->removeUser($req->params[0], $res);
         });
@@ -145,19 +195,34 @@ class App
         });
 
         Router::post('/files/upload', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new FileController())->save($res);
         });
 
         Router::put('/files/gallery/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new FileController())->addGallery($req->params[0], $req->getJSON(), $res);
         });
 
         Router::delete('/files/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new FileController())->removeFile($req->params[0], $res);
         });
@@ -191,19 +256,34 @@ class App
         });
 
         Router::post('/languages', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new LanguagesController())->addLanguage($req->getJSON(), $res);
         });
 
         Router::put('/languages', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new LanguagesController())->editLanguage($req->getJSON(), $res);
         });
 
         Router::delete('/languages/([a-zA-Z0-9]*)', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new LanguagesController())->removeLanguage($req->params[0], $res);
         });

@@ -69,6 +69,7 @@ export default {
   components: {},
   data() {
     return {
+      isEdit: false,
       messageClass: null,
       message: null,
       users: [],
@@ -87,6 +88,7 @@ export default {
     edit(user) {
       this.user = user;
       this.modalTitle = this.user.username;
+      this.isEdit = true;
       this.show();
     },
     remove(id) {
@@ -116,6 +118,7 @@ export default {
           });
     },
     create() {
+      this.isEdit = false;
       this.user = {
         username: "",
         password: ""
@@ -129,9 +132,9 @@ export default {
       this.$modal.hide('form')
     },
     save() {
-      if (this.user.id !== undefined) {
+      if (this.isEdit === true) {
         axios.put(
-            this.$hostname + "users/",
+            this.$hostname + "users",
             this.user,
             {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
             ).then(response => {
@@ -149,6 +152,7 @@ export default {
                 this.messageClass = null;
               }, 2000);
             }, (error) => {
+              console.log(error);
               if (error.response.status === 401) {
                 window.localStorage.removeItem("userId");
                 window.localStorage.removeItem("user");

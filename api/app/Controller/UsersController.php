@@ -46,7 +46,7 @@ class UsersController
      */
     public function getUser(int $id, Response $res): void
     {
-        $user = $this->findById($id);
+        $user = $this->findById((string) $id);
         if ($user) {
             $res->toJSON($user);
         } else {

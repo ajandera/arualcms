@@ -43,7 +43,7 @@
                 <div class="sidebar-footer text-center">
                   <div class="row">
                     <div class="col-12">
-                        <p>2021 &copy; <a href="https://ajandera.com" target="_blank">ajandera.com</a></p>
+                        <p>2021 &copy; v0.9 <a href="https://ajandera.com" target="_blank">ajandera.com</a></p>
                     </div>
                   </div>
                 </div>

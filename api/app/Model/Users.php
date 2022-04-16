@@ -55,7 +55,8 @@ trait Users
      */
     public function edit(\stdClass $user): void
     {
-        $this->update('users', $user, $user['id']);
+        $oid = '$oid';
+        $this->update('users', $user, new ObjectID($user->_id->$oid));
     }
 
     /**

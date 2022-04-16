@@ -28,6 +28,12 @@ class App
      */
     public static function run(): void
     {
+        // healthcheck
+        Router::get('/', function (Request $req, Response $res) {
+            $data['message'] = 'arualCMS v0.9 API is running';
+            $data['success'] = true;
+            $res->toJSON($data);
+        });
 
         //posts
         Router::get('/post', function (Request $req, Response $res) {
@@ -169,7 +175,12 @@ class App
         });
 
         Router::post('/users', function (Request $req, Response $res) {
-            $bearer = explode(" ", getallheaders()['Authorization']);
+            // fix for http/1.X and http/2 protocol
+            if (isset(getallheaders()['Authorization'])) {
+                $bearer = explode(" ", getallheaders()['Authorization']);
+            } else {
+                $bearer = explode(" ", getallheaders()['authorization']);
+            }
             Guard::check($bearer[1], $res);
             (new UsersController())->addUser($req->getJSON(), $res);
         });

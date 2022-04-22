@@ -15,7 +15,7 @@
 <script lang="ts">
 
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { Error } from '@model/Error'
+import Error from '~/model/Error'
 
 @Component({
     layout: 'empty'

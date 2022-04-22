@@ -60,13 +60,17 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
+import Language from '~/model/Language'
+import Message from "~/model/Message";
 
 @Component
 export default class DefaultLayout extends Vue {
     clipped: boolean = true
     drawer: boolean = true
     fixed: boolean = true
-    token: string = localStorage.getItem('jwt')
+    languages: Language[] = []
+    language: string = ""
+    message: Message = {text: "", class: ""}
     items: Array<any> = [
         {
           icon: 'mdi-apps',
@@ -102,38 +106,33 @@ export default class DefaultLayout extends Vue {
       ]
     miniVariant: boolean = false
     title: string = 'arualCMS'
+    $axios: any
 
     mounted() {
-        if (this.token === null) {
-            //this.$nuxt.$options.router.push('/in');
-        } else {
-            if (this.$router.currentRoute.name !== '/posts') {
-                this.$nuxt.$options.router.push('/posts');
-            }
-        }
         this.getDefaultLanguage();
     }
 
     logout(): void {
       window.localStorage.removeItem("jwt");
-      this.loggedUser = null;
-      this.$router.push({name: 'sign'});
+      this.$router.push('in');
     }
 
     getDefaultLanguage(): void {
-      this.$axios.get(this.$hostname + "languages")
-        .then(response => {
-          if (response.data.success === true) {
-            this.languages = response.data.languages.map(item => item = item.key);
+      this.$axios.get("/languages")
+        .then((response: { data: { success: boolean; languages: any[]; error: any, message: string } }) => {
+          if (response.data.success) {
+            this.languages = response.data.languages.map(item => item.key);
             this.language = response.data.languages.find(item => item.default === true).key;
           } else {
-            this.message = response.data.error;
-            this.messageClass = 'danger';
+            this.message = {
+              "text": response.data.message,
+              "class": "error"
+            }
           }
         });
     }
 
-    setLanguage(lang): void {
+    setLanguage(lang: string): void {
       this.language = lang;
     }
 }

@@ -1,15 +1,15 @@
 <template>
-  <v-content>
+  <v-main>
     <v-container fluid fill-height>
-    <v-layout align-center justify-center>
+      <v-layout align-center justify-center>
       <v-flex xs12 sm8 md4>
         <v-alert
-          v-if="message"
-          :type="alertType"
+          v-if="message.text"
+          :type="message.class"
           border="left"
           dense
           prominent
-        >{{ message }}</v-alert>
+        >{{ message.text }}</v-alert>
         <v-card v-if="forgot === false" class="elevation-12">
           <v-toolbar dark color="primary">
             <v-toolbar-title>
@@ -72,38 +72,38 @@
         </v-card>
       </v-flex>
     </v-layout>
-  </v-container>
-  </v-content>
+    </v-container>
+  </v-main>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { Forgot } from '@model/Forgot'
-import { Message } from '@model/Message'
-import { User } from '@model/User'
+import User from '~/model/User';
+import Message from '~/model/Message';
 
 @Component({
     layout: "sign"
 })
 export default class InPage extends Vue {
-    message: Message = null;
-    forgot: boolean = false;
-    forgotMail: string = null;
-    user: User = {username: null, password: null};
+    message: Message = {text: "", class: ""}
+    forgot: boolean = false
+    forgotMail: string = ""
+    user: User = {username: "", password: ""}
+    $axios: any;
 
     login(): void {
-      this.$axios.post(this.$config.api+"auth", this.user)
-        .then(response => {
+      this.$axios.post("/auth", this.user)
+        .then((response: { data: { success: any; jwt: string; message: any; }; }) => {
           if (response.data.success) {
-            window.localStorage.setItem('jwt', res.jwt);
-            this.$nuxt.$options.router.push('/posts');
+            window.localStorage.setItem('jwt', response.data.jwt);
+            this.$router.push('/posts');
           } else {
             this.message = {
-                "text": res.message,
+                "text": response.data.message,
                 "class": "error"
             }
           }
-        }).catch(error => {this.message = {"text": res.message,"class": "error"}});
+        }).catch((error: { message: any; }) => {this.message = {"text": error.message,"class": "error"}});
     }
 
     forgotForm(): void {
@@ -117,17 +117,21 @@ export default class InPage extends Vue {
       };
 
       // send email
-     this.$axios.post(this.$config.api+"sendRecovery", param)
-        .then(response => {
+     this.$axios.$post(this.$config.api+"sendRecovery", param)
+        .then((response: { data: { message: any; success: string }; }) => {
           let res = response.data;
           this.message = res.message;
           if (res.success) {
-            this.message = res.message;
-            this.alertType = "success";
-            this.forgotMail = null;
+            this.message = {
+              "text": response.data.message,
+              "class": "success"
+            }
+            this.forgotMail = "";
           } else {
-            this.message = res.message;
-            this.alertType = "error";
+            this.message = {
+              "text": res.message,
+              "class": "error"
+            }
           }
         });
     }

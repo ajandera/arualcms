@@ -13,7 +13,7 @@
         <v-card v-if="forgot === false" class="elevation-12">
           <v-toolbar dark color="primary">
             <v-toolbar-title>
-              arualCSM Login
+              arualCMS Login
             </v-toolbar-title>
           </v-toolbar>
           <v-card-text>
@@ -26,6 +26,7 @@
                 name="login"
                 label="Login"
                 type="text"
+                v-model="user.username"
               ></v-text-field>
               <v-text-field
                 id="password"
@@ -33,6 +34,7 @@
                 name="password"
                 label="Password"
                 type="password"
+                v-model="user.password"
               ></v-text-field>
             </v-form>
             <p @click="forgotForm()">Forgot your password?</p>
@@ -74,60 +76,48 @@
   </v-content>
 </template>
 
-<script lang="js">
-import axios from "axios";
+<script lang="ts">
+import { Component, Vue } from 'nuxt-property-decorator'
+import { Forgot } from '@model/Forgot'
+import { Message } from '@model/Message'
+import { User } from '@model/User'
 
-export default {
-  name: 'InPAge',
-  layout: 'sign',
-  components: {},
-  data() {
-    return {
-      alertType: null,
-      message: null,
-      forgot: false,
-      forgotMail: null,
-      username: null,
-      password: null,
-    }
-  },
-  methods: {
-    login() {
-      axios.post(this.$config.api+"auth", {"username": this.username, "password": this.password})
+@Component({
+    layout: "sign"
+})
+export default class InPage extends Vue {
+    message: Message = null;
+    forgot: boolean = false;
+    forgotMail: string = null;
+    user: User = {username: null, password: null};
+
+    login(): void {
+      this.$axios.post(this.$config.api+"auth", this.user)
         .then(response => {
-          let res = response.data;
-          this.message = res.message;
-          if (res.success) {
-            this.message = res.message;
-            this.alertType = "success";
-            this.username = null;
-            this.password = null;
-            this.loggedUser = res.username;
-            window.localStorage.setItem('userId', res.id);
-            window.localStorage.setItem("user", res.username)
+          if (response.data.success) {
             window.localStorage.setItem('jwt', res.jwt);
-            this.hide();
-            this.$router.push({name: 'posts'});
+            this.$nuxt.$options.router.push('/posts');
           } else {
-            this.message = res.message;
-            this.alertType = "error";
+            this.message = {
+                "text": res.message,
+                "class": "error"
+            }
           }
-        }).catch(error => {
-        this.message = error.message;
-        this.alertType = "error";
-      });
-    },
-    forgotForm() {
+        }).catch(error => {this.message = {"text": res.message,"class": "error"}});
+    }
+
+    forgotForm(): void {
       this.forgot = !this.forgot;
-    },
-    requestNewPw() {
+    }
+
+    requestNewPw(): void {
       const param = {
         "username": this.forgotMail,
         "domain": window.location.protocol + "//" + window.location.hostname
       };
 
       // send email
-      axios.post(this.$config.api+"sendRecovery", param)
+     this.$axios.post(this.$config.api+"sendRecovery", param)
         .then(response => {
           let res = response.data;
           this.message = res.message;
@@ -141,7 +131,6 @@ export default {
           }
         });
     }
-  }
 }
 </script>
 <style>

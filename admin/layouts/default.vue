@@ -29,32 +29,19 @@
       fixed
       app
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-btn
         icon
         @click.stop="miniVariant = !miniVariant"
       >
         <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
       </v-btn>
-      <v-btn
-        icon
-        @click.stop="clipped = !clipped"
-      >
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="fixed = !fixed"
-      >
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn
         icon
-        @click.stop="rightDrawer = !rightDrawer"
+        @click="logout"
       >
-        <v-icon>mdi-menu</v-icon>
+        <v-icon>mdi-logout-variant</v-icon>
       </v-btn>
     </v-app-bar>
     <v-main>
@@ -62,81 +49,79 @@
         <Nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
-      temporary
-      fixed
-    >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
     <v-footer
       :absolute="!fixed"
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span>v0.9.2 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
   </v-app>
 </template>
 
-<script>
-import axios from "axios";
+<script lang="ts">
+import { Component, Vue } from 'nuxt-property-decorator'
 
-export default {
-  name: 'DefaultLayout',
-  data () {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      loggedUser: null,
-      items: [
+@Component
+export default class DefaultLayout extends Vue {
+    clipped: boolean = true
+    drawer: boolean = true
+    fixed: boolean = true
+    token: string = localStorage.getItem('jwt')
+    items: Array<any> = [
         {
           icon: 'mdi-apps',
-          title: 'Welcome',
+          title: 'Posts',
           to: '/'
         },
         {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
+          icon: 'mdi-card-text',
+          title: 'Texts',
+          to: '/texts'
+        },
+        {
+          icon: 'mdi-file-multiple',
+          title: 'Files',
+          to: '/files'
+        },
+        {
+          icon: 'mdi-flag',
+          title: 'Languages',
+          to: '/languages'
+        },
+        {
+          icon: 'mdi-cog',
+          title: 'Setting',
+          to: '/settings'
+        },
+        {
+          icon: 'mdi-account',
+          title: 'Users',
+          to: '/users'
         }
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
+
+      ]
+    miniVariant: boolean = false
+    title: string = 'arualCMS'
+
+    mounted() {
+        if (this.token === null) {
+            //this.$nuxt.$options.router.push('/in');
+        } else {
+            if (this.$router.currentRoute.name !== '/posts') {
+                this.$nuxt.$options.router.push('/posts');
+            }
+        }
+        this.getDefaultLanguage();
     }
-  },
-  mounted() {
-    if (this.loggedUser === null) {
-      this.$nuxt.$options.router.push('/in');
-    } else {
-      if (this.$router.currentRoute.name !== '/posts') {
-        this.$nuxt.$options.router.push('/posts');
-      }
-    }
-    this.getDefaultLanguage();
-  },
-  methods: {
-    logout() {
-      window.localStorage.removeItem("userId");
-      window.localStorage.removeItem("user");
+
+    logout(): void {
       window.localStorage.removeItem("jwt");
       this.loggedUser = null;
       this.$router.push({name: 'sign'});
-    },
-    getDefaultLanguage() {
-      axios.get(this.$hostname + "languages")
+    }
+
+    getDefaultLanguage(): void {
+      this.$axios.get(this.$hostname + "languages")
         .then(response => {
           if (response.data.success === true) {
             this.languages = response.data.languages.map(item => item = item.key);
@@ -146,10 +131,10 @@ export default {
             this.messageClass = 'danger';
           }
         });
-    },
-    setLanguage(lang) {
+    }
+
+    setLanguage(lang): void {
       this.language = lang;
     }
-  }
 }
 </script>

@@ -47,6 +47,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+      '@nuxtjs/axios'
   ],
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -73,6 +74,6 @@ export default {
   },
 
   publicRuntimeConfig: {
-    api: process.env.VUE_APP_API || 'http://localhost:8000'
+    api: process.env.VUE_APP_API || 'http://localhost:8000/'
   }
 }

@@ -8,7 +8,8 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 
 @Component
-export default class IndexPage extends Vue {
+export default class PostsPage extends Vue {
 
 }
 </script>
+

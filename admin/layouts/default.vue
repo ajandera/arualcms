@@ -68,7 +68,7 @@ export default class DefaultLayout extends Vue {
     clipped: boolean = true
     drawer: boolean = true
     fixed: boolean = true
-    languages: Language[] = []
+    languages: string[] = []
     language: string = ""
     message: Message = {text: "", class: ""}
     items: Array<any> = [
@@ -119,16 +119,9 @@ export default class DefaultLayout extends Vue {
 
     getDefaultLanguage(): void {
       this.$axios.get("/languages")
-        .then((response: { data: { success: boolean; languages: any[]; error: any, message: string } }) => {
-          if (response.data.success) {
-            this.languages = response.data.languages.map(item => item.key);
-            this.language = response.data.languages.find(item => item.default === true).key;
-          } else {
-            this.message = {
-              "text": response.data.message,
-              "class": "error"
-            }
-          }
+        .then((response: { data: { success: boolean; languages: Language[] } }) => {
+          this.language = response.data.languages.filter(item => item.default)[0].key;
+          this.languages = response.data.languages.map(item => item.key);
         });
     }
 

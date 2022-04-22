@@ -1,4 +1,4 @@
 export default interface Language {
-  code: string,
-  name: string
+  key: string;
+  default: boolean;
 }

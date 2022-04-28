@@ -2,7 +2,7 @@
   <v-main>
     <v-container fluid fill-height>
       <v-layout align-center justify-center>
-      <v-flex xs12 sm8 md4>
+      <v-flex xs12 sm8 md6>
         <v-alert
           v-if="message.text"
           :type="message.class"
@@ -11,13 +11,8 @@
           prominent
         >{{ message.text }}</v-alert>
         <v-card v-if="forgot === false" class="elevation-12">
-          <v-toolbar dark color="primary">
-            <v-toolbar-title>
-              arualCMS Login
-            </v-toolbar-title>
-          </v-toolbar>
           <v-card-text>
-            <v-col cols="8" offset="2">
+            <v-col cols="12">
               <v-img class="logo" src="https://user-images.githubusercontent.com/4760295/112476277-04b9b680-8d72-11eb-8433-fb53ddb9f78a.png"></v-img>
             </v-col>
             <v-form>
@@ -37,7 +32,7 @@
                 v-model="user.password"
               ></v-text-field>
             </v-form>
-            <p @click="forgotForm()">Forgot your password?</p>
+            <p @click="forgotForm()" class="fp">Forgot your password?</p>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -45,13 +40,8 @@
           </v-card-actions>
         </v-card>
         <v-card v-if="forgot === true" class="elevation-12">
-          <v-toolbar dark color="primary">
-            <v-toolbar-title>
-              arualCSM Forgot password
-            </v-toolbar-title>
-          </v-toolbar>
           <v-card-text>
-            <v-col cols="8" offset="2">
+            <v-col cols="12">
               <v-img class="logo" src="https://user-images.githubusercontent.com/4760295/112476277-04b9b680-8d72-11eb-8433-fb53ddb9f78a.png"></v-img>
             </v-col>
             <v-form>
@@ -143,5 +133,8 @@ export default class InPage extends Vue {
 }
 .logo {
   border-radius: 20px
+}
+.fp {
+    cursor: pointer
 }
 </style>

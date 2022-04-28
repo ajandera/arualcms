@@ -60,53 +60,46 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
+import User from '~/model/User';
+import Message from '~/model/Message';
+import IResponse from '~/model/IResponse';
 
 @Component
 export default class UsersPage extends Vue {
-    isEdit: bool = false;
-    alertType: string = "";
-    message: string = "";
+    isEdit: boolean = false;
+    message: Message = {text: "", class: ""};
     users: User[];
     user: User = {
         username: "",
         password: ""
       };
     modalTitle: "";
-    error: ""
+    $axios: any;
 
     mounted() {
         this.load();
     }
 
-    edit(user) {
+    edit(user: User) {
       this.user = user;
       this.modalTitle = this.user.username;
       this.isEdit = true;
-      this.show();
     }
 
-    remove(id) {
-      axios.delete("users/" + id)
-          .then(response => {
+    remove(id: string) {
+      this.$axios.delete("users/" + id)
+          .then((response: IResponse) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message = {
+                text: response.data.message,
+                class: "success"
+              };
               this.load();
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
-            }
-            this.hide();
-            setTimeout(() => {
-              this.message = null;
-              this.messageClass = null;
-            }, 2000);
-          }, (error) => {
-            if (error.response.status === 401) {
-              window.localStorage.removeItem("userId");
-              window.localStorage.removeItem("user");
-              window.localStorage.removeItem("jwt");
-              this.$router.push({name: 'posts'});
+              this.message = {
+                text: response.data.message,
+                class: "danger"
+              };
             }
           });
     }
@@ -117,74 +110,55 @@ export default class UsersPage extends Vue {
         username: "",
         password: ""
       };
-      this.show();
     }
 
     save() {
       if (this.isEdit === true) {
-        axios.put(
-            this.$hostname + "users",
-            this.user,
-            {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}}
-            ).then(response => {
+        this.$axios.put("users", this.user)
+            .then((response: IResponse) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message = {
+                    text: response.data.message,
+                    class: "success"
+                };
               } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
+                this.message = {
+                    text: response.data.message,
+                    class: "danger"
+                };
               }
               this.load();
-              this.hide();
-              setTimeout(() => {
-                this.message = null;
-                this.messageClass = null;
-              }, 2000);
-            }, (error) => {
-              console.log(error);
-              if (error.response.status === 401) {
-                window.localStorage.removeItem("userId");
-                window.localStorage.removeItem("user");
-                window.localStorage.removeItem("jwt");
-                this.$router.push({name: 'posts'});
-              }
             });
       } else {
-        axios.post(this.$hostname + "users", this.user, {headers: {Authorization: "Bearer " + window.localStorage.getItem('jwt')}})
-            .then(response => {
+        this.$axios.post("users", this.user)
+            .then((response: IResponse) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message = {
+                    text: response.data.message,
+                    class: "success"
+                };
               } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
+                this.message = {
+                    text: response.data.message,
+                    class: "danger"
+                };
               }
               this.load();
-              this.hide();
-              setTimeout(() => {
-                this.message = null;
-                this.messageClass = null;
-              }, 2000);
-            }, (error) => {
-              if (error.response.status === 401) {
-                window.localStorage.removeItem("userId");
-                window.localStorage.removeItem("user");
-                window.localStorage.removeItem("jwt");
-                this.$router.push({name: 'posts'});
-              }
             });
       }
     }
 
     load() {
       this.users = [];
-      axios.get("users")
-          .then(response => {
+      this.$axios.get("users")
+          .then((response: IResponse) => {
             if (response.data.success === true) {
               this.users = response.data.users;
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message = {
+                text: response.data.message,
+                class: "danger"
+              };
             }
           });
     }

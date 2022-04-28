@@ -1,4 +1,6 @@
 export default interface Language {
-  key: string;
-  default: boolean;
+    key: string;
+    value: string;
+    default: boolean;
+    _id: string;
 }

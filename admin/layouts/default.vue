@@ -55,6 +55,14 @@
     >
       <span>v0.9.2 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
+    <v-snackbar
+      v-model="message.text !== ''"
+      :timeout="2000"
+      :color="message.class"
+    >
+      {{ message.text }}
+
+    </v-snackbar>
   </v-app>
 </template>
 

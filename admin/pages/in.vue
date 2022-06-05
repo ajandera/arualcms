@@ -80,6 +80,7 @@ export default class InPage extends Vue {
     forgotMail: string = ""
     user: User = {username: "", password: ""}
     $axios: any;
+    $router: any;
 
     login(): void {
       this.$axios.post("/auth", this.user)
@@ -107,7 +108,7 @@ export default class InPage extends Vue {
       };
 
       // send email
-     this.$axios.$post(this.$config.api+"sendRecovery", param)
+     this.$axios.$post("/sendRecovery", param)
         .then((response: { data: { message: any; success: string }; }) => {
           let res = response.data;
           this.message = res.message;

@@ -26,7 +26,7 @@
             </v-card-title>
             <v-card-text>
               <v-container>
-                
+
               </v-container>
             </v-card-text>
 
@@ -62,18 +62,18 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import User from '~/model/User';
 import Message from '~/model/Message';
-import IResponse from '~/model/IResponse';
+import IResponseUsers from '~/model/IResponseUsers';
 
 @Component
 export default class UsersPage extends Vue {
     isEdit: boolean = false;
     message: Message = {text: "", class: ""};
-    users: User[];
+    users!: User[];
     user: User = {
         username: "",
         password: ""
       };
-    modalTitle: "";
+    modalTitle: string = "";
     $axios: any;
 
     mounted() {
@@ -87,8 +87,8 @@ export default class UsersPage extends Vue {
     }
 
     remove(id: string) {
-      this.$axios.delete("users/" + id)
-          .then((response: IResponse) => {
+      this.$axios.delete("/users/" + id)
+          .then((response: IResponseUsers) => {
             if (response.data.success) {
               this.message = {
                 text: response.data.message,
@@ -113,9 +113,9 @@ export default class UsersPage extends Vue {
     }
 
     save() {
-      if (this.isEdit === true) {
-        this.$axios.put("users", this.user)
-            .then((response: IResponse) => {
+      if (this.isEdit) {
+        this.$axios.put("/users", this.user)
+            .then((response: IResponseUsers) => {
               if (response.data.success) {
                 this.message = {
                     text: response.data.message,
@@ -130,8 +130,8 @@ export default class UsersPage extends Vue {
               this.load();
             });
       } else {
-        this.$axios.post("users", this.user)
-            .then((response: IResponse) => {
+        this.$axios.post("/users", this.user)
+            .then((response: IResponseUsers) => {
               if (response.data.success) {
                 this.message = {
                     text: response.data.message,
@@ -150,8 +150,8 @@ export default class UsersPage extends Vue {
 
     load() {
       this.users = [];
-      this.$axios.get("users")
-          .then((response: IResponse) => {
+      this.$axios.get("/users")
+          .then((response: IResponseUsers) => {
             if (response.data.success === true) {
               this.users = response.data.users;
             } else {

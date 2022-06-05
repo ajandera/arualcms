@@ -68,8 +68,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import Language from '~/model/Language'
 import Message from "~/model/Message";
+import IResponseLanguage from "~/model/IResponseLanguage";
 
 @Component
 export default class DefaultLayout extends Vue {
@@ -115,6 +115,7 @@ export default class DefaultLayout extends Vue {
     miniVariant: boolean = false
     title: string = 'arualCMS'
     $axios: any
+    $router: any;
 
     mounted() {
         this.getDefaultLanguage();
@@ -127,7 +128,7 @@ export default class DefaultLayout extends Vue {
 
     getDefaultLanguage(): void {
       this.$axios.get("/languages")
-        .then((response: { data: { success: boolean; languages: Language[] } }) => {
+        .then((response: IResponseLanguage) => {
           this.language = response.data.languages.filter(item => item.default)[0].key;
           this.languages = response.data.languages.map(item => item.key);
         });

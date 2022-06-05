@@ -1,13 +1,14 @@
 <template>
   <v-row justify="center" align="center">
-   
+
   </v-row>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
-import IResponse from '~/model/IResponse';
+import {Component, Prop, Vue} from 'nuxt-property-decorator';
 import Text from '~/model/Text';
+import Message from "~/model/Message";
+import IResponseTexts from "~/model/IResponseTexts";
 
 @Component({
     components: {
@@ -15,93 +16,103 @@ import Text from '~/model/Text';
     }
 })
 export default class TextsPage extends Vue {
-    texts: Text[];
-    text?: Text; 
+    @Prop readonly languages!: string[];
+    texts!: Text[];
+    text?: Text;
     editorOption: any = {};
     modalTitle: string = "";
+    message: Message = {class: "", text: ""};
+    $axios: any;
+    content: any;
 
     mounted() {
         this.load();
     }
 
     save(text: Text) {
-      if (text._id !== undefined) {
-        axios.put("text", text)
-            .then(response => {
+      if (text._id.$oid !== '') {
+        this.$axios.put("text", text)
+            .then((response: IResponseTexts) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
               } else {
-                this.message = response.data.error;
-                this.messageClass = 'danger';
+                this.message.text = response.data.error;
+                this.message.class = 'danger';
               }
             });
       } else {
-        axios.post("text", text)
-            .then(response => {
+        this.$axios.post("text", text)
+            .then((response: IResponseTexts) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
                 this.load();
               } else {
-                this.message = response.data.error;
-                this.messageClass = 'danger';
+                this.message.text = response.data.error;
+                this.message.class = 'danger';
               }
             });
       }
     }
 
     load() {
-      axios.get("text")
-          .then(response => {
+      this.$axios.get("/text")
+          .then((response: IResponseTexts) => {
             if (response.data.success === true) {
               this.texts = response.data.texts;
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }
 
     add() {
-      let text = {};
-      text.key = "";
-      text.value = {};
+      let text: Text = {
+        key: '',
+        value: {},
+        _id: {$oid: ""}
+      };
       for (const lang of this.languages) {
         text.value[lang] = "";
       }
       this.texts.push(text);
     }
 
-    remove(item) {
-      axios.delete("text/" + item._id.$oid)
-          .then(response => {
+    remove(item: Text) {
+      this.$axios.delete("/text/" + item._id.$oid)
+          .then((response: IResponseTexts) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
               this.load();
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }
 
-    openEditor(item) {
+    openEditor(item: Text) {
       this.text = item;
       this.modalTitle = item.key;
       this.show();
     }
 
-    onEditorBlur(quill) {
+    show() {
+        throw new Error('Method not implemented.');
     }
 
-    onEditorFocus(quill) {
-    }
-    onEditorReady(quill) {
+    onEditorBlur(quill: any) {
     }
 
-    onEditorChange({ quill, html, text }) {
+    onEditorFocus(quill: any) {
+    }
+    onEditorReady(quill: any) {
+    }
+
+    onEditorChange(quill: any, html: any, text: any ) {
       this.content = html
     }
 }

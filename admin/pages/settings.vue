@@ -1,43 +1,46 @@
 <template>
   <v-row justify="center" align="center">
-   
+
   </v-row>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import IResponse from '~/model/IResponse';
 import Setting from '~/model/Setting';
+import Message from "~/model/Message";
+import IResponseSetting from "~/model/IResponseSetting";
 
 @Component
 export default class SettingsPage extends Vue {
-    setting: Setting[];
- 
+    setting!: Setting[];
+    $axios: any;
+    message: Message = {class: "", text: ""};
+
     mounted() {
         this.load();
     }
 
     load() {
-      this.$axios.get("setting")
-          .then((response: IResponse) => {
-            if (response.data.success === true) {
+      this.$axios.get("/setting")
+          .then((response: IResponseSetting) => {
+            if (response.data.success) {
               this.setting = response.data.settings;
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }
 
-    save(setting) {
+    save(setting: Setting) {
       this.$axios.put("setting", setting)
-          .then((response: IResponse) => {
+          .then((response: IResponseSetting) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }

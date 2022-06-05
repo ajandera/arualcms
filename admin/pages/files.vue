@@ -1,34 +1,37 @@
 <template>
   <v-row justify="center" align="center">
-   
+
   </v-row>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
-import File from '~/model/File';
-import IResponse from '~/model/IResponse';
+import { Component, Vue } from 'nuxt-property-decorator';
+import IResponseFiles from '~/model/IResponseFiles';
+import Message from "~/model/Message";
 
 @Component
 export default class FilesPage extends Vue {
-    files: File[];
-    file: File;
+    files!: File[];
+    file!: File;
     modalTitle: string =  "";
+    message: Message = {class: "", text: ""};
+    $axios: any;
+    $refs: any;
 
     mounted() {
         this.load();
     }
-  
+
     remove(id:string) {
       this.$axios.delete("files/" + id)
-          .then((response: IResponse) => {
+          .then((response: IResponseFiles) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
               this.load();
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }
@@ -39,7 +42,7 @@ export default class FilesPage extends Vue {
 
     save() {
       let formData = new FormData();
-      formData.append('file', this.file);
+      formData.append('file', this.file.toString());
       this.$axios.post('files/upload',
           formData,
           {
@@ -48,14 +51,14 @@ export default class FilesPage extends Vue {
               'Authorization': "Bearer " + window.localStorage.getItem('jwt')
             }
           }
-      ).then((response: IResponse) => {
+      ).then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message = response.data.message;
-          this.messageClass = "alert alert-success";
+          this.message.text = response.data.message;
+          this.message.class = "alert alert-success";
           this.load();
         } else {
-          this.message = response.data.message;
-          this.messageClass = "alert alert-danger";
+          this.message.text = response.data.message;
+          this.message.class = "alert alert-danger";
         }
       });
     }
@@ -66,12 +69,12 @@ export default class FilesPage extends Vue {
 
     load() {
       this.$axios.get("files")
-          .then(response => {
-            if (response.data.success === true) {
+          .then((response: IResponseFiles) => {
+            if (response.data.success) {
               this.files = response.data.files;
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }
@@ -79,13 +82,13 @@ export default class FilesPage extends Vue {
     saveGallery(id: string, gallery: string) {
       this.$axios.put( 'files/gallery/'+id,
           {'gallery': gallery}
-      ).then(response => {
+      ).then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message = response.data.message;
-          this.messageClass = "alert alert-success";
+          this.message.text = response.data.message;
+          this.message.class = "alert alert-success";
         } else {
-          this.message = response.data.message;
-          this.messageClass = "alert alert-danger";
+          this.message.text = response.data.message;
+          this.message.class = "alert alert-danger";
         }
       });
     }

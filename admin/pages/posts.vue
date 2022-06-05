@@ -1,13 +1,15 @@
 <template>
   <v-row justify="center" align="center">
-   
+
   </v-row>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
-import Post from '~/model/Post';
-import IResponse from '~/model/IResponse';
+import {Component, Prop, Vue} from 'nuxt-property-decorator';
+import Post from "~/model/Post";
+import IResponsePosts from "~/model/IResponsePosts";
+import Message from "~/model/Message";
+import IResponseFiles from '~/model/IResponseFiles';
 
 @Component({
     components: {
@@ -15,12 +17,19 @@ import IResponse from '~/model/IResponse';
     }
 })
 export default class PostsPage extends Vue {
-    posts: Post[];
+    @Prop readonly languages!: string[];
+    @Prop readonly language!: string;
+    posts!: Post[];
     post: Post;
     modalTitle: string = "";
     editorOption: any = {
     // Some Quill options...
     };
+    $axios: any;
+    message: Message = {text: "", class: ""};
+    content: any;
+    $refs: any;
+    file: any;
 
     mounted() {
         this.load();
@@ -32,15 +41,15 @@ export default class PostsPage extends Vue {
     }
 
     remove(id: string) {
-      axios.delete("post/" + id)
-          .then((response) => {
+      this.$axios.delete("/post/" + id)
+          .then((response: IResponsePosts) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
               this.load();
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }
@@ -69,26 +78,26 @@ export default class PostsPage extends Vue {
 
     save(close: boolean) {
       if (this.post._id !== undefined) {
-        this.$axios.put("post", this.post)
-            .then(response => {
+        this.$axios.put("/post", this.post)
+            .then((response: IResponsePosts) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
               } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-danger";
               }
               this.load();
             });
       } else {
-        this.$axios.post("post", this.post)
-            .then(response => {
+        this.$axios.post("/post", this.post)
+            .then((response: IResponsePosts) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
               } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-danger";
               }
               this.load();
             });
@@ -104,56 +113,56 @@ export default class PostsPage extends Vue {
     }
 
     createSend() {
-      this.$axios.put("post", this.post)
-          .then(response => {
+      this.$axios.put("/post", this.post)
+          .then((response: IResponsePosts) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }
 
     editSend() {
-      this.$axios.post("post", this.post)
-          .then(response => {
+      this.$axios.post("/post", this.post)
+          .then((response: IResponsePosts) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }
 
-    onEditorBlur(quill) {
+    onEditorBlur(quill: any) {
     }
 
-    onEditorFocus(quill) {
+    onEditorFocus(quill: any) {
     }
 
-    onEditorReady(quill) {
+    onEditorReady(quill: any) {
     }
 
-    onEditorChange({ quill, html, text }) {
+    onEditorChange(quill: any, html: any, text: any) {
       this.content = html
     }
 
     load() {
       this.posts = [];
-      this.$axios.get("post")
-          .then((response) => {
-            if (response.data.success === true) {
+      this.$axios.get("/post")
+          .then((response: IResponsePosts) => {
+            if (response.data.success) {
               for (let index in response.data.posts) {
                 response.data.posts[index].published = new Date(response.data.posts[index].published);
                 this.posts.push(response.data.posts[index]);
               }
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }
@@ -165,15 +174,15 @@ export default class PostsPage extends Vue {
     upload() {
       let formData = new FormData();
       formData.append('file', this.file);
-      this.$axios.post( this.$hostname + 'files/upload',formData)
-        .then(response => {
+      this.$axios.post('/files/upload', formData)
+        .then((response: IResponseFiles) => {
             if (response.data.success) {
                 this.post.file = response.data.file;
                 this.post.src = response.data.file;
                 this.save(false);
             } else {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-danger";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-danger";
             }
       });
     }

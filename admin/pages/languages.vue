@@ -1,18 +1,22 @@
 <template>
   <v-row justify="center" align="center">
-   
+
   </v-row>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
+import IResponseLanguage from '~/model/IResponseLanguage';
 import Language from '~/model/Language';
-import IResponse from '~/model/IResponse';
+import Message from "~/model/Message";
 
 @Component
 export default class LanguagesPage extends Vue {
     langObject?: Language;
     modalTitle: string = 'Create language'
+    $axios: any;
+    message: Message = {class: "", text: ""};
+  languages: Language[];
 
     mounted(): void {
         this.load();
@@ -21,6 +25,7 @@ export default class LanguagesPage extends Vue {
     create(): void {
       this.modalTitle = "New Language";
       this.langObject = {
+        _id: "",
         key: "",
         value: "",
         default: false
@@ -28,41 +33,41 @@ export default class LanguagesPage extends Vue {
     }
 
     save(language: Language) {
-      if (language._id !== undefined) {
-        this.$axios.put("languages", language)
-            .then((response: IResponse) => {
+      if (language._id !== '') {
+        this.$axios.put("/languages", language)
+            .then((response: IResponseLanguage) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
                 this.load();
               } else {
-                this.message = response.data.error;
-                this.messageClass = 'danger';
+                this.message.text = response.data.error;
+                this.message.class = 'danger';
                 this.load();
               }
             });
       } else {
-        this.$axios.post("languages", language)
-            .then((response: IResponse) => {
+        this.$axios.post("/languages", language)
+            .then((response: IResponseLanguage) => {
               if (response.data.success) {
-                this.message = response.data.message;
-                this.messageClass = "alert alert-success";
+                this.message.text = response.data.message;
+                this.message.class = "alert alert-success";
               } else {
-                this.message = response.data.error;
-                this.messageClass = 'danger';
+                this.message.text = response.data.error;
+                this.message.class = 'danger';
               }
             });
       }
     }
 
     load() {
-      axios.get("languages")
-          .then((response: IResponse) => {
-            if (response.data.success === true) {
+      this.$axios.get("/languages")
+          .then((response: IResponseLanguage) => {
+            if (response.data.success) {
               this.languages = response.data.languages;
             } else {
-              this.message = response.data.error;
-              this.messageClass = 'danger';
+              this.message.text = response.data.error;
+              this.message.class = 'danger';
             }
           });
     }
@@ -73,15 +78,15 @@ export default class LanguagesPage extends Vue {
     }
 
     remove(id: string) {
-      axios.delete("languages/" + id)
-          .then((response: IResponse) => {
+      this.$axios.delete("/languages/" + id)
+          .then((response: IResponseLanguage) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
               this.load();
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }

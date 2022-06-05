@@ -45,22 +45,27 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
+import Message from "~/model/Message";
+import IResponseUsers from "~/model/IResponseUsers";
 
 @Component
 export default class RecoveryPage extends Vue {
-    password?: string = null;
+    password: string = "";
     passwordCheck: string = "";
+    message: Message = {class: "", text: ""};
+    $route: any;
+    $axios: any;
 
     recoveryPw() {
       const username = this.$route.params.username;
       this.$axios.post("recovery", {username: username, password: this.password})
-          .then((response: IResponse) => {
+          .then((response: IResponseUsers) => {
             if (response.data.success) {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-success";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-success";
             } else {
-              this.message = response.data.message;
-              this.messageClass = "alert alert-danger";
+              this.message.text = response.data.message;
+              this.message.class = "alert alert-danger";
             }
           });
     }

@@ -11,16 +11,12 @@ import IResponsePosts from "~/model/IResponsePosts";
 import Message from "~/model/Message";
 import IResponseFiles from '~/model/IResponseFiles';
 
-@Component({
-    components: {
-        quillEditor
-    }
-})
+@Component
 export default class PostsPage extends Vue {
-    @Prop readonly languages!: string[];
-    @Prop readonly language!: string;
+    @Prop() readonly languages!: string[];
+    @Prop() readonly language!: string;
     posts!: Post[];
-    post: Post;
+    post!: Post;
     modalTitle: string = "";
     editorOption: any = {
     // Some Quill options...
@@ -56,6 +52,7 @@ export default class PostsPage extends Vue {
 
     create() {
       this.post = {
+        _id: '',
         title: {},
         excerpt: {},
         body: {},

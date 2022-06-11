@@ -1,5 +1,5 @@
 export default interface Text {
     key: string;
-    value: object;
+    value: any;
     _id: {$oid: string };
 }

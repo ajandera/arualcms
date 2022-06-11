@@ -10,13 +10,9 @@ import Text from '~/model/Text';
 import Message from "~/model/Message";
 import IResponseTexts from "~/model/IResponseTexts";
 
-@Component({
-    components: {
-        quillEditor
-    }
-})
+@Component
 export default class TextsPage extends Vue {
-    @Prop readonly languages!: string[];
+    @Prop() readonly languages!: string[];
     texts!: Text[];
     text?: Text;
     editorOption: any = {};

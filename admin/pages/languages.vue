@@ -16,7 +16,7 @@ export default class LanguagesPage extends Vue {
     modalTitle: string = 'Create language'
     $axios: any;
     message: Message = {class: "", text: ""};
-  languages: Language[];
+    languages: Language[] = [];
 
     mounted(): void {
         this.load();

@@ -74,6 +74,7 @@ export default {
   },
 
   publicRuntimeConfig: {
+    hostname: process.env.VUE_APP_API || 'http://localhost:8000/',
     axios: {
       baseURL: process.env.VUE_APP_API || 'http://localhost:8000/'
     }

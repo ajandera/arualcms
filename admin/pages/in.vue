@@ -70,6 +70,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import User from '~/model/User';
 import Message from '~/model/Message';
+import IResponseAuth from "~/model/IResponseAuth";
 
 @Component({
     layout: "sign"
@@ -83,8 +84,8 @@ export default class InPage extends Vue {
     $router: any;
 
     login(): void {
-      this.$axios.post("/auth", this.user)
-        .then((response: { data: { success: any; jwt: string; message: any; }; }) => {
+      this.$axios.post("/auth", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseAuth) => {
           if (response.data.success) {
             window.localStorage.setItem('jwt', response.data.jwt);
             this.$router.push('/posts');
@@ -94,7 +95,7 @@ export default class InPage extends Vue {
                 "class": "error"
             }
           }
-        }).catch((error: { message: any; }) => {this.message = {"text": error.message,"class": "error"}});
+        });
     }
 
     forgotForm(): void {

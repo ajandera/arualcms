@@ -1,22 +1,57 @@
 <template>
-  <v-row justify="center" align="center">
-
-  </v-row>
+  <v-data-table
+    :headers="headers"
+    :items="files"
+    :items-per-page="50"
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-toolbar
+        flat
+      >
+        <v-toolbar-title>Files</v-toolbar-title>
+        <v-divider
+          class="mx-4"
+          inset
+          vertical
+        ></v-divider>
+        <v-spacer></v-spacer>
+      </v-toolbar>
+    </template>
+    <template v-slot:item.src="{ item }">
+      <div class="p-5">
+        <v-img :src="item.src" :alt="item.name" height="auto" width="200px"></v-img>
+      </div>
+    </template>
+    <template v-slot:no-data>
+    </template>
+  </v-data-table>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
 import IResponseFiles from '~/model/IResponseFiles';
 import Message from "~/model/Message";
+import IHeader from "~/model/IHeader";
 
 @Component
 export default class FilesPage extends Vue {
-    files!: File[];
+    files: File[] = [];
     file!: File;
-    modalTitle: string =  "";
     message: Message = {class: "", text: ""};
     $axios: any;
     $refs: any;
+    headers: IHeader[] = [
+      {
+        text: "Image",
+        align: 'start',
+        sortable: true,
+        value: 'src',
+      },
+      {text: "Name", value: 'name', sortable: true},
+      {text: "Gallery", value: 'gallery', sortable: true},
+      {text: "Actions", value: 'actions', sortable: false}
+    ];
 
     mounted() {
         this.load();

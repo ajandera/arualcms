@@ -83,7 +83,7 @@ export default class DefaultLayout extends Vue {
         {
           icon: 'mdi-apps',
           title: 'Posts',
-          to: '/'
+          to: '/posts'
         },
         {
           icon: 'mdi-card-text',

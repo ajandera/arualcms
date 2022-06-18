@@ -36,8 +36,6 @@ class AuthController
                     "username" => $user['username']
                 ]
             ];
-            $data["id"] = $user['id'];
-            $data["username"] = $user['username'];
             $data['jwt'] = JWT::encode($token, Config::get("KEY", "fsdfsdfsdSDF34"));
             $data['success'] = true;
         } else {

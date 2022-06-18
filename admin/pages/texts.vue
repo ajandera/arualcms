@@ -1,7 +1,25 @@
 <template>
-  <v-row justify="center" align="center">
-
-  </v-row>
+  <div>
+    <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
+    <div class="col-sm-1 col-xs-12">
+      <button v-if="index === Object.keys(texts).length - 1" v-on:click="add" class="btn btn-warning"><font-awesome-icon icon="plus" /></button>
+    </div>
+    <div class="col-sm-3 col-xs-6">
+      <input type="text" v-model="item.key" class="form-control" v-on:change="save(item)">
+    </div>
+    <div class="col-sm-7 col-xs-6">
+      <textarea v-model="item.value[language]" class="form-control" v-on:change="save(item)"></textarea>
+    </div>
+    <div class="col-sm-1 col-xs-12">
+      <div class="float-right">
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button v-on:click="openEditor(item)" class="btn btn-success"><font-awesome-icon icon="edit" /></button>
+          <button v-on:click="remove(item)" class="btn btn-danger"><font-awesome-icon icon="times" /></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -12,8 +30,9 @@ import IResponseTexts from "~/model/IResponseTexts";
 
 @Component
 export default class TextsPage extends Vue {
-    @Prop() readonly languages!: string[];
-    texts!: Text[];
+  @Prop() readonly languages!: string[];
+    @Prop() readonly language!: string;
+    texts: Text[] = [];
     text?: Text;
     editorOption: any = {};
     modalTitle: string = "";

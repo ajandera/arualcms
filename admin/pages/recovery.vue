@@ -58,7 +58,7 @@ export default class RecoveryPage extends Vue {
 
     recoveryPw() {
       const username = this.$route.params.username;
-      this.$axios.post("recovery", {username: username, password: this.password})
+      this.$axios.post("recovery", {username: username, password: this.password}, {headers: {'Content-Type': "application/json;charset=utf-8"}})
           .then((response: IResponseUsers) => {
             if (response.data.success) {
               this.message.text = response.data.message;

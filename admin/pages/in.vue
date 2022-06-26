@@ -79,7 +79,7 @@ export default class InPage extends Vue {
     message: Message = {text: "", class: ""}
     forgot: boolean = false
     forgotMail: string = ""
-    user: User = {username: "", password: ""}
+    user: User = {username: "", password: "", _id: {$oid: ''}}
     $axios: any;
     $router: any;
 
@@ -129,7 +129,7 @@ export default class InPage extends Vue {
     }
 }
 </script>
-<style>
+<style scoped>
 .v-application--wrap {
   background: url("/arualbg.jpg") center center !important;
 }

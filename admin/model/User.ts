@@ -1,4 +1,7 @@
 export default interface User {
   username: string,
-  password: string
+  password: string,
+  _id: {
+    $oid: string
+  }
 }

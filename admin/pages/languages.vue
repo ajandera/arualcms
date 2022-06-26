@@ -20,16 +20,38 @@
           v-model="dialog"
           max-width="1000px"
         >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              dark
+              class="mb-2"
+              v-bind="attrs"
+              v-on="on"
+            >
+              Add
+            </v-btn>
+          </template>
           <v-card>
             <v-card-title>
               <span class="text-h5">{{ title }}</span>
             </v-card-title>
             <v-card-text>
               <v-container>
-
+                <v-text-field
+                  v-model="langObject.key"
+                  :counter="5"
+                  label="Code"
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="langObject.value"
+                  :counter="30"
+                  label="Name"
+                  required
+                ></v-text-field>
+                <v-checkbox v-model="langObject.default" label="Default" />
               </v-container>
             </v-card-text>
-
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
@@ -50,7 +72,23 @@
         class="mr-2"
         @click="edit(item)"
       >
-        mdi-user
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        small
+        class="mr-2"
+        @click="remove(item)"
+      >
+        mdi-delete
+      </v-icon>
+    </template>
+    <template v-slot:item.default="{ item }">
+      <v-icon
+        small
+        class="mr-2"
+        v-if="item.default === true"
+      >
+        mdi-check
       </v-icon>
     </template>
     <template v-slot:no-data>
@@ -67,7 +105,14 @@ import IHeader from "~/model/IHeader";
 
 @Component
 export default class LanguagesPage extends Vue {
-    langObject?: Language;
+    langObject: Language = {
+      key: "",
+      value: "",
+      default: false,
+      _id: {
+        $oid: "",
+      }
+    };
     title: string = 'Create language'
     $axios: any;
     message: Message = {class: "", text: ""};
@@ -92,16 +137,19 @@ export default class LanguagesPage extends Vue {
     create(): void {
       this.title = "New Language";
       this.langObject = {
-        _id: "",
+        _id: {
+          $oid: ""
+        },
         key: "",
         value: "",
         default: false
       };
+      this.dialog = true;
     }
 
     save(language: Language) {
-      if (language._id !== '') {
-        this.$axios.put("/languages", language)
+      if (language._id.$oid !== '') {
+        this.$axios.put("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
             .then((response: IResponseLanguage) => {
               if (response.data.success) {
                 this.message.text = response.data.message;
@@ -114,7 +162,7 @@ export default class LanguagesPage extends Vue {
               }
             });
       } else {
-        this.$axios.post("/languages", language)
+        this.$axios.post("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
             .then((response: IResponseLanguage) => {
               if (response.data.success) {
                 this.message.text = response.data.message;
@@ -128,6 +176,7 @@ export default class LanguagesPage extends Vue {
     }
 
     load() {
+      this.dialog = false;
       this.$axios.get("/languages")
           .then((response: IResponseLanguage) => {
             if (response.data.success) {
@@ -142,10 +191,11 @@ export default class LanguagesPage extends Vue {
     edit(langObject: Language) {
       this.title = langObject.value;
       this.langObject = langObject;
+      this.dialog = true;
     }
 
-    remove(id: string) {
-      this.$axios.delete("/languages/" + id)
+    remove(language: Language) {
+      this.$axios.delete("/languages/" + language._id.$oid, {headers: {'Content-Type': "application/json;charset=utf-8"}})
           .then((response: IResponseLanguage) => {
             if (response.data.success) {
               this.message.text = response.data.message;
@@ -159,7 +209,7 @@ export default class LanguagesPage extends Vue {
     }
 
     close() {
-
+      this.dialog = false;
     }
 }
 </script>

@@ -37,6 +37,33 @@
       </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer />
+      <v-menu
+        bottom
+        origin="center center"
+        transition="scale-transition"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="secondary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            {{ language }}
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            v-for="(item, i) in languages"
+            :key="i"
+            @click="onLangChange(item)"
+          >
+            <v-list-item-title>{{ item }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <v-btn
         icon
         @click="logout"
@@ -46,7 +73,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <Nuxt />
+        <NuxtChild :language="language" />
       </v-container>
     </v-main>
     <v-footer
@@ -116,6 +143,7 @@ export default class DefaultLayout extends Vue {
     title: string = 'arualCMS'
     $axios: any
     $router: any;
+    $i18n: any;
 
     mounted() {
         this.getDefaultLanguage();
@@ -134,7 +162,7 @@ export default class DefaultLayout extends Vue {
         });
     }
 
-    setLanguage(lang: string): void {
+    onLangChange(lang: string): void {
       this.language = lang;
     }
 }

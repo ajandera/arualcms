@@ -50,7 +50,7 @@ export default class SettingsPage extends Vue {
   }
 
   save(setting: Setting) {
-    this.$axios.put("setting", setting)
+    this.$axios.put("setting", setting, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseSetting) => {
         if (response.data.success) {
           this.message.text = response.data.message;

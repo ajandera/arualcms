@@ -20,18 +20,48 @@
           v-model="dialog"
           max-width="1000px"
         >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              dark
+              class="mb-2"
+              v-bind="attrs"
+              v-on="on"
+            >
+              Add
+            </v-btn>
+          </template>
           <v-card>
             <v-card-title>
               <span class="text-h5">{{ title }}</span>
             </v-card-title>
             <v-card-text>
               <v-container>
-
+                <v-text-field
+                  v-model="user.username"
+                  :counter="30"
+                  label="Username"
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="user.password"
+                  :counter="20"
+                  type="password"
+                  label="Password"
+                  required
+                ></v-text-field>
               </v-container>
             </v-card-text>
 
             <v-card-actions>
               <v-spacer></v-spacer>
+              <v-btn
+                color="primary"
+                dark
+                @click="save"
+              >
+                Save
+              </v-btn>
               <v-btn
                 color="blue darken-1"
                 text
@@ -50,7 +80,14 @@
         class="mr-2"
         @click="edit(item)"
       >
-        mdi-user
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        small
+        class="mr-2"
+        @click="remove(item)"
+      >
+        mdi-delete
       </v-icon>
     </template>
     <template v-slot:no-data>
@@ -74,7 +111,10 @@ export default class UsersPage extends Vue {
   dialog: boolean = false;
   user: User = {
     username: "",
-    password: ""
+    password: "",
+    _id: {
+      $oid: ""
+    }
   };
   headers: IHeader[] = [
     {
@@ -95,10 +135,11 @@ export default class UsersPage extends Vue {
     this.user = user;
     this.title = this.user.username;
     this.isEdit = true;
+    this.dialog = true;
   }
 
-  remove(id: string) {
-    this.$axios.delete("/users/" + id)
+  remove(user: User) {
+    this.$axios.delete("/users/" + user._id.$oid, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseUsers) => {
         if (response.data.success) {
           this.message = {
@@ -119,13 +160,16 @@ export default class UsersPage extends Vue {
     this.isEdit = false;
     this.user = {
       username: "",
-      password: ""
+      password: "",
+      _id: {
+        $oid: ""
+      }
     };
   }
 
   save() {
     if (this.isEdit) {
-      this.$axios.put("/users", this.user)
+      this.$axios.put("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
             this.message = {
@@ -141,7 +185,7 @@ export default class UsersPage extends Vue {
           this.load();
         });
     } else {
-      this.$axios.post("/users", this.user)
+      this.$axios.post("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
             this.message = {
@@ -163,6 +207,7 @@ export default class UsersPage extends Vue {
     this.users = [];
     this.$axios.get("/users")
       .then((response: IResponseUsers) => {
+        this.dialog = false;
         if (response.data.success === true) {
           this.users = response.data.users;
         } else {
@@ -175,7 +220,7 @@ export default class UsersPage extends Vue {
   }
 
   close() {
-
+    this.dialog = false;
   }
 }
 </script>

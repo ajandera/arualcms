@@ -86,7 +86,34 @@
         <v-img :src="$config.hostname + '/storage/' + item.file" :alt="item.title[language]" height="auto" width="200px"></v-img>
       </div>
     </template>
-    </v-data-table>
+    <template v-slot:item.title="{ item }">
+      <p>{{ item.title[language] }}</p>
+    </template>
+    <template v-slot:item.excerpt="{ item }">
+      <p>{{ item.excerpt[language] }}</p>
+    </template>
+    <template v-slot:item.published="{ item }">
+      <p>{{ item.published.toLocaleDateString() }}</p>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <v-icon
+        small
+        class="mr-2"
+        @click="edit(item)"
+      >
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        small
+        class="mr-2"
+        @click="remove(item)"
+      >
+        mdi-delete
+      </v-icon>
+    </template>
+    <template v-slot:no-data>
+    </template>
+  </v-data-table>
 </template>
 
 <script lang="ts">
@@ -299,7 +326,7 @@ export default class PostsPage extends Vue {
     }
 
     close() {
-
+      this.dialog = false;
     }
 
     get editor() {

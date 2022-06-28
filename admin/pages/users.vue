@@ -56,18 +56,18 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
-                color="primary"
-                dark
-                @click="save"
-              >
-                Save
-              </v-btn>
-              <v-btn
                 color="blue darken-1"
                 text
                 @click="close"
               >
                 Close
+              </v-btn>
+              <v-btn
+                color="primary"
+                dark
+                @click="save"
+              >
+                Save
               </v-btn>
             </v-card-actions>
           </v-card>

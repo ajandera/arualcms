@@ -76,18 +76,18 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                  color="primary"
-                  dark
-                  @click="save(item)"
-                >
-                  Save
-                </v-btn>
-                <v-btn
                   color="blue darken-1"
                   text
                   @click="close(item.key)"
                 >
                   Close
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  dark
+                  @click="save(item)"
+                >
+                  Save
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -140,6 +140,7 @@ export default class TextsPage extends Vue {
                 this.message.text = response.data.error;
                 this.message.class = 'danger';
               }
+              this.close(text.key);
             });
       } else {
         this.$axios.post("text", text)
@@ -152,6 +153,7 @@ export default class TextsPage extends Vue {
                 this.message.text = response.data.error;
                 this.message.class = 'danger';
               }
+              this.close(text.key);
             });
       }
     }
@@ -161,7 +163,6 @@ export default class TextsPage extends Vue {
           .then((response: IResponseTexts) => {
             if (response.data.success === true) {
               this.texts = response.data.texts;
-              response.data.text.forEach((item: Text) => this.dialog[item.key] = false)
             } else {
               this.message.text = response.data.error;
               this.message.class = 'danger';
@@ -208,6 +209,7 @@ export default class TextsPage extends Vue {
     }
 
     close(key: string) {
+      console.log(this.dialog[key]);
       this.dialog[key] = false;
     }
 }

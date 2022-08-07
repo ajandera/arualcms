@@ -1,27 +1,20 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
-	"log"
-	"math/rand"
-	"net/http"
-	"net/smtp"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"text/template"
-	"time"
-    "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+	"time"
 )
 
 type tokenReqBody struct {
@@ -29,7 +22,12 @@ type tokenReqBody struct {
 }
 
 type Pw struct {
-    Password    string
+	Password string
+}
+
+type Account struct {
+	Username string
+	Password string
 }
 
 var mySigningKey = []byte("DFGDFGhcsadkjhfwe+ě+23123asldxjhsdljfh1234234")
@@ -42,7 +40,12 @@ var (
 	allCharSet     = lowerCharSet + upperCharSet + specialCharSet + numberSet
 )
 
-func isAuthorized(w http.ResponseWriter, r *http.Request, m model.Repository, storeId string) bool {
+func IsValidUUID(uuid string) bool {
+	r := regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
+	return r.MatchString(uuid)
+}
+
+func isAuthorized(w http.ResponseWriter, r *http.Request) bool {
 	if r.Header["Authorization"] != nil {
 		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
 		token, err := jwt.Parse(sendToken, func(token *jwt.Token) (interface{}, error) {
@@ -51,15 +54,6 @@ func isAuthorized(w http.ResponseWriter, r *http.Request, m model.Repository, st
 			}
 			return mySigningKey, nil
 		})
-
-		// check if store belongs to account
-		if IsValidUUID(storeId) {
-			claims := token.Claims.(jwt.MapClaims)
-			if m.IsPermitted(fmt.Sprintf("%v", claims["id"]), storeId) == false {
-				http.Error(w, "Not Permitted", http.StatusForbidden)
-				return false
-			}
-		}
 
 		if err != nil && token != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -73,7 +67,7 @@ func isAuthorized(w http.ResponseWriter, r *http.Request, m model.Repository, st
 	}
 }
 
-func setupCORS(w *http.ResponseWriter, req *http.Request) {
+func setupCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -112,8 +106,8 @@ func GenerateJWT(name string, id string) (map[string]string, error) {
 	}, nil
 }
 
-func refresh(w http.ResponseWriter, r *http.Request, m model.Repository) {
-	setupCORS(&w, r)
+func refresh(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
@@ -144,7 +138,7 @@ func refresh(w http.ResponseWriter, r *http.Request, m model.Repository) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		var account rdbsClientInfo.Accounts = m.GetAccountById(fmt.Sprint(claims["id"]))
+		var account Account = m.Database("test").Collection(fmt.Sprint(claims["id"]))
 		if account.Id != "" {
 
 			newTokenPair, err := GenerateJWT(account.Name, account.Id)
@@ -174,8 +168,8 @@ func refresh(w http.ResponseWriter, r *http.Request, m model.Repository) {
 	}
 }
 
-func auth(w http.ResponseWriter, r *http.Request, m model.Repository) {
-	setupCORS(&w, r)
+func auth(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
@@ -216,180 +210,394 @@ func auth(w http.ResponseWriter, r *http.Request, m model.Repository) {
 	w.Write(payload)
 }
 
+func getPosts(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func createPost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updatePost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getPostDetail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func deletePost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func createSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateSettings(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getTexts(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func createText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func deleteText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getUsers(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func createUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func deleteUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getUserByEmail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getFiles(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func uploadFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func deleteFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getLanguages(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func createLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func updateLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func getLanguageByCode(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func deleteLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func sendEmail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
+func recovery(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+}
+
 func main() {
 
-    client, err := mongo.NewClient(options.Client().ApplyURI("<ATLAS_URI_HERE>"))
-	if err != nil {
-		log.Fatal(err)
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	defer client.Disconnect(ctx)
-
-    err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-	databases, err := client.ListDatabaseNames(ctx, bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(databases)
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
 
 	r := mux.NewRouter()
 	api := r.PathPrefix("/v1").Subrouter()
 
 	// posts
 	api.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
-		posts(w, r, repository)
+		getPosts(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
-		getAccounts(w, r, repository)
+		createPost(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
-		updateAccounts(w, r, repository)
+		updatePost(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
 	api.HandleFunc("/posts/{postId}", func(w http.ResponseWriter, r *http.Request) {
-		deleteAccounts(w, r, repository)
+		getPostDetail(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/posts/{postId}", func(w http.ResponseWriter, r *http.Request) {
-		getAccount(w, r, repository)
+		deletePost(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
-    // setting
+	// setting
 	api.HandleFunc("/setting", func(w http.ResponseWriter, r *http.Request) {
-		getAccountByEmail(w, r, repository)
+		getSetting(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/setting", func(w http.ResponseWriter, r *http.Request) {
-		addOpenData(w, r, repository)
+		createSetting(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/setting", func(w http.ResponseWriter, r *http.Request) {
-		getOpenData(w, r, repository)
+		updateSettings(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
 	api.HandleFunc("/setting/{settingId}", func(w http.ResponseWriter, r *http.Request) {
-		stores(w, r, repository)
+		updateSetting(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-    // texts
+	// texts
 	api.HandleFunc("/text", func(w http.ResponseWriter, r *http.Request) {
-		getStores(w, r, repository)
+		getTexts(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/text", func(w http.ResponseWriter, r *http.Request) {
-		updateStores(w, r, repository)
+		createText(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/text", func(w http.ResponseWriter, r *http.Request) {
-		deleteStores(w, r, repository)
+		updateText(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
 	api.HandleFunc("/text/{textId}", func(w http.ResponseWriter, r *http.Request) {
-		getPredictedVisitors(w, r, repository, influx)
+		getText(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/text/{textId}", func(w http.ResponseWriter, r *http.Request) {
-		getPredictedOrders(w, r, repository, influx)
+		deleteText(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
 	// users
 	api.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		createStoreWeights(w, r, repository)
+		getUsers(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		updateStoreWeights(w, r, repository)
+		createUser(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		getStoreWeights(w, r, repository)
+		updateUser(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
 	api.HandleFunc("/user/{userId}", func(w http.ResponseWriter, r *http.Request) {
-		plans(w, r, repository)
+		getUser(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/user/{userId}", func(w http.ResponseWriter, r *http.Request) {
-		updatePlans(w, r, repository)
+		deleteUser(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
 	api.HandleFunc("/user/{username}", func(w http.ResponseWriter, r *http.Request) {
-		getPlans(w, r, repository)
+		getUserByEmail(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-    // files
+	// files
 	api.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+		getFiles(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-    api.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
+		updateFile(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
-    api.HandleFunc("/files/upload", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/files/upload", func(w http.ResponseWriter, r *http.Request) {
+		uploadFile(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-    api.HandleFunc("/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
+		getFile(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	api.HandleFunc("/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+		deleteFile(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
-
-    // languages
+	// languages
 	api.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+		getLanguages(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-    api.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
+		createLanguage(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-    api.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
+		updateLanguage(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
-    api.HandleFunc("/languages/{code}", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/languages/{code}", func(w http.ResponseWriter, r *http.Request) {
+		getLanguageByCode(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-    api.HandleFunc("/languages/{languageId}", func(w http.ResponseWriter, r *http.Request) {
-		deletePlans(w, r, repository)
+	api.HandleFunc("/languages/{languageId}", func(w http.ResponseWriter, r *http.Request) {
+		deleteLanguage(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
-
 
 	// auth
 	api.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
-		auth(w, r, repository)
+		auth(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-    // password recovery
 	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {
-		refresh(w, r, repository)
+		refresh(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
+	// password recovery
 	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {
-		healthCheck(w, r, repository)
-	}).Methods(http.MethodPost, http.MethodOptions)
+		recovery(w, r, client)
+	}).Methods(http.MethodPut, http.MethodOptions)
 
 	// mail
 	api.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
-		getOrders(w, r, repository)
+		sendEmail(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	log.Fatal(http.ListenAndServe(":8888", r))
 }
-

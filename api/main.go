@@ -1,21 +1,25 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
+	model "main/model"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 )
+
+type ClientData struct {
+	db *gorm.DB
+}
 
 type tokenReqBody struct {
 	RefreshToken string `json:"refresh_token"`
@@ -30,15 +34,35 @@ type Account struct {
 	Password string
 }
 
-var mySigningKey = []byte("DFGDFGhcsadkjhfwe+ě+23123asldxjhsdljfh1234234")
-
 var (
 	lowerCharSet   = "abcdedfghijklmnopqrst"
 	upperCharSet   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	specialCharSet = "!@#$%&*"
 	numberSet      = "0123456789"
 	allCharSet     = lowerCharSet + upperCharSet + specialCharSet + numberSet
+	mySigningKey   = []byte("DFGDFGhcsadkjhfwe+ě+23123asldxjhsdljfh1234234")
 )
+
+func NewConnect(dsn string) ClientData {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	errExt := db.Raw("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error
+	if errExt != nil {
+		panic(errExt)
+	}
+	// Migrate the schema
+	db.AutoMigrate(
+		&model.Post{},
+		&model.User{},
+		&model.Text{},
+		&model.Language{},
+		&model.Setting{},
+		&model.File{})
+	return ClientData{db}
+}
 
 func IsValidUUID(uuid string) bool {
 	r := regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
@@ -106,7 +130,7 @@ func GenerateJWT(name string, id string) (map[string]string, error) {
 	}, nil
 }
 
-func refresh(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func refresh(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
@@ -138,18 +162,19 @@ func refresh(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		var account Account = m.Database("test").Collection(fmt.Sprint(claims["id"]))
-		if account.Id != "" {
+		var user model.User
+		c.db.First(&model.User{}, "id = ?", fmt.Sprint(claims["id"])).Scan(user)
+		if user.Id != "" {
 
-			newTokenPair, err := GenerateJWT(account.Name, account.Id)
+			newTokenPair, err := GenerateJWT(user.Name, user.Id)
 			if err != nil {
 				return
 			}
 
 			response := simplejson.New()
-			if IsValidUUID(account.Id) == true && err == nil {
+			if IsValidUUID(user.Id) == true && err == nil {
 				response.Set("success", true)
-				response.Set("account", account)
+				response.Set("account", user)
 				response.Set("jwt", newTokenPair)
 			} else {
 				response.Set("success", false)
@@ -168,7 +193,7 @@ func refresh(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
 	}
 }
 
-func auth(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func auth(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
@@ -188,7 +213,8 @@ func auth(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
 
 	response := simplejson.New()
 
-	account := m.Auth(a.Email, a.Password)
+	var account model.User
+	c.db.First(&model.User{}, "username = ? AND password = ?", a.Username, a.Password).Scan(account)
 	token, err := GenerateJWT(account.Name, account.Id)
 	if IsValidUUID(account.Id) == true && err == nil {
 		response.Set("success", true)
@@ -210,246 +236,432 @@ func auth(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
 	w.Write(payload)
 }
 
-func getPosts(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getPosts(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+		response := simplejson.New()
+
+		var posts []model.Post
+		c.db.First(&model.Post{}).Scan(posts)
+		response.Set("success", true)
+		response.Set("posts", posts)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
 }
 
-func createPost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func createPost(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updatePost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getPostDetail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getPostDetail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+		response := simplejson.New()
+
+		vars := mux.Vars(r)
+		postId := vars["postId"]
+
+		var post model.Post
+		c.db.First(&model.Post{}, "id = ?", postId).Scan(post)
+		response.Set("success", true)
+		response.Set("post", post)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
 }
 
-func deletePost(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func deletePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+		response := simplejson.New()
+
+		var settings []model.Setting
+		c.db.First(&model.Setting{}).Scan(settings)
+		response.Set("success", true)
+		response.Set("settings", settings)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
 }
 
-func createSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func createSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateSettings(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updateSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateSetting(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getTexts(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+		response := simplejson.New()
+
+		var texts []model.Text
+		c.db.First(&model.Text{}).Scan(texts)
+		response.Set("success", true)
+		response.Set("texts", texts)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
 }
 
-func getTexts(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func createText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updateText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+		response := simplejson.New()
+
+		vars := mux.Vars(r)
+		key := vars["key"]
+
+		var posts []model.Text
+		c.db.First(&model.Text{}, "key = ?", key).Scan(posts)
+		response.Set("success", true)
+		response.Set("posts", posts)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
 }
 
-func getText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func deleteText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func deleteText(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getUsers(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getUsers(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func createUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updateUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func deleteUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func deleteUser(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getUserByEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getUserByEmail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getFiles(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getFiles(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func uploadFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func deleteFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func deleteFile(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getLanguages(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getLanguages(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func createLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func createLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func updateLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func updateLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func getLanguageByCode(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func getLanguageByCode(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func deleteLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func deleteLanguage(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func sendEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
+
+	if isAuthorized(w, r) == true {
+
+	}
 }
 
-func sendEmail(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
+func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
 		return
 	}
-}
 
-func recovery(w http.ResponseWriter, r *http.Request, m *mongo.Client) {
-	setupCORS(&w)
-	if (*r).Method == "OPTIONS" {
-		return
+	if isAuthorized(w, r) == true {
+
 	}
 }
 
 func main() {
 
-	uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
+	dsn := "host=" + os.Getenv("HOST") + " user=" + os.Getenv("USER") + " password=" + os.Getenv("PASSWORD") + " dbname=" + os.Getenv("DATABASE") + " port=" + os.Getenv("PORT") + " sslmode=disable"
+	client := NewConnect(dsn)
 
 	r := mux.NewRouter()
 	api := r.PathPrefix("/v1").Subrouter()
@@ -484,10 +696,6 @@ func main() {
 		createSetting(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-	api.HandleFunc("/setting", func(w http.ResponseWriter, r *http.Request) {
-		updateSettings(w, r, client)
-	}).Methods(http.MethodPut, http.MethodOptions)
-
 	api.HandleFunc("/setting/{settingId}", func(w http.ResponseWriter, r *http.Request) {
 		updateSetting(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
@@ -505,7 +713,7 @@ func main() {
 		updateText(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
-	api.HandleFunc("/text/{textId}", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/text/{key}", func(w http.ResponseWriter, r *http.Request) {
 		getText(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 

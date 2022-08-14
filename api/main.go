@@ -1,16 +1,23 @@
 package main
 
 import (
+	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"html/template"
+	"io"
 	"log"
 	model "main/model"
+	"math/rand"
 	"net/http"
+	"net/smtp"
 	"os"
 	"regexp"
 	"strings"
@@ -25,13 +32,20 @@ type tokenReqBody struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type Pw struct {
-	Password string
-}
-
 type Account struct {
 	Username string
 	Password string
+}
+
+type Reset struct {
+	Token    string
+	Password string
+}
+
+type Email struct {
+	Email      string
+	Subject    string
+	HtmlString string
 }
 
 var (
@@ -42,6 +56,16 @@ var (
 	allCharSet     = lowerCharSet + upperCharSet + specialCharSet + numberSet
 	mySigningKey   = []byte("DFGDFGhcsadkjhfwe+ě+23123asldxjhsdljfh1234234")
 )
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
 
 func NewConnect(dsn string) ClientData {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -214,13 +238,20 @@ func auth(w http.ResponseWriter, r *http.Request, c ClientData) {
 	response := simplejson.New()
 
 	var account model.User
-	c.db.First(&model.User{}, "username = ? AND password = ?", a.Username, a.Password).Scan(account)
-	token, err := GenerateJWT(account.Name, account.Id)
-	if IsValidUUID(account.Id) == true && err == nil {
-		response.Set("success", true)
-		response.Set("account", account)
-		response.Set("jwt", token)
-		w.WriteHeader(http.StatusOK)
+	c.db.First(&model.User{}, "username = ?", a.Username, a.Password).Scan(account)
+	pw := CheckPasswordHash(a.Password, account.Password)
+	if pw == true {
+		token, err := GenerateJWT(account.Name, account.Id)
+		if IsValidUUID(account.Id) == true && err == nil {
+			response.Set("success", true)
+			response.Set("account", account)
+			response.Set("jwt", token)
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			response.Set("success", false)
+			response.Set("error", "Email and password not match.")
+		}
 	} else {
 		w.WriteHeader(http.StatusForbidden)
 		response.Set("success", false)
@@ -269,7 +300,40 @@ func createPost(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Post struct.
+		var post model.Post
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&post)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Create(&model.Post{
+			Body:        post.Body,
+			Title:       post.Title,
+			Excerpt:     post.Excerpt,
+			Published:   post.Published,
+			MetaTitle:   post.MetaTitle,
+			Keywords:    post.Keywords,
+			Description: post.Description,
+		})
+		response.Set("success", true)
+		response.Set("post", post.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -281,6 +345,38 @@ func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	if isAuthorized(w, r) == true {
 
+		// Declare a new Post struct.
+		var post model.Post
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&post)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+		c.db.Model(model.Post{}).Where("id = ?", post.Id).Updates(model.Post{
+			Body:        post.Body,
+			Title:       post.Title,
+			Excerpt:     post.Excerpt,
+			Published:   post.Published,
+			MetaTitle:   post.MetaTitle,
+			Keywords:    post.Keywords,
+			Description: post.Description})
+		response.Set("success", true)
+		response.Set("post", post.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -320,7 +416,21 @@ func deletePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		var p model.Post
+		vars := mux.Vars(r)
+		id := vars["postId"]
+		c.db.Model(&model.Post{}).Where("id = ?", id).Delete(&p)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
 
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -357,7 +467,35 @@ func createSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Setting struct.
+		var setting model.Setting
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&setting)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Create(&model.Setting{
+			Key:   setting.Key,
+			Value: setting.Value,
+		})
+		response.Set("success", true)
+		response.Set("post", setting.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -368,7 +506,33 @@ func updateSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Setting struct.
+		var setting model.Setting
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&setting)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+		c.db.Model(model.Setting{}).Where("id = ?", setting.Id).Updates(model.Setting{
+			Key:   setting.Key,
+			Value: setting.Value})
+		response.Set("success", true)
+		response.Set("setting", setting.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -405,7 +569,35 @@ func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Text struct.
+		var text model.Text
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&text)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Create(&model.Text{
+			Key:   text.Key,
+			Value: text.Key,
+		})
+		response.Set("success", true)
+		response.Set("post", text.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -416,7 +608,34 @@ func updateText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Text struct.
+		var text model.Text
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&text)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Model(model.Text{}).Where("id = ?", text.Id).Updates(model.Text{
+			Key:   text.Key,
+			Value: text.Key})
+		response.Set("success", true)
+		response.Set("post", text.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -456,7 +675,21 @@ func deleteText(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		var t model.Text
+		vars := mux.Vars(r)
+		id := vars["textId"]
+		c.db.Model(&model.Text{}).Where("id = ?", id).Delete(&t)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
 
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -467,7 +700,22 @@ func getUsers(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		response := simplejson.New()
 
+		var users []model.User
+		c.db.First(&model.User{}).Scan(users)
+		response.Set("success", true)
+		response.Set("users", users)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -478,7 +726,40 @@ func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new User struct.
+		var user model.User
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		pw, hashErr := HashPassword(user.Password)
+		if hashErr != nil {
+			log.Fatalf(hashErr.Error())
+		}
+		c.db.Create(&model.User{
+			Name:     user.Name,
+			Username: user.Username,
+			Password: pw,
+		})
+		response.Set("success", true)
+		response.Set("post", user.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -489,7 +770,34 @@ func updateUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new User struct.
+		var user model.User
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Model(model.User{}).Where("id = ?", user.Id).Updates(model.User{
+			Name:     user.Name,
+			Username: user.Username})
+		response.Set("success", true)
+		response.Set("post", user.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -500,7 +808,25 @@ func getUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		vars := mux.Vars(r)
+		userId := vars["userId"]
 
+		response := simplejson.New()
+
+		var user model.User
+		c.db.First(&model.User{}, "id = ?", userId).Scan(user)
+		response.Set("success", true)
+		response.Set("user", user)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -511,7 +837,21 @@ func deleteUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		var u model.User
+		vars := mux.Vars(r)
+		id := vars["userId"]
+		c.db.Model(&model.User{}).Where("id = ?", id).Delete(&u)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
 
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -522,7 +862,25 @@ func getUserByEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		vars := mux.Vars(r)
+		username := vars["username"]
 
+		response := simplejson.New()
+
+		var user model.User
+		c.db.First(&model.User{}, "username = ?", username).Scan(user)
+		response.Set("success", true)
+		response.Set("user", user)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -534,6 +892,22 @@ func getFiles(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	if isAuthorized(w, r) == true {
 
+		response := simplejson.New()
+
+		var files []model.File
+		c.db.First(&model.File{}).Scan(files)
+		response.Set("success", true)
+		response.Set("files", files)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -544,7 +918,33 @@ func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new User struct.
+		var file model.File
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&file)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Model(model.File{}).Where("id = ?", file.Id).Updates(model.File{
+			Gallery: file.Gallery})
+		response.Set("success", true)
+		response.Set("post", file.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -555,7 +955,49 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		file, handle, err := r.FormFile("file")
+		if err != nil {
+			log.Printf("From file: " + err.Error())
+		}
 
+		defer file.Close()
+
+		// Create file
+		dst, err := os.Create("files/" + handle.Filename)
+		defer dst.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Copy the uploaded file to the created file on the filesystem
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var f model.File
+
+		c.db.Create(&model.File{
+			Name:    handle.Filename,
+			Src:     "/files/" + handle.Filename,
+			Gallery: "",
+		}).Scan(f)
+
+		// prepare data to response
+		response := simplejson.New()
+		response.Set("success", true)
+		response.Set("file", f.Id)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Printf(err.Error())
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(payload)
 	}
 }
 
@@ -566,7 +1008,25 @@ func getFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		vars := mux.Vars(r)
+		fileId := vars["fileId"]
 
+		response := simplejson.New()
+
+		var file model.File
+		c.db.First(&model.File{}, "id = ?", fileId).Scan(file)
+		response.Set("success", true)
+		response.Set("file", file)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -577,7 +1037,21 @@ func deleteFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		var f model.File
+		vars := mux.Vars(r)
+		id := vars["fileId"]
+		c.db.Model(&model.File{}).Where("id = ?", id).Delete(&f)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
 
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -588,7 +1062,22 @@ func getLanguages(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		response := simplejson.New()
 
+		var languages []model.Language
+		c.db.First(&model.Language{}).Scan(languages)
+		response.Set("success", true)
+		response.Set("languages", languages)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -599,7 +1088,37 @@ func createLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Language struct.
+		var language model.Language
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&language)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Create(&model.Language{
+			Name:    language.Name,
+			Key:     language.Key,
+			Default: language.Default,
+		})
+
+		response.Set("success", true)
+		response.Set("post", language.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -610,7 +1129,36 @@ func updateLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Language struct.
+		var language model.Language
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&language)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Model(model.Language{}).Where("id = ?", language.Id).Updates(model.Language{
+			Name:    language.Name,
+			Key:     language.Key,
+			Default: language.Default})
+
+		response.Set("success", true)
+		response.Set("post", language.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -621,7 +1169,25 @@ func getLanguageByCode(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		vars := mux.Vars(r)
+		code := vars["code"]
 
+		response := simplejson.New()
+
+		var language model.Language
+		c.db.First(&model.Language{}, "code = ?", code).Scan(language)
+		response.Set("success", true)
+		response.Set("language", language)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -632,7 +1198,21 @@ func deleteLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		var l model.Language
+		vars := mux.Vars(r)
+		id := vars["languageId"]
+		c.db.Model(&model.Language{}).Where("id = ?", id).Delete(&l)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
 
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
 }
 
@@ -643,8 +1223,112 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	if isAuthorized(w, r) == true {
+		// Declare a new Email struct.
+		var mail Email
 
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&mail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.HtmlString, c)
+
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
 	}
+}
+
+func forgot(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	rand.Seed(time.Now().Unix())
+	minSpecialChar := 1
+	minNum := 1
+	minUpperCase := 1
+	passwordLength := 8
+	token := generatePassword(passwordLength, minSpecialChar, minNum, minUpperCase)
+
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	var user model.User
+	c.db.First(&model.User{}, "username = ?", username).Scan(user)
+
+	t := time.Now().Add(time.Hour * 24)
+	c.db.Model(model.User{}).Where("username = ?", username).Updates(model.User{
+		ForgotToken: token,
+		ValidToken:  t})
+
+	sendEmailWithTemplate(username, "Recover your password", "forgot", token, c)
+
+	response := simplejson.New()
+	response.Set("success", true)
+
+	payload, err := response.MarshalJSON()
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(payload)
+
+}
+
+func generatePassword(passwordLength, minSpecialChar, minNum, minUpperCase int) string {
+	var password strings.Builder
+
+	//Set special character
+	for i := 0; i < minSpecialChar; i++ {
+		random := rand.Intn(len(specialCharSet))
+		password.WriteString(string(specialCharSet[random]))
+	}
+
+	//Set numeric
+	for i := 0; i < minNum; i++ {
+		random := rand.Intn(len(numberSet))
+		password.WriteString(string(numberSet[random]))
+	}
+
+	//Set uppercase
+	for i := 0; i < minUpperCase; i++ {
+		random := rand.Intn(len(upperCharSet))
+		password.WriteString(string(upperCharSet[random]))
+	}
+
+	remainingLength := passwordLength - minSpecialChar - minNum - minUpperCase
+	for i := 0; i < remainingLength; i++ {
+		random := rand.Intn(len(allCharSet))
+		password.WriteString(string(allCharSet[random]))
+	}
+	inRune := []rune(password.String())
+	rand.Shuffle(len(inRune), func(i, j int) {
+		inRune[i], inRune[j] = inRune[j], inRune[i]
+	})
+	return string(inRune)
 }
 
 func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
@@ -653,8 +1337,256 @@ func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
 		return
 	}
 
-	if isAuthorized(w, r) == true {
+	// Declare a new Reset struct.
+	var reset Reset
 
+	// Try to decode the request body into the struct. If there is an error,
+	// respond to the client with the error message and a 400 status code.
+	err := json.NewDecoder(r.Body).Decode(&reset)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatalf(err.Error())
+		return
+	}
+
+	var a model.User
+	c.db.Model(&model.User{}).Where("forgot_token = ?", reset.Token).First(&a)
+
+	t1 := time.Now()
+	t2 := a.ValidToken
+	hourDiff := t2.Sub(t1).Hours()
+
+	if hourDiff < 24 {
+		a.ForgotToken = ""
+		if len(reset.Password) > 6 {
+			hash, _ := HashPassword(reset.Password)
+			a.Password = hash
+		}
+	}
+	c.db.Save(&a)
+
+	response := simplejson.New()
+	response.Set("success", true)
+
+	payload, err := response.MarshalJSON()
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(payload)
+}
+
+func sendEmailWithTemplate(email string, subject string, templateName string, token string, c ClientData) {
+	var settings []model.Setting
+	c.db.First(&model.Setting{}).Scan(settings)
+	var smtpHost string
+	var smtpPort string
+	var from string
+	var password string
+
+	for _, v := range settings {
+		if v.Key == "smtpHost" {
+			smtpHost = v.Value
+		}
+
+		if v.Key == "smtpPort" {
+			smtpPort = v.Value
+		}
+
+		if v.Key == "smtpUser" {
+			from = v.Value
+		}
+
+		if v.Key == "smtpPassword" {
+			password = v.Value
+		}
+	}
+
+	// prepare template
+	t, _ := template.ParseFiles("templates/" + templateName + ".html")
+	var body bytes.Buffer
+
+	// Setup headers
+	headers := make(map[string]string)
+	headers["From"] = from
+	headers["To"] = email
+	headers["Subject"] = subject
+
+	for k, v := range headers {
+		body.Write([]byte(fmt.Sprintf("%s: %s\r\n", k, v)))
+	}
+
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: "+subject+" \n%s\n\n", mimeHeaders)))
+
+	err := t.Execute(&body, struct {
+		Email string
+		Link  string
+	}{
+		Email: email,
+		Link:  "/restore?token=" + token,
+	})
+
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	} else {
+		// TLS config
+		tlsconfig := &tls.Config{
+			InsecureSkipVerify: true,
+			ServerName:         smtpHost,
+		}
+
+		// Here is the key, you need to call tls.Dial instead of smtp.Dial
+		// for smtp servers running on 465 that require an ssl connection
+		// from the very beginning (no starttls)
+		servername := smtpHost + ":" + smtpPort
+		conn, err := tls.Dial("tcp", servername, tlsconfig)
+		if err != nil {
+			log.Println(err)
+		}
+
+		c, err := smtp.NewClient(conn, smtpHost)
+		if err != nil {
+			log.Println(err)
+		}
+
+		// Auth
+		auth := smtp.PlainAuth("", from, password, smtpHost)
+		if err = c.Auth(auth); err != nil {
+			log.Println(err)
+		}
+
+		// To && From
+		if err = c.Mail(from); err != nil {
+			log.Println(err)
+		}
+
+		if err = c.Rcpt(email); err != nil {
+			log.Println(err)
+		}
+
+		// Data
+		wr, err := c.Data()
+		if err != nil {
+			log.Println(err)
+		}
+
+		_, err = wr.Write(body.Bytes())
+		if err != nil {
+			log.Println(err)
+		}
+
+		err = wr.Close()
+		if err != nil {
+			log.Println(err)
+		}
+		errC := c.Quit()
+		if errC != nil {
+			log.Println(err.Error())
+		}
+	}
+}
+
+func sendEmailWithoutTemplate(email string, subject string, htmlString string, c ClientData) {
+	var settings []model.Setting
+	c.db.First(&model.Setting{}).Scan(settings)
+	var smtpHost string
+	var smtpPort string
+	var from string
+	var password string
+
+	for _, v := range settings {
+		if v.Key == "smtpHost" {
+			smtpHost = v.Value
+		}
+
+		if v.Key == "smtpPort" {
+			smtpPort = v.Value
+		}
+
+		if v.Key == "smtpUser" {
+			from = v.Value
+		}
+
+		if v.Key == "smtpPassword" {
+			password = v.Value
+		}
+	}
+
+	var body bytes.Buffer
+
+	// Setup headers
+	headers := make(map[string]string)
+	headers["From"] = from
+	headers["To"] = email
+	headers["Subject"] = subject
+
+	for k, v := range headers {
+		body.Write([]byte(fmt.Sprintf("%s: %s\r\n", k, v)))
+	}
+
+	sub := "Subject: " + subject + "\n"
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	content := "<html><body>" + htmlString + "</body></html>"
+	body.Write([]byte(sub + mimeHeaders + content))
+
+	// TLS config
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         smtpHost,
+	}
+
+	// Here is the key, you need to call tls.Dial instead of smtp.Dial
+	// for smtp servers running on 465 that require an ssl connection
+	// from the very beginning (no starttls)
+	servername := smtpHost + ":" + smtpPort
+	conn, err := tls.Dial("tcp", servername, tlsconfig)
+	if err != nil {
+		log.Println(err)
+	}
+
+	cl, err := smtp.NewClient(conn, smtpHost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Auth
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+	if err = cl.Auth(auth); err != nil {
+		log.Println(err)
+	}
+
+	// To && From
+	if err = cl.Mail(from); err != nil {
+		log.Println(err)
+	}
+
+	if err = cl.Rcpt(email); err != nil {
+		log.Println(err)
+	}
+
+	// Data
+	wr, err := cl.Data()
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = wr.Write(body.Bytes())
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = wr.Close()
+	if err != nil {
+		log.Println(err)
+	}
+	errC := cl.Quit()
+	if errC != nil {
+		log.Println(err.Error())
 	}
 }
 
@@ -793,9 +1725,9 @@ func main() {
 		auth(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {
-		refresh(w, r, client)
-	}).Methods(http.MethodPut, http.MethodOptions)
+	api.HandleFunc("/forgot/{username}", func(w http.ResponseWriter, r *http.Request) {
+		forgot(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
 
 	// password recovery
 	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {

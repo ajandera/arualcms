@@ -6,9 +6,10 @@ import (
 )
 
 type File struct {
-	Id   string `gorm:"primary_key; unique"`
-	Name string
-	Src  string
+	Id      string `gorm:"primary_key; unique"`
+	Name    string
+	Src     string
+	Gallery string
 }
 
 func (file *File) BeforeCreate(db *gorm.DB) error {

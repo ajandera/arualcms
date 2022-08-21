@@ -5,7 +5,7 @@ export default interface Post {
     title: any;
     excerpt: any;
     published: any;
-    _id: string;
+    id: string;
     meta: {
       title: any,
       keywords: any,

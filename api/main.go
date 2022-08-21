@@ -187,7 +187,7 @@ func refresh(w http.ResponseWriter, r *http.Request, c ClientData) {
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
 		var user model.User
-		c.db.First(&model.User{}, "id = ?", fmt.Sprint(claims["id"])).Scan(user)
+		c.db.First(&model.User{}, "id = ?", fmt.Sprint(claims["id"])).Scan(&user)
 		if user.Id != "" {
 
 			newTokenPair, err := GenerateJWT(user.Name, user.Id)
@@ -235,10 +235,11 @@ func auth(w http.ResponseWriter, r *http.Request, c ClientData) {
 		return
 	}
 
+	log.Println(a)
 	response := simplejson.New()
 
 	var account model.User
-	c.db.First(&model.User{}, "username = ?", a.Username, a.Password).Scan(account)
+	c.db.First(&model.User{}, "username = ?", a.Username).Scan(&account)
 	pw := CheckPasswordHash(a.Password, account.Password)
 	if pw == true {
 		token, err := GenerateJWT(account.Name, account.Id)
@@ -277,7 +278,7 @@ func getPosts(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var posts []model.Post
-		c.db.First(&model.Post{}).Scan(posts)
+		c.db.Model(&model.Post{}).Scan(&posts)
 		response.Set("success", true)
 		response.Set("posts", posts)
 
@@ -393,7 +394,7 @@ func getPostDetail(w http.ResponseWriter, r *http.Request, c ClientData) {
 		postId := vars["postId"]
 
 		var post model.Post
-		c.db.First(&model.Post{}, "id = ?", postId).Scan(post)
+		c.db.First(&model.Post{}, "id = ?", postId).Scan(&post)
 		response.Set("success", true)
 		response.Set("post", post)
 
@@ -444,7 +445,7 @@ func getSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var settings []model.Setting
-		c.db.First(&model.Setting{}).Scan(settings)
+		c.db.Model(&model.Setting{}).Scan(&settings)
 		response.Set("success", true)
 		response.Set("settings", settings)
 
@@ -546,7 +547,7 @@ func getTexts(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var texts []model.Text
-		c.db.First(&model.Text{}).Scan(texts)
+		c.db.Model(&model.Text{}).Scan(&texts)
 		response.Set("success", true)
 		response.Set("texts", texts)
 
@@ -651,10 +652,10 @@ func getText(w http.ResponseWriter, r *http.Request, c ClientData) {
 		vars := mux.Vars(r)
 		key := vars["key"]
 
-		var posts []model.Text
-		c.db.First(&model.Text{}, "key = ?", key).Scan(posts)
+		var text model.Text
+		c.db.First(&model.Text{}, "key = ?", key).Scan(&text)
 		response.Set("success", true)
-		response.Set("posts", posts)
+		response.Set("text", text)
 
 		w.WriteHeader(http.StatusOK)
 
@@ -703,7 +704,7 @@ func getUsers(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var users []model.User
-		c.db.First(&model.User{}).Scan(users)
+		c.db.Model(&model.User{}).Scan(&users)
 		response.Set("success", true)
 		response.Set("users", users)
 
@@ -814,7 +815,7 @@ func getUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var user model.User
-		c.db.First(&model.User{}, "id = ?", userId).Scan(user)
+		c.db.First(&model.User{}, "id = ?", userId).Scan(&user)
 		response.Set("success", true)
 		response.Set("user", user)
 
@@ -868,7 +869,7 @@ func getUserByEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var user model.User
-		c.db.First(&model.User{}, "username = ?", username).Scan(user)
+		c.db.First(&model.User{}, "username = ?", username).Scan(&user)
 		response.Set("success", true)
 		response.Set("user", user)
 
@@ -895,7 +896,7 @@ func getFiles(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var files []model.File
-		c.db.First(&model.File{}).Scan(files)
+		c.db.Model(&model.File{}).Scan(&files)
 		response.Set("success", true)
 		response.Set("files", files)
 
@@ -982,7 +983,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name:    handle.Filename,
 			Src:     "/files/" + handle.Filename,
 			Gallery: "",
-		}).Scan(f)
+		}).Scan(&f)
 
 		// prepare data to response
 		response := simplejson.New()
@@ -1014,7 +1015,7 @@ func getFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var file model.File
-		c.db.First(&model.File{}, "id = ?", fileId).Scan(file)
+		c.db.First(&model.File{}, "id = ?", fileId).Scan(&file)
 		response.Set("success", true)
 		response.Set("file", file)
 
@@ -1065,7 +1066,7 @@ func getLanguages(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var languages []model.Language
-		c.db.First(&model.Language{}).Scan(languages)
+		c.db.Model(&model.Language{}).Scan(&languages)
 		response.Set("success", true)
 		response.Set("languages", languages)
 
@@ -1175,7 +1176,7 @@ func getLanguageByCode(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var language model.Language
-		c.db.First(&model.Language{}, "code = ?", code).Scan(language)
+		c.db.First(&model.Language{}, "code = ?", code).Scan(&language)
 		response.Set("success", true)
 		response.Set("language", language)
 
@@ -1274,7 +1275,7 @@ func forgot(w http.ResponseWriter, r *http.Request, c ClientData) {
 	username := vars["username"]
 
 	var user model.User
-	c.db.First(&model.User{}, "username = ?", username).Scan(user)
+	c.db.First(&model.User{}, "username = ?", username).Scan(&user)
 
 	t := time.Now().Add(time.Hour * 24)
 	c.db.Model(model.User{}).Where("username = ?", username).Updates(model.User{
@@ -1381,7 +1382,7 @@ func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 func sendEmailWithTemplate(email string, subject string, templateName string, token string, c ClientData) {
 	var settings []model.Setting
-	c.db.First(&model.Setting{}).Scan(settings)
+	c.db.Model(&model.Setting{}).Scan(&settings)
 	var smtpHost string
 	var smtpPort string
 	var from string
@@ -1493,7 +1494,7 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 
 func sendEmailWithoutTemplate(email string, subject string, htmlString string, c ClientData) {
 	var settings []model.Setting
-	c.db.First(&model.Setting{}).Scan(settings)
+	c.db.Model(&model.Setting{}).Scan(&settings)
 	var smtpHost string
 	var smtpPort string
 	var from string
@@ -1588,6 +1589,59 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string, c
 	if errC != nil {
 		log.Println(err.Error())
 	}
+}
+
+func me(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	if isAuthorized(w, r) == true {
+		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
+		token, err := jwt.Parse(sendToken, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("JWT token not pass")
+			}
+			return mySigningKey, nil
+		})
+		claims := token.Claims.(jwt.MapClaims)
+		response := simplejson.New()
+		var user model.User
+		c.db.First(&model.User{}, "id = ?", fmt.Sprintf("%v", claims["id"])).Scan(&user)
+		response.Set("success", true)
+		response.Set("user", user)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Printf(err.Error())
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(payload)
+	}
+}
+
+func logout(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	response := simplejson.New()
+	response.Set("success", true)
+
+	payload, err := response.MarshalJSON()
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(payload)
 }
 
 func main() {
@@ -1733,6 +1787,18 @@ func main() {
 	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {
 		recovery(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
+
+	api.HandleFunc("/me", func(w http.ResponseWriter, r *http.Request) {
+		me(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	api.HandleFunc("/refresh", func(w http.ResponseWriter, r *http.Request) {
+		refresh(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	api.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		logout(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
 
 	// mail
 	api.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {

@@ -85,121 +85,137 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
+import {Component, Vue} from 'nuxt-property-decorator';
 import IResponseFiles from '~/model/IResponseFiles';
-import Message from "~/model/Message";
 import IHeader from "~/model/IHeader";
+import {namespace} from 'vuex-class';
+
+const snackbar = namespace('Snackbar');
 
 @Component
 export default class FilesPage extends Vue {
-    files: File[] = [];
-    file: File = {
-      lastModified: 0, name: "", webkitRelativePath: "",
-      size: 0,
-      type: '',
-      arrayBuffer: function (): Promise<ArrayBuffer> {
-        throw new Error('Function not implemented.');
-      },
-      slice: function (start?: number, end?: number, contentType?: string): Blob {
-        throw new Error('Function not implemented.');
-      },
-      stream: function (): ReadableStream<any> {
-        throw new Error('Function not implemented.');
-      },
-      text: function (): Promise<string> {
-        throw new Error('Function not implemented.');
-      }
-    };
-    message: Message = {class: "", text: ""};
-    $axios: any;
-    $refs: any;
-    dialog: boolean = false;
-    headers: IHeader[] = [
-      {
-        text: "Image",
-        align: 'start',
-        sortable: true,
-        value: 'src',
-      },
-      {text: "Name", value: 'name', sortable: true},
-      {text: "Gallery", value: 'gallery', sortable: true},
-      {text: "Actions", value: 'actions', sortable: false}
-    ];
+  @snackbar.Action
+  public updateText!: (newText: string) => void
 
-    mounted() {
-        this.load();
+  @snackbar.Action
+  public updateColor!: (newColor: string) => void
+
+  @snackbar.Action
+  public updateShow!: (newShow: boolean) => void
+  files: File[] = [];
+  file: File = {
+    lastModified: 0, name: "", webkitRelativePath: "",
+    size: 0,
+    type: '',
+    arrayBuffer: function (): Promise<ArrayBuffer> {
+      throw new Error('Function not implemented.');
+    },
+    slice: function (start?: number, end?: number, contentType?: string): Blob {
+      throw new Error('Function not implemented.');
+    },
+    stream: function (): ReadableStream<any> {
+      throw new Error('Function not implemented.');
+    },
+    text: function (): Promise<string> {
+      throw new Error('Function not implemented.');
     }
+  };
+  $axios: any;
+  $refs: any;
+  dialog: boolean = false;
+  headers: IHeader[] = [
+    {
+      text: "Image",
+      align: 'start',
+      sortable: true,
+      value: 'src',
+    },
+    {text: "Name", value: 'name', sortable: true},
+    {text: "Gallery", value: 'gallery', sortable: true},
+    {text: "Actions", value: 'actions', sortable: false}
+  ];
 
-    remove(id:string) {
-      this.$axios.delete("files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-          .then((response: IResponseFiles) => {
-            if (response.data.success) {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-success";
-              this.load();
-            } else {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-danger";
-            }
-          });
-    }
+  mounted() {
+    this.load();
+  }
 
-    create() {
-
-    }
-
-    save() {
-      let formData = new FormData();
-      formData.append('file', this.file.toString());
-      this.$axios.post('files/upload',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      ).then((response: IResponseFiles) => {
+  remove(id: string) {
+    this.$axios.delete("files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
           this.load();
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
-    }
+  }
 
-    load() {
-      this.$axios.get("files")
-          .then((response: IResponseFiles) => {
-            if (response.data.success) {
-              this.files = response.data.files;
-            } else {
-              this.message.text = response.data.error;
-              this.message.class = 'danger';
-            }
-          });
-    }
+  create() {
 
-    saveGallery(id: string, gallery: string) {
-      this.$axios.put( 'files/gallery/'+id,
-        {'gallery': gallery},
-        {headers: {'Content-Type': "application/json;charset=utf-8"}}
-      ).then((response: IResponseFiles) => {
+  }
+
+  save() {
+    let formData = new FormData();
+    formData.append('file', this.file.toString());
+    this.$axios.post('files/upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    ).then((response: IResponseFiles) => {
+      if (response.data.success) {
+        this.updateText(response.data.message);
+        this.updateColor('green')
+        this.updateShow(true);
+        this.load();
+      } else {
+        this.updateText(response.data.message);
+        this.updateColor('red')
+        this.updateShow(true);
+      }
+    });
+  }
+
+  load() {
+    this.$axios.get("files")
+      .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.files = response.data.files;
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
-    }
+  }
 
-    close() {
-      this.dialog = false;
-    }
+  saveGallery(id: string, gallery: string) {
+    this.$axios.put('files/gallery/' + id,
+      {'gallery': gallery},
+      {headers: {'Content-Type': "application/json;charset=utf-8"}}
+    ).then((response: IResponseFiles) => {
+      if (response.data.success) {
+        this.updateText(response.data.message);
+        this.updateColor('green')
+        this.updateShow(true);
+      } else {
+        this.updateText(response.data.message);
+        this.updateColor('red')
+        this.updateShow(true);
+      }
+    });
+  }
+
+  close() {
+    this.dialog = false;
+  }
 }
 </script>
 

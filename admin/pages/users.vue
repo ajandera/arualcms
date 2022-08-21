@@ -98,23 +98,31 @@
 <script lang="ts">
 import {Component, Vue} from 'nuxt-property-decorator'
 import User from '~/model/User';
-import Message from '~/model/Message';
 import IResponseUsers from '~/model/IResponseUsers';
 import IHeader from "~/model/IHeader";
+import {namespace} from 'vuex-class';
+
+const snackbar = namespace('Snackbar');
 
 @Component
 export default class UsersPage extends Vue {
+  @snackbar.Action
+  public updateText!: (newText: string) => void
+
+  @snackbar.Action
+  public updateColor!: (newColor: string) => void
+
+  @snackbar.Action
+  public updateShow!: (newShow: boolean) => void
+
   isEdit: boolean = false;
   title: string = 'Users';
-  message: Message = {text: "", class: ""};
   users: User[] = [];
   dialog: boolean = false;
   user: User = {
     username: "",
     password: "",
-    _id: {
-      $oid: ""
-    }
+    id: ""
   };
   headers: IHeader[] = [
     {
@@ -139,19 +147,17 @@ export default class UsersPage extends Vue {
   }
 
   remove(user: User) {
-    this.$axios.delete("/users/" + user._id.$oid, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/users/" + user.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseUsers) => {
         if (response.data.success) {
-          this.message = {
-            text: response.data.message,
-            class: "success"
-          };
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
           this.load();
         } else {
-          this.message = {
-            text: response.data.message,
-            class: "danger"
-          };
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }
@@ -161,9 +167,7 @@ export default class UsersPage extends Vue {
     this.user = {
       username: "",
       password: "",
-      _id: {
-        $oid: ""
-      }
+      id: ""
     };
   }
 
@@ -172,15 +176,13 @@ export default class UsersPage extends Vue {
       this.$axios.put("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
-            this.message = {
-              text: response.data.message,
-              class: "success"
-            };
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
           } else {
-            this.message = {
-              text: response.data.message,
-              class: "danger"
-            };
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
           }
           this.load();
         });
@@ -188,15 +190,13 @@ export default class UsersPage extends Vue {
       this.$axios.post("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
-            this.message = {
-              text: response.data.message,
-              class: "success"
-            };
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
           } else {
-            this.message = {
-              text: response.data.message,
-              class: "danger"
-            };
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
           }
           this.load();
         });
@@ -211,10 +211,9 @@ export default class UsersPage extends Vue {
         if (response.data.success === true) {
           this.users = response.data.users;
         } else {
-          this.message = {
-            text: response.data.message,
-            class: "danger"
-          };
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }

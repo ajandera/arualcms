@@ -209,12 +209,22 @@
 import {Component, Prop, Vue} from 'nuxt-property-decorator';
 import Post from "~/model/Post";
 import IResponsePosts from "~/model/IResponsePosts";
-import Message from "~/model/Message";
 import IResponseFiles from '~/model/IResponseFiles';
 import IHeader from '~/model/IHeader';
+import {namespace} from 'vuex-class';
+
+const snackbar = namespace('Snackbar');
 
 @Component
 export default class PostsPage extends Vue {
+  @snackbar.Action
+  public updateText!: (newText: string) => void
+
+  @snackbar.Action
+  public updateColor!: (newColor: string) => void
+
+  @snackbar.Action
+  public updateShow!: (newShow: boolean) => void
   @Prop() readonly languages!: string[];
   @Prop() readonly language!: string;
   posts: Post[] = [];
@@ -223,7 +233,6 @@ export default class PostsPage extends Vue {
     // Some Quill options...
   };
   $axios: any;
-  message: Message = {text: "", class: ""};
   content: any;
   $refs: any;
   headers: IHeader[] = [
@@ -243,7 +252,7 @@ export default class PostsPage extends Vue {
     title: {},
     excerpt: {},
     published: '',
-    _id: '',
+    id: '',
     meta: {
       title: {},
       keywords: {},
@@ -289,19 +298,21 @@ export default class PostsPage extends Vue {
     this.$axios.delete("/post/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
           this.load();
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }
 
   create() {
     this.post = {
-      _id: "",
+      id: "",
       title: {},
       excerpt: {},
       body: {},
@@ -324,15 +335,17 @@ export default class PostsPage extends Vue {
 
   save(close: boolean) {
     this.post.published = this.fromDateVal;
-    if (this.post._id !== "") {
+    if (this.post.id !== "") {
       this.$axios.put("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
           if (response.data.success) {
-            this.message.text = response.data.message;
-            this.message.class = "alert alert-success";
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
           } else {
-            this.message.text = response.data.message;
-            this.message.class = "alert alert-danger";
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
           }
           this.load();
         });
@@ -340,11 +353,13 @@ export default class PostsPage extends Vue {
       this.$axios.post("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
           if (response.data.success) {
-            this.message.text = response.data.message;
-            this.message.class = "alert alert-success";
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
           } else {
-            this.message.text = response.data.message;
-            this.message.class = "alert alert-danger";
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
           }
           this.load();
         });
@@ -352,7 +367,7 @@ export default class PostsPage extends Vue {
   }
 
   autoSave() {
-    if (this.post._id !== "") {
+    if (this.post.id !== "") {
       this.createSend();
     } else {
       this.editSend();
@@ -363,11 +378,13 @@ export default class PostsPage extends Vue {
     this.$axios.put("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }
@@ -376,11 +393,13 @@ export default class PostsPage extends Vue {
     this.$axios.post("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }
@@ -408,8 +427,9 @@ export default class PostsPage extends Vue {
             this.posts.push(response.data.posts[index]);
           }
         } else {
-          this.message.text = response.data.error;
-          this.message.class = 'danger';
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }
@@ -424,8 +444,9 @@ export default class PostsPage extends Vue {
           this.post.src = response.data.file;
           this.save(false);
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
   }

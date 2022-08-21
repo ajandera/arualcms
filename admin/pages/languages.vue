@@ -44,12 +44,12 @@
                   required
                 ></v-text-field>
                 <v-text-field
-                  v-model="langObject.value"
+                  v-model="langObject.name"
                   :counter="30"
                   label="Name"
                   required
                 ></v-text-field>
-                <v-checkbox v-model="langObject.default" label="Default" />
+                <v-checkbox v-model="langObject.default" label="Default"/>
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -104,120 +104,133 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
+import {Component, Vue} from 'nuxt-property-decorator';
 import IResponseLanguage from '~/model/IResponseLanguage';
 import Language from '~/model/Language';
-import Message from "~/model/Message";
 import IHeader from "~/model/IHeader";
+import {namespace} from 'vuex-class';
+
+const snackbar = namespace('Snackbar');
 
 @Component
 export default class LanguagesPage extends Vue {
-    langObject: Language = {
+  @snackbar.Action
+  public updateText!: (newText: string) => void
+
+  @snackbar.Action
+  public updateColor!: (newColor: string) => void
+
+  @snackbar.Action
+  public updateShow!: (newShow: boolean) => void
+
+  langObject: Language = {
+    key: "",
+    name: "",
+    default: false,
+    id: "",
+  };
+  title: string = 'Create language'
+  $axios: any;
+  languages: Language[] = [];
+  dialog: boolean = false;
+  headers: IHeader[] = [
+    {
+      text: "Name",
+      align: 'start',
+      sortable: true,
+      value: 'Name',
+    },
+    {text: "Code", value: 'Key', sortable: false},
+    {text: "Default", value: 'Default', sortable: false},
+    {text: "Actions", value: 'actions', sortable: false}
+  ];
+
+  mounted(): void {
+    this.load();
+  }
+
+  create(): void {
+    this.title = "New Language";
+    this.langObject = {
+      id: "",
       key: "",
-      value: "",
-      default: false,
-      _id: {
-        $oid: "",
-      }
+      name: "",
+      default: false
     };
-    title: string = 'Create language'
-    $axios: any;
-    message: Message = {class: "", text: ""};
-    languages: Language[] = [];
-    dialog: boolean = false;
-    headers: IHeader[] = [
-      {
-        text: "Name",
-        align: 'start',
-        sortable: true,
-        value: 'value',
-      },
-      {text: "Code", value: 'key', sortable: false},
-      {text: "Default", value: 'default', sortable: false},
-      {text: "Actions", value: 'actions', sortable: false}
-    ];
+    this.dialog = true;
+  }
 
-    mounted(): void {
-        this.load();
+  save(language: Language) {
+    if (language.id !== '') {
+      this.$axios.put("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseLanguage) => {
+          if (response.data.success) {
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
+            this.load();
+          } else {
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
+            this.load();
+          }
+        });
+    } else {
+      this.$axios.post("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseLanguage) => {
+          if (response.data.success) {
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
+          } else {
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
+          }
+        });
     }
+  }
 
-    create(): void {
-      this.title = "New Language";
-      this.langObject = {
-        _id: {
-          $oid: ""
-        },
-        key: "",
-        value: "",
-        default: false
-      };
-      this.dialog = true;
-    }
+  load() {
+    this.dialog = false;
+    this.$axios.get("/languages")
+      .then((response: IResponseLanguage) => {
+        if (response.data.success) {
+          this.languages = response.data.languages;
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
+        }
+      });
+  }
 
-    save(language: Language) {
-      if (language._id.$oid !== '') {
-        this.$axios.put("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-            .then((response: IResponseLanguage) => {
-              if (response.data.success) {
-                this.message.text = response.data.message;
-                this.message.class = "alert alert-success";
-                this.load();
-              } else {
-                this.message.text = response.data.error;
-                this.message.class = 'danger';
-                this.load();
-              }
-            });
-      } else {
-        this.$axios.post("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-            .then((response: IResponseLanguage) => {
-              if (response.data.success) {
-                this.message.text = response.data.message;
-                this.message.class = "alert alert-success";
-              } else {
-                this.message.text = response.data.error;
-                this.message.class = 'danger';
-              }
-            });
-      }
-    }
+  edit(langObject: Language) {
+    this.title = langObject.name;
+    this.langObject = langObject;
+    this.dialog = true;
+  }
 
-    load() {
-      this.dialog = false;
-      this.$axios.get("/languages")
-          .then((response: IResponseLanguage) => {
-            if (response.data.success) {
-              this.languages = response.data.languages;
-            } else {
-              this.message.text = response.data.error;
-              this.message.class = 'danger';
-            }
-          });
-    }
+  remove(language: Language) {
+    this.$axios.delete("/languages/" + language.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseLanguage) => {
+        if (response.data.success) {
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
+          this.load();
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
+        }
+      });
+  }
 
-    edit(langObject: Language) {
-      this.title = langObject.value;
-      this.langObject = langObject;
-      this.dialog = true;
-    }
-
-    remove(language: Language) {
-      this.$axios.delete("/languages/" + language._id.$oid, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-          .then((response: IResponseLanguage) => {
-            if (response.data.success) {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-success";
-              this.load();
-            } else {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-danger";
-            }
-          });
-    }
-
-    close() {
-      this.dialog = false;
-    }
+  close() {
+    this.dialog = false;
+  }
 }
 </script>
 

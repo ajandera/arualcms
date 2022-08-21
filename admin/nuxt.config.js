@@ -15,13 +15,13 @@ export default {
       lang: 'en'
     },
     meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      {charset: 'utf-8'},
+      {name: 'viewport', content: 'width=device-width, initial-scale=1'},
+      {hid: 'description', name: 'description', content: ''},
+      {name: 'format-detection', content: 'telephone=no'}
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'}
     ]
   },
 
@@ -32,8 +32,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/axios.js'},
-    { src: '~/plugins/vue-quill-editor.js', ssr: false}
+    {src: '~/plugins/vue-quill-editor.js', ssr: false}
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -49,8 +48,9 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-      '@nuxtjs/i18n',
-      '@nuxtjs/axios'
+    '@nuxtjs/i18n',
+    '@nuxtjs/axios',
+    '@nuxtjs/auth-next'
   ],
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -71,14 +71,41 @@ export default {
     }
   },
 
-  // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {
+  auth: {
+    strategies: {
+      local: {
+        scheme: 'refresh',
+        token: {
+          property: 'jwt.access_token',
+          maxAge: 60,
+          global: true,
+          type: 'Bearer'
+        },
+        refreshToken: {
+          property: 'jwt.refresh_token',
+          data: 'refresh_token',
+          maxAge: 60 * 60 * 24
+        },
+        user: {
+          property: 'user'
+        },
+        endpoints: {
+          login: { url: '/auth', method: 'post' },
+          refresh: { url: '/refresh', method: 'post' },
+          user: { url: '/me', method: 'get' },
+          logout: { url: '/logout', method: 'post' }
+        }
+      }
+    }
   },
 
+  // Build Configuration: https://go.nuxtjs.dev/config-build
+  build: {},
+
   publicRuntimeConfig: {
-    hostname: process.env.VUE_APP_API || 'http://localhost:8000/',
+    hostname: process.env.VUE_APP_API || 'http://localhost:9009/',
     axios: {
-      baseURL: process.env.VUE_APP_API || 'http://localhost:8000/'
+      baseURL: process.env.VUE_APP_API || 'http://localhost:9009/'
     }
   }
 }

@@ -19,7 +19,7 @@
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
+            <v-list-item-title v-text="item.title"/>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -35,8 +35,8 @@
       >
         <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
       </v-btn>
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
+      <v-toolbar-title v-text="title"/>
+      <v-spacer/>
       <v-menu
         bottom
         origin="center center"
@@ -73,7 +73,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtChild :language="language" />
+        <NuxtChild :language="language"/>
       </v-container>
     </v-main>
     <v-footer
@@ -82,88 +82,94 @@
     >
       <span>v0.9.2 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
-    <v-snackbar
-      v-model="message.text !== ''"
-      :timeout="2000"
-      :color="message.class"
-    >
-      {{ message.text }}
-
-    </v-snackbar>
+    <Snackbar/>
   </v-app>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
-import Message from "~/model/Message";
+import {Component, Vue} from 'nuxt-property-decorator'
 import IResponseLanguage from "~/model/IResponseLanguage";
+import Snackbar from "~/components/Snackbar.vue";
 
-@Component
+@Component({
+  components: {
+    Snackbar
+  }
+})
 export default class DefaultLayout extends Vue {
-    clipped: boolean = true
-    drawer: boolean = true
-    fixed: boolean = true
-    languages: string[] = []
-    language: string = ""
-    message: Message = {text: "", class: ""}
-    items: Array<any> = [
-        {
-          icon: 'mdi-apps',
-          title: 'Posts',
-          to: '/posts'
-        },
-        {
-          icon: 'mdi-card-text',
-          title: 'Texts',
-          to: '/texts'
-        },
-        {
-          icon: 'mdi-file-multiple',
-          title: 'Files',
-          to: '/files'
-        },
-        {
-          icon: 'mdi-flag',
-          title: 'Languages',
-          to: '/languages'
-        },
-        {
-          icon: 'mdi-cog',
-          title: 'Setting',
-          to: '/settings'
-        },
-        {
-          icon: 'mdi-account',
-          title: 'Users',
-          to: '/users'
-        }
-
-      ]
-    miniVariant: boolean = false
-    title: string = 'arualCMS'
-    $axios: any
-    $router: any;
-    $i18n: any;
-
-    mounted() {
-        this.getDefaultLanguage();
+  clipped: boolean = true
+  drawer: boolean = true
+  fixed: boolean = true
+  languages: string[] = []
+  language: string = ""
+  items: Array<any> = [
+    {
+      icon: 'mdi-apps',
+      title: 'Posts',
+      to: '/posts'
+    },
+    {
+      icon: 'mdi-card-text',
+      title: 'Texts',
+      to: '/texts'
+    },
+    {
+      icon: 'mdi-file-multiple',
+      title: 'Files',
+      to: '/files'
+    },
+    {
+      icon: 'mdi-flag',
+      title: 'Languages',
+      to: '/languages'
+    },
+    {
+      icon: 'mdi-cog',
+      title: 'Setting',
+      to: '/settings'
+    },
+    {
+      icon: 'mdi-account',
+      title: 'Users',
+      to: '/users'
     }
 
-    logout(): void {
-      window.localStorage.removeItem("jwt");
-      this.$router.push('in');
-    }
+  ]
+  miniVariant: boolean = false
+  title: string = 'arualCMS'
+  $axios: any
+  $router: any;
+  $i18n: any;
+  $auth: any;
+  $nuxt: any;
 
-    getDefaultLanguage(): void {
-      this.$axios.get("/languages")
-        .then((response: IResponseLanguage) => {
-          this.language = response.data.languages.filter(item => item.default)[0].key;
-          this.languages = response.data.languages.map(item => item.key);
-        });
-    }
+  mounted() {
+    this.guard();
+  }
 
-    onLangChange(lang: string): void {
-      this.language = lang;
+  guard() {
+    if (!this.$auth.loggedIn) {
+      this.$nuxt.$options.router.push('/in');
+    } else {
+      this.getDefaultLanguage();
     }
+  }
+
+  async logout() {
+    await this.$auth.logout();
+    this.$nuxt.$options.router.push('/in');
+  }
+
+  getDefaultLanguage(): void {
+    this.$axios.get("/languages")
+      .then((response: IResponseLanguage) => {
+        this.language = response.data.languages.filter(item => item.Default)[0].key;
+        this.languages = response.data.languages.map(item => item.Key);
+      });
+  }
+
+  onLangChange(lang: string): void {
+    this.language = lang;
+  }
 }
 </script>

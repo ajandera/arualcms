@@ -163,7 +163,7 @@ export default class DefaultLayout extends Vue {
   getDefaultLanguage(): void {
     this.$axios.get("/languages")
       .then((response: IResponseLanguage) => {
-        this.language = response.data.languages.filter(item => item.Default)[0].key;
+        this.language = response.data.languages.filter(item => item.Default)[0].Key;
         this.languages = response.data.languages.map(item => item.Key);
       });
   }

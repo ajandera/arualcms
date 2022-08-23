@@ -1684,7 +1684,7 @@ func main() {
 
 	api.HandleFunc("/setting/{settingId}", func(w http.ResponseWriter, r *http.Request) {
 		updateSetting(w, r, client)
-	}).Methods(http.MethodPost, http.MethodOptions)
+	}).Methods(http.MethodPut, http.MethodOptions)
 
 	// texts
 	api.HandleFunc("/text", func(w http.ResponseWriter, r *http.Request) {

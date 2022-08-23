@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="setting.length > 0">
       <v-col
         v-for="(item, index) in setting"
         v-bind:key="index"
@@ -9,9 +9,9 @@
         md="6"
       >
         <v-text-field
-          v-model="item.value[language]"
+          v-model="item.Value[language.toString()]"
           :counter="50"
-          :label="item.key"
+          :label="item.Key"
           v-on:change="save(item)"
           required
         ></v-text-field>
@@ -50,6 +50,7 @@ export default class SettingsPage extends Vue {
     this.$axios.get("/setting")
       .then((response: IResponseSetting) => {
         if (response.data.success) {
+          response.data.settings.forEach(setting => setting.Value = JSON.parse(setting.Value.toString()));
           this.setting = response.data.settings;
         } else {
           this.updateText(response.data.message);
@@ -60,7 +61,7 @@ export default class SettingsPage extends Vue {
   }
 
   save(setting: Setting) {
-    this.$axios.put("setting", setting, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.put("/setting/"+setting.Id, setting, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseSetting) => {
         if (response.data.success) {
           this.updateText(response.data.message);

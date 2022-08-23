@@ -38,18 +38,18 @@
             <v-card-text>
               <v-container>
                 <v-text-field
-                  v-model="langObject.key"
+                  v-model="langObject.Key"
                   :counter="5"
                   label="Code"
                   required
                 ></v-text-field>
                 <v-text-field
-                  v-model="langObject.name"
+                  v-model="langObject.Name"
                   :counter="30"
                   label="Name"
                   required
                 ></v-text-field>
-                <v-checkbox v-model="langObject.default" label="Default"/>
+                <v-checkbox v-model="langObject.Default" label="Default"/>
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -124,10 +124,10 @@ export default class LanguagesPage extends Vue {
   public updateShow!: (newShow: boolean) => void
 
   langObject: Language = {
-    key: "",
-    name: "",
-    default: false,
-    id: "",
+    Key: "",
+    Name: "",
+    Default: false,
+    Id: "",
   };
   title: string = 'Create language'
   $axios: any;
@@ -151,17 +151,11 @@ export default class LanguagesPage extends Vue {
 
   create(): void {
     this.title = "New Language";
-    this.langObject = {
-      id: "",
-      key: "",
-      name: "",
-      default: false
-    };
     this.dialog = true;
   }
 
   save(language: Language) {
-    if (language.id !== '') {
+    if (language.Id !== '') {
       this.$axios.put("/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseLanguage) => {
           if (response.data.success) {
@@ -183,10 +177,12 @@ export default class LanguagesPage extends Vue {
             this.updateText(response.data.message);
             this.updateColor('green')
             this.updateShow(true);
+            this.load();
           } else {
             this.updateText(response.data.message);
             this.updateColor('red')
             this.updateShow(true);
+            this.load();
           }
         });
     }
@@ -207,13 +203,13 @@ export default class LanguagesPage extends Vue {
   }
 
   edit(langObject: Language) {
-    this.title = langObject.name;
+    this.title = langObject.Name;
     this.langObject = langObject;
     this.dialog = true;
   }
 
   remove(language: Language) {
-    this.$axios.delete("/languages/" + language.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/languages/" + language.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseLanguage) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -229,6 +225,12 @@ export default class LanguagesPage extends Vue {
   }
 
   close() {
+    this.langObject = {
+      Id: "",
+      Key: "",
+      Name: "",
+      Default: false
+    };
     this.dialog = false;
   }
 }

@@ -1,0 +1,2 @@
+vars := mux.Vars(r)
+	siteId := vars["siteId"]

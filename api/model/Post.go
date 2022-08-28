@@ -15,6 +15,7 @@ type Post struct {
 	MetaTitle   string
 	Keywords    string
 	Description string
+	SiteId		string
 }
 
 func (post *Post) BeforeCreate(db *gorm.DB) error {

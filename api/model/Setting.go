@@ -6,9 +6,10 @@ import (
 )
 
 type Setting struct {
-	Id    string `gorm:"primary_key; unique"`
-	Key   string
-	Value string
+	Id    	string `gorm:"primary_key; unique"`
+	Key   	string
+	Value 	string
+	SiteId	string
 }
 
 func (setting *Setting) BeforeCreate(db *gorm.DB) error {

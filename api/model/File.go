@@ -10,6 +10,7 @@ type File struct {
 	Name    string
 	Src     string
 	Gallery string
+	SiteId	string
 }
 
 func (file *File) BeforeCreate(db *gorm.DB) error {

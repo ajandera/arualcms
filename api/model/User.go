@@ -13,6 +13,7 @@ type User struct {
 	Password    string
 	ForgotToken string
 	ValidToken  time.Time
+	ParentId		string
 }
 
 func (user *User) BeforeCreate(db *gorm.DB) error {

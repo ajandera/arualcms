@@ -6,6 +6,7 @@ import (
 )
 
 type Post struct {
+	gorm.Model
 	Id          string `gorm:"primary_key; unique"`
 	File        string
 	Body        string
@@ -15,7 +16,7 @@ type Post struct {
 	MetaTitle   string
 	Keywords    string
 	Description string
-	SiteId		string
+	SiteId      string
 }
 
 func (post *Post) BeforeCreate(db *gorm.DB) error {

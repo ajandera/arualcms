@@ -49,6 +49,32 @@
             v-bind="attrs"
             v-on="on"
           >
+            {{ site.Name }}
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            v-for="(item, i) in sites"
+            :key="i"
+            @click="onSiteChange(item)"
+          >
+            <v-list-item-title>{{ item.Name }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu
+        bottom
+        origin="center center"
+        transition="scale-transition"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="secondary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
             {{ language }}
           </v-btn>
         </template>
@@ -87,9 +113,11 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'nuxt-property-decorator'
+import {Component, Vue, Watch} from 'nuxt-property-decorator'
 import IResponseLanguage from "~/model/IResponseLanguage";
 import Snackbar from "~/components/Snackbar.vue";
+import IResponseSite from "~/model/IResponseSite";
+import Site from '~/model/Site';
 
 @Component({
   components: {
@@ -124,6 +152,11 @@ export default class DefaultLayout extends Vue {
       to: '/languages'
     },
     {
+      icon: 'mdi-earth',
+      title: 'Sites',
+      to: '/sites'
+    },
+    {
       icon: 'mdi-cog',
       title: 'Setting',
       to: '/settings'
@@ -142,16 +175,29 @@ export default class DefaultLayout extends Vue {
   $i18n: any;
   $auth: any;
   $nuxt: any;
+  sites: Site[] = [];
+  site: Site = {Id: "", Name: ""};
 
   mounted() {
     this.guard();
+  }
+
+  @Watch('$route')
+  onPropertyChanged(value: string, oldValue: string) {
+    if (!this.$route.query.siteId && this.site !== null) {
+      if (this.site.Id === undefined) {
+        this.$router.push({path: this.$route.path, query: {siteId: this.site}})
+      } else {
+        this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
+      }
+    }
   }
 
   guard() {
     if (!this.$auth.loggedIn) {
       this.$nuxt.$options.router.push('/in');
     } else {
-      this.getDefaultLanguage();
+      this.getSites();
     }
   }
 
@@ -160,16 +206,31 @@ export default class DefaultLayout extends Vue {
     this.$nuxt.$options.router.push('/in');
   }
 
-  getDefaultLanguage(): void {
-    this.$axios.get("/languages")
+  getDefaultLanguage(siteId: string): void {
+    this.$axios.get("/" + siteId +"/languages")
       .then((response: IResponseLanguage) => {
         this.language = response.data.languages.filter(item => item.Default)[0].Key;
         this.languages = response.data.languages.map(item => item.Key);
       });
   }
 
+  getSites(): void {
+    this.$axios.get("/sites")
+      .then((response: IResponseSite) => {
+        this.sites = response.data.sites;
+        this.site = this.sites[0];
+        this.$router.push({path: this.$route.path, query: {storeId: this.site.Id}});
+        this.getDefaultLanguage(this.site.Id)
+      });
+  }
+
   onLangChange(lang: string): void {
     this.language = lang;
+  }
+
+  onSiteChange(site: Site): void {
+    this.site = site;
+    this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
   }
 }
 </script>

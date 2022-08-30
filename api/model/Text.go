@@ -6,10 +6,11 @@ import (
 )
 
 type Text struct {
-	Id    	string `gorm:"primary_key; unique"`
-	Key   	string
-	Value 	string
-	SiteId	string
+	gorm.Model
+	Id     string `gorm:"primary_key; unique"`
+	Key    string
+	Value  string
+	SiteId string
 }
 
 func (text *Text) BeforeCreate(db *gorm.DB) error {

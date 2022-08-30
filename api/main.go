@@ -94,7 +94,13 @@ func IsValidUUID(uuid string) bool {
 	return r.MatchString(uuid)
 }
 
-func isAuthorized(w http.ResponseWriter, r *http.Request, site string) bool {
+type userPermission struct {
+	ParentId string
+	Id       string
+	Name     string
+}
+
+func isAuthorized(w http.ResponseWriter, r *http.Request, site string, c ClientData) (bool, string) {
 	if r.Header["Authorization"] != nil {
 		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
 		token, err := jwt.Parse(sendToken, func(token *jwt.Token) (interface{}, error) {
@@ -104,39 +110,39 @@ func isAuthorized(w http.ResponseWriter, r *http.Request, site string) bool {
 			return mySigningKey, nil
 		})
 
+		claims := token.Claims.(jwt.MapClaims)
 		// check if store belongs to account
 		if IsValidUUID(site) {
-			claims := token.Claims.(jwt.MapClaims)
-			var user = model.User
-			c.db.First(&model.User{}).Where("id = ?", fmt.Sprintf("%v", claims["id"])).Scan(user)
-			if user.ParentId != '' {
-				if isPermitted(user.ParentId, site) == false {
+			var user userPermission
+			c.db.Model(&model.User{Id: fmt.Sprintf("%v", claims["id"])}).First(&user)
+			if user.ParentId != "" {
+				if isPermitted(user.ParentId, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)
-					return false
+					return false, ""
 				}
 			} else {
-				if isPermitted(userId, site) == false {
+				if isPermitted(user.Id, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)
-					return false
+					return false, ""
 				}
 			}
 		}
-		
+
 		if err != nil && token != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Fatalf(err.Error())
-			return false
+			return false, ""
 		}
-		return true
+		return true, fmt.Sprintf("%v", claims["id"])
 	} else {
 		http.Error(w, "Not Authorized", http.StatusForbidden)
-		return false
+		return false, ""
 	}
 }
 
-func isPermitted(udesrId string, siteId string, c ClientData) {
+func isPermitted(userId string, siteId string, c ClientData) bool {
 	var site model.Site
-	c.db.First(&model.Site{}, "user_id = ? AND id = ?",userId, siteId).Scan(&site)	
+	c.db.First(&model.Site{}, "user_id = ? AND id = ?", userId, siteId).Scan(&site)
 	return IsValidUUID(site.Id)
 }
 
@@ -300,7 +306,7 @@ func getPosts(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var posts []model.Post
@@ -328,7 +334,7 @@ func createPost(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Post struct.
 		var post model.Post
 
@@ -351,7 +357,7 @@ func createPost(w http.ResponseWriter, r *http.Request, c ClientData) {
 			MetaTitle:   post.MetaTitle,
 			Keywords:    post.Keywords,
 			Description: post.Description,
-			SiteId:		 siteId
+			SiteId:      siteId,
 		})
 		response.Set("success", true)
 		response.Set("post", post.Id)
@@ -375,7 +381,7 @@ func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 
 		// Declare a new Post struct.
 		var post model.Post
@@ -398,7 +404,7 @@ func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 			MetaTitle:   post.MetaTitle,
 			Keywords:    post.Keywords,
 			Description: post.Description,
-			SiteId:		 siteId})
+			SiteId:      siteId})
 		response.Set("success", true)
 		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
@@ -418,10 +424,10 @@ func getPostDetail(w http.ResponseWriter, r *http.Request, c ClientData) {
 	if (*r).Method == "OPTIONS" {
 		return
 	}
-	
+
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		postId := vars["postId"]
@@ -451,7 +457,7 @@ func deletePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		var p model.Post
 		id := vars["postId"]
 		c.db.Model(&model.Post{}).Where("id = ?", id).Delete(&p)
@@ -474,14 +480,15 @@ func getSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 	if (*r).Method == "OPTIONS" {
 		return
 	}
-	
+
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	log.Println(siteId)
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var settings []model.Setting
-		c.db.Model(&model.Setting{})Where("site_id = ?", siteId).Scan(&settings)
+		c.db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
 		response.Set("success", true)
 		response.Set("settings", settings)
 
@@ -505,7 +512,7 @@ func createSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Setting struct.
 		var setting model.Setting
 
@@ -546,7 +553,7 @@ func updateSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Setting struct.
 		var setting model.Setting
 
@@ -585,7 +592,7 @@ func getTexts(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var texts []model.Text
@@ -613,7 +620,7 @@ func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Text struct.
 		var text model.Text
 
@@ -631,7 +638,7 @@ func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Create(&model.Text{
 			Key:    text.Key,
 			Value:  text.Key,
-			SiteId: siteId
+			SiteId: siteId,
 		})
 		response.Set("success", true)
 		response.Set("post", text.Id)
@@ -655,7 +662,7 @@ func updateText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Text struct.
 		var text model.Text
 
@@ -695,7 +702,7 @@ func getText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, site) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		vars := mux.Vars(r)
@@ -726,7 +733,7 @@ func deleteText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		var t model.Text
 		id := vars["textId"]
 		c.db.Model(&model.Text{}).Where("id = ?", id).Delete(&t)
@@ -752,7 +759,7 @@ func getUsers(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var users []model.User
@@ -778,7 +785,9 @@ func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 		return
 	}
 
-	if isAuthorized(w, r) == true {
+	vars := mux.Vars(r)
+	siteId := vars["siteId"]
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var user model.User
 
@@ -801,7 +810,7 @@ func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name:     user.Name,
 			Username: user.Username,
 			Password: pw,
-			ParentId: user.ParentId
+			ParentId: user.ParentId,
 		})
 		response.Set("success", true)
 		response.Set("post", user.Id)
@@ -825,7 +834,7 @@ func updateUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var user model.User
 
@@ -865,7 +874,7 @@ func getUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		userId := vars["userId"]
 
@@ -894,7 +903,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 		return
 	}
 
-	if isAuthorized(w, r) == true {
+	vars := mux.Vars(r)
+	siteId := vars["siteId"]
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		var u model.User
 		vars := mux.Vars(r)
 		id := vars["userId"]
@@ -921,7 +932,7 @@ func getUserByEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		username := vars["username"]
 
@@ -952,7 +963,7 @@ func getFiles(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 
 		response := simplejson.New()
 
@@ -981,7 +992,7 @@ func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var file model.File
 
@@ -1020,7 +1031,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		file, handle, err := r.FormFile("file")
 		if err != nil {
 			log.Printf("From file: " + err.Error())
@@ -1048,7 +1059,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name:    handle.Filename,
 			Src:     "/files/" + handle.Filename,
 			Gallery: "",
-			SiteId:  siteId
+			SiteId:  siteId,
 		}).Scan(&f)
 
 		// prepare data to response
@@ -1076,7 +1087,7 @@ func getFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		fileId := vars["fileId"]
 
@@ -1107,7 +1118,7 @@ func deleteFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		var f model.File
 		vars := mux.Vars(r)
 		id := vars["fileId"]
@@ -1134,7 +1145,7 @@ func getLanguages(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var languages []model.Language
@@ -1162,7 +1173,7 @@ func createLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var language model.Language
 
@@ -1181,11 +1192,11 @@ func createLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name:    language.Name,
 			Key:     language.Key,
 			Default: language.Default,
-			SiteId:	 siteId
+			SiteId:  siteId,
 		})
 
 		response.Set("success", true)
-		response.Set("post", language.Id)
+		response.Set("language", language.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1206,7 +1217,7 @@ func updateLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var language model.Language
 
@@ -1227,7 +1238,7 @@ func updateLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Default: language.Default})
 
 		response.Set("success", true)
-		response.Set("post", language.Id)
+		response.Set("language", language.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1247,11 +1258,10 @@ func getLanguageByCode(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 
 	vars := mux.Vars(r)
-	site := vars["siteId"]
-	
-	if isAuthorized(w, r, site) == true {
+	siteId := vars["siteId"]
+
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		code := vars["code"]
-		
 
 		response := simplejson.New()
 
@@ -1280,10 +1290,149 @@ func deleteLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		var l model.Language
 		id := vars["languageId"]
 		c.db.Model(&model.Language{}).Where("id = ?", id).Delete(&l)
+		response := simplejson.New()
+		response.Set("success", true)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func getSites(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	if auth, userId := isAuthorized(w, r, "", c); auth == true {
+		response := simplejson.New()
+
+		var sites []model.Site
+		c.db.Model(&model.Site{}).Where("user_id = ?", userId).Scan(&sites)
+		response.Set("success", true)
+		response.Set("sites", sites)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func createSite(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	if auth, userId := isAuthorized(w, r, "", c); auth == true {
+		// Declare a new Language struct.
+		var site model.Site
+		var res model.Site
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&site)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+		response := simplejson.New()
+		res.UserId = userId
+		res.Name = site.Name
+		c.db.Create(&res)
+		createDefaultSetting(res.Id, c)
+		response.Set("success", true)
+		response.Set("site", res.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func createDefaultSetting(siteId string, c ClientData) {
+	settings := [...]string{"subtitle", "author", "contactEmail", "contactPhone", "metaTitle", "metaDescription", "metaKeywords", "smtp", "smtp_user", "smtp_password", "smtp_port", "title"}
+	for _, v := range settings {
+		c.db.Create(&model.Setting{
+			Key:    v,
+			Value:  "",
+			SiteId: siteId,
+		})
+	}
+}
+
+func updateSite(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	siteId := vars["siteId"]
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
+		// Declare a new Language struct.
+		var site model.Site
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&site)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.db.Model(model.Site{}).Where("id = ?", site.Id).Updates(model.Site{
+			Name: site.Name})
+
+		response.Set("success", true)
+		response.Set("site", site.Id)
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func deleteSite(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	siteId := vars["siteId"]
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
+		var s model.Site
+		c.db.Model(&model.Language{}).Where("id = ?", siteId).Delete(&s)
 		response := simplejson.New()
 		response.Set("success", true)
 		w.WriteHeader(http.StatusOK)
@@ -1306,7 +1455,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Email struct.
 		var mail Email
 
@@ -1365,7 +1514,7 @@ func forgot(w http.ResponseWriter, r *http.Request, c ClientData) {
 		ForgotToken: token,
 		ValidToken:  t})
 
-	sendEmailWithTemplate(username, "Recover your password", "forgot", token, c, r *http.Request)
+	sendEmailWithTemplate(username, "Recover your password", "forgot", token, c, r)
 
 	response := simplejson.New()
 	response.Set("success", true)
@@ -1465,9 +1614,9 @@ func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 func sendEmailWithTemplate(email string, subject string, templateName string, token string, c ClientData, r *http.Request) {
 	vars := mux.Vars(r)
-	sideId := vars["siteId"]
+	siteId := vars["siteId"]
 	var settings []model.Setting
-	c.db.Model(&model.Setting{}).Where("site_id = ?", siteId)Scan(&settings)
+	c.db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
 	var smtpHost string
 	var smtpPort string
 	var from string
@@ -1578,11 +1727,11 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 }
 
 func sendEmailWithoutTemplate(email string, subject string, htmlString string, c ClientData, r *http.Request) {
-	
+
 	vars := mux.Vars(r)
-	sideId := vars["siteId"]
+	siteId := vars["siteId"]
 	var settings []model.Setting
-	c.db.Model(&model.Setting{}).Where("site_id = ?", siteId)Scan(&settings)
+	c.db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
 	var smtpHost string
 	var smtpPort string
 	var from string
@@ -1685,9 +1834,7 @@ func me(w http.ResponseWriter, r *http.Request, c ClientData) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	siteId := vars["siteId"]
-	if isAuthorized(w, r, siteId) == true {
+	if auth, _ := isAuthorized(w, r, "", c); auth == true {
 		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
 		token, err := jwt.Parse(sendToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -1864,21 +2011,38 @@ func main() {
 		deleteLanguage(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
+	// sites
+	api.HandleFunc("/sites", func(w http.ResponseWriter, r *http.Request) {
+		getSites(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	api.HandleFunc("/sites", func(w http.ResponseWriter, r *http.Request) {
+		createSite(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	api.HandleFunc("/sites", func(w http.ResponseWriter, r *http.Request) {
+		updateSite(w, r, client)
+	}).Methods(http.MethodPut, http.MethodOptions)
+
+	api.HandleFunc("/sites/{siteId}", func(w http.ResponseWriter, r *http.Request) {
+		deleteSite(w, r, client)
+	}).Methods(http.MethodDelete, http.MethodOptions)
+
 	// auth
-	api.HandleFunc("/{siteId}/auth", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
 		auth(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-	api.HandleFunc("/{siteId}/forgot/{username}", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/forgot/{username}", func(w http.ResponseWriter, r *http.Request) {
 		forgot(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	// password recovery
-	api.HandleFunc("/{siteId}/recovery", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/recovery", func(w http.ResponseWriter, r *http.Request) {
 		recovery(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
-	api.HandleFunc("/{siteId}/me", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/me", func(w http.ResponseWriter, r *http.Request) {
 		me(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 

@@ -3,4 +3,5 @@ export default interface Language {
   Name: string;
   Default: boolean;
   Id: string;
+  SiteId: string;
 }

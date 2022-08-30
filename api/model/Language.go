@@ -6,11 +6,12 @@ import (
 )
 
 type Language struct {
+	gorm.Model
 	Id      string `gorm:"primary_key; unique"`
 	Name    string
 	Key     string
 	Default bool
-	SiteId	string
+	SiteId  string
 }
 
 func (language *Language) BeforeCreate(db *gorm.DB) error {

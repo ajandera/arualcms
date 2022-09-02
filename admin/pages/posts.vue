@@ -65,7 +65,7 @@
                       md="6"
                     >
                       <v-text-field
-                        v-model="post.title[language]"
+                        v-model="post.Title[language]"
                         :counter="50"
                         :rules="rules"
                         label="Title"
@@ -108,36 +108,36 @@
                       cols="12"
                     >
                       <v-textarea
-                        v-model="post.excerpt[language]"
+                        v-model="post.Excerpt[language]"
                         :counter="300"
                         :rules="rules"
                         label="Excerpt"
                         required
                       ></v-textarea>
                       <quill-editor
-                        :ref="post.body[language]"
-                        v-model="post.body[language]"
+                        :ref="post.Body[language]"
+                        v-model="post.Body[language]"
                         :options="editorOption"
                         @blur="onEditorBlur($event)"
                         @focus="onEditorFocus($event)"
                         @ready="onEditorReady($event)"
                       />
                       <v-text-field
-                        v-model="post.meta.title[language]"
+                        v-model="post.Meta.Title[language]"
                         :counter="100"
                         :rules="rules"
                         label="Meta title"
                         required
                       ></v-text-field>
                       <v-text-field
-                        v-model="post.meta.description[language]"
+                        v-model="post.Meta.Description[language]"
                         :counter="150"
                         :rules="rules"
                         label="Meta description"
                         required
                       ></v-text-field>
                       <v-text-field
-                        v-model="post.meta.keywords[language]"
+                        v-model="post.Meta.Keywords[language]"
                         :counter="100"
                         :rules="rules"
                         label="Meta keywords"
@@ -171,18 +171,18 @@
     </template>
     <template v-slot:item.file="{ item }">
       <div class="p-5">
-        <v-img :src="$config.hostname + '/storage/' + item.file" :alt="item.title[language]" height="auto"
+        <v-img :src="$config.hostname + '/storage/' + item.file" :alt="item.Title[language]" height="auto"
                width="200px"></v-img>
       </div>
     </template>
-    <template v-slot:item.title="{ item }">
-      <p>{{ item.title[language] }}</p>
+    <template v-slot:item.Title="{ item }">
+      <p>{{ item.Title[language] }}</p>
     </template>
-    <template v-slot:item.excerpt="{ item }">
-      <p>{{ item.excerpt[language] }}</p>
+    <template v-slot:item.Excerpt="{ item }">
+      <p>{{ item.Excerpt[language] }}</p>
     </template>
-    <template v-slot:item.published="{ item }">
-      <p>{{ item.published[0].toLocaleDateString() }}</p>
+    <template v-slot:item.Published="{ item }">
+      <p>{{ item.Published[0].toLocaleDateString() }}</p>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon
@@ -240,23 +240,23 @@ export default class PostsPage extends Vue {
       text: "Image",
       align: 'start',
       sortable: false,
-      value: 'file',
+      value: 'File',
     },
-    {text: "Title", value: 'title'},
-    {text: "Excerpt", value: 'excerpt'},
-    {text: "Published", value: 'published'},
+    {text: "Title", value: 'Title'},
+    {text: "Excerpt", value: 'Excerpt'},
+    {text: "Published", value: 'Published'},
     {text: "Actions", value: 'actions', sortable: false}
   ];
   post: Post = {
-    body: {},
-    title: {},
-    excerpt: {},
-    published: '',
-    id: '',
-    meta: {
-      title: {},
-      keywords: {},
-      description: {}
+    Body: this.createClearTranslationObject(),
+    Title: this.createClearTranslationObject(),
+    Excerpt: this.createClearTranslationObject(),
+    Published: '',
+    Id: '',
+    Meta: {
+      Title: this.createClearTranslationObject(),
+      Keywords: this.createClearTranslationObject(),
+      Description: this.createClearTranslationObject()
     }
   };
   dialog: boolean = false;
@@ -290,12 +290,11 @@ export default class PostsPage extends Vue {
     this.post = post;
     this.title = this.post.title[this.language];
     this.fromDateVal = post.published[0].toISOString().split('T')[0].toString();
-    console.log(this.fromDateVal);
     this.dialog = true;
   }
 
   remove(id: string) {
-    this.$axios.delete("/post/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/" + this.$route.query.siteId + "/posts/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -312,31 +311,23 @@ export default class PostsPage extends Vue {
 
   create() {
     this.post = {
-      id: "",
-      title: {},
-      excerpt: {},
-      body: {},
-      published: "",
-      meta: {
-        title: {},
-        keywords: {},
-        description: {}
+      Body: this.createClearTranslationObject(),
+      Title: this.createClearTranslationObject(),
+      Excerpt: this.createClearTranslationObject(),
+      Published: '',
+      Id: '',
+      Meta: {
+        Title: this.createClearTranslationObject(),
+        Keywords: this.createClearTranslationObject(),
+        Description: this.createClearTranslationObject()
       }
     };
-    for (const lang of this.languages) {
-      this.post.title[lang] = "";
-      this.post.excerpt[lang] = "";
-      this.post.body[lang] = "";
-      this.post.meta.title[lang] = "";
-      this.post.meta.keywords[lang] = "";
-      this.post.meta.description[lang] = "";
-    }
   }
 
   save(close: boolean) {
-    this.post.published = this.fromDateVal;
-    if (this.post.id !== "") {
-      this.$axios.put("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.post.Published = this.fromDateVal;
+    if (this.post.Id !== "") {
+      this.$axios.put("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -350,7 +341,8 @@ export default class PostsPage extends Vue {
           this.load();
         });
     } else {
-      this.$axios.post("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      this.post.Id = null;
+      this.$axios.post("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -367,7 +359,7 @@ export default class PostsPage extends Vue {
   }
 
   autoSave() {
-    if (this.post.id !== "") {
+    if (this.post.Id !== "") {
       this.createSend();
     } else {
       this.editSend();
@@ -375,7 +367,7 @@ export default class PostsPage extends Vue {
   }
 
   createSend() {
-    this.$axios.put("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.put("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -390,7 +382,7 @@ export default class PostsPage extends Vue {
   }
 
   editSend() {
-    this.$axios.post("/post", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.post("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponsePosts) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -419,11 +411,11 @@ export default class PostsPage extends Vue {
 
   load() {
     this.posts = [];
-    this.$axios.get("/post")
+    this.$axios.get("/" + this.$route.query.siteId + "/posts")
       .then((response: IResponsePosts) => {
         if (response.data.success) {
           for (let index in response.data.posts) {
-            response.data.posts[index].published = [new Date(response.data.posts[index].published)];
+            response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
             this.posts.push(response.data.posts[index]);
           }
         } else {
@@ -437,7 +429,7 @@ export default class PostsPage extends Vue {
   addCover() {
     let formData = new FormData();
     formData.append('file', this.file);
-    this.$axios.post('/files/upload', formData)
+    this.$axios.post("/" + this.$route.query.siteId + '/files/upload', formData)
       .then((response: IResponseFiles) => {
         if (response.data.success) {
           this.post.file = response.data.file;
@@ -453,6 +445,14 @@ export default class PostsPage extends Vue {
 
   close() {
     this.dialog = false;
+  }
+
+  createClearTranslationObject() {
+    const response = {};
+    for (const lang of this.languages) {
+      response[lang] = "";
+    }
+    return response
   }
 
   get editor() {

@@ -126,10 +126,15 @@ export default class UsersPage extends Vue {
   };
   headers: IHeader[] = [
     {
-      text: "Username",
+      text: "Name",
       align: 'start',
       sortable: true,
-      value: 'username',
+      value: 'Name',
+    },
+    {
+      text: "Username",
+      sortable: true,
+      value: 'Username',
     },
     {text: "Actions", value: 'actions', sortable: false}
   ];
@@ -147,7 +152,7 @@ export default class UsersPage extends Vue {
   }
 
   remove(user: User) {
-    this.$axios.delete("/users/" + user.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/" + this.$route.query.siteId + "/users/" + user.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseUsers) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -173,7 +178,7 @@ export default class UsersPage extends Vue {
 
   save() {
     if (this.isEdit) {
-      this.$axios.put("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      this.$axios.put("/" + this.$route.query.siteId + "/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -187,7 +192,7 @@ export default class UsersPage extends Vue {
           this.load();
         });
     } else {
-      this.$axios.post("/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      this.$axios.post("/" + this.$route.query.siteId + "/users", this.user, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseUsers) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -205,11 +210,12 @@ export default class UsersPage extends Vue {
 
   load() {
     this.users = [];
-    this.$axios.get("/users")
+    this.$axios.get("/" + this.$route.query.siteId + "/users")
       .then((response: IResponseUsers) => {
         this.dialog = false;
         if (response.data.success === true) {
           this.users = response.data.users;
+          console.log(this.users);
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')

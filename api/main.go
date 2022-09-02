@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/golang-jwt/jwt/v4"
@@ -637,7 +638,7 @@ func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 		c.db.Create(&model.Text{
 			Key:    text.Key,
-			Value:  text.Key,
+			Value:  text.Value,
 			SiteId: siteId,
 		})
 		response.Set("success", true)
@@ -679,7 +680,7 @@ func updateText(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 		c.db.Model(model.Text{}).Where("id = ?", text.Id).Updates(model.Text{
 			Key:   text.Key,
-			Value: text.Key})
+			Value: text.Value})
 		response.Set("success", true)
 		response.Set("post", text.Id)
 		w.WriteHeader(http.StatusOK)
@@ -992,6 +993,7 @@ func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
+	fileId := vars["fileId"]
 	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var file model.File
@@ -1007,7 +1009,7 @@ func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 		response := simplejson.New()
 
-		c.db.Model(model.File{}).Where("id = ?", file.Id).Updates(model.File{
+		c.db.Model(model.File{}).Where("id = ?", fileId).Updates(model.File{
 			Gallery: file.Gallery})
 		response.Set("success", true)
 		response.Set("post", file.Id)
@@ -1032,6 +1034,10 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
 	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
+		e := r.ParseMultipartForm(50 << 20)
+		if e != nil {
+			log.Printf("F: " + e.Error())
+		}
 		file, handle, err := r.FormFile("file")
 		if err != nil {
 			log.Printf("From file: " + err.Error())
@@ -1040,7 +1046,15 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		defer file.Close()
 
 		// Create file
-		dst, err := os.Create("files/" + handle.Filename)
+		path := "files/" + siteId
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+			err := os.Mkdir(path, os.ModePerm)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
+		dst, err := os.Create(path + "/" + handle.Filename)
 		defer dst.Close()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1057,7 +1071,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 		c.db.Create(&model.File{
 			Name:    handle.Filename,
-			Src:     "/files/" + handle.Filename,
+			Src:     "/" + siteId + "/" + handle.Filename,
 			Gallery: "",
 			SiteId:  siteId,
 		}).Scan(&f)
@@ -1887,7 +1901,10 @@ func main() {
 	client := NewConnect(dsn)
 
 	r := mux.NewRouter()
+	// For serving api endpoints
 	api := r.PathPrefix("/v1").Subrouter()
+	// For serving static files
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./files")))
 
 	// posts
 	api.HandleFunc("/{siteId}/posts", func(w http.ResponseWriter, r *http.Request) {
@@ -1974,7 +1991,7 @@ func main() {
 		getFiles(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-	api.HandleFunc("/{siteId}/files", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/{siteId}/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
 		updateFile(w, r, client)
 	}).Methods(http.MethodPut, http.MethodOptions)
 
@@ -2046,11 +2063,11 @@ func main() {
 		me(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-	api.HandleFunc("/{siteId}/refresh", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/refresh", func(w http.ResponseWriter, r *http.Request) {
 		refresh(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
-	api.HandleFunc("/{siteId}/logout", func(w http.ResponseWriter, r *http.Request) {
+	api.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		logout(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 

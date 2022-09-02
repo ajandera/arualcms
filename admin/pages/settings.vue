@@ -50,7 +50,11 @@ export default class SettingsPage extends Vue {
     this.$axios.get("/" + this.$route.query.siteId + "/setting")
       .then((response: IResponseSetting) => {
         if (response.data.success) {
-          response.data.settings.forEach(setting => setting.Value = JSON.parse(setting.Value.toString()));
+          response.data.settings.forEach(setting => {
+            if (setting.Value !== "") {
+              setting.Value = JSON.parse(setting.Value.toString())
+            }
+          });
           this.setting = response.data.settings;
         } else {
           this.updateText(response.data.message);

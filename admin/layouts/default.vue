@@ -99,7 +99,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtChild :language="language"/>
+        <NuxtChild :language="language" :languages="languages" />
       </v-container>
     </v-main>
     <v-footer

@@ -1,5 +1,19 @@
 <template>
   <div>
+    <div class="col-sm-1 col-xs-12" v-if="texts.length === 0">
+      <v-btn
+        @click="add"
+        class="primary"
+        dark
+      >
+        <v-icon
+          small
+          class="mr-2"
+        >
+          mdi-plus
+        </v-icon>
+      </v-btn>
+    </div>
     <div v-for="(item, index) in texts" class="row mt-2" v-bind:key="index">
       <div class="col-sm-1 col-xs-12">
         <v-btn
@@ -18,7 +32,7 @@
       </div>
       <div class="col-sm-3 col-xs-6">
         <v-text-field
-          v-model="item.key"
+          v-model="item.Key"
           :counter="30"
           label="Key"
           required
@@ -30,7 +44,7 @@
           solo
           name="input-7-4"
           label="Solo textarea"
-          v-model="item.value[language]"
+          v-model="item.Value[language]"
           @change="save(item)"
         ></v-textarea>
       </div>
@@ -38,7 +52,7 @@
         <div class="float-right">
           <div class="btn-group" role="group" aria-label="Basic example">
             <v-dialog
-              v-model="dialog[item.key]"
+              v-model="dialog[item.Key]"
               max-width="1000px"
             >
               <template v-slot:activator="{ on, attrs }">
@@ -58,13 +72,13 @@
               </template>
               <v-card>
                 <v-card-title>
-                  <span class="text-h5">{{ item.key[language] }}</span>
+                  <span class="text-h5">{{ item.Key[language] }}</span>
                 </v-card-title>
                 <v-card-text>
                   <v-container>
                     <quill-editor
-                      :ref="item.key['en']"
-                      v-model="item.value[language]"
+                      :ref="item.Key['en']"
+                      v-model="item.Value[language]"
                       :options="editorOption"
                       @blur="onEditorBlur($event)"
                       @focus="onEditorFocus($event)"
@@ -139,8 +153,9 @@ export default class TextsPage extends Vue {
   }
 
   save(text: Text) {
-    if (text.id !== '') {
-      this.$axios.put("text", text, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    text.Value = JSON.stringify(text.Value);
+    if (text.Id !== '') {
+      this.$axios.put('/' + this.$route.query.siteId +"/text", text, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseTexts) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -151,10 +166,11 @@ export default class TextsPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
-          this.close(text.key);
+          this.close(text.Key);
         });
     } else {
-      this.$axios.post("text", text)
+      text.Id = null;
+      this.$axios.post('/' + this.$route.query.siteId +"/text", text)
         .then((response: IResponseTexts) => {
           if (response.data.success) {
             this.updateText(response.data.message);
@@ -166,16 +182,23 @@ export default class TextsPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
-          this.close(text.key);
+          this.close(text.Key);
         });
     }
   }
 
   load() {
-    this.$axios.get("/text")
+    this.$axios.get('/' + this.$route.query.siteId +"/text")
       .then((response: IResponseTexts) => {
         if (response.data.success === true) {
-          this.texts = response.data.texts;
+          if (response.data.texts !== null) {
+            response.data.texts.forEach(text => {
+              if (text.Value !== "") {
+                text.Value = JSON.parse(text.Value.toString())
+              }
+            });
+            this.texts = response.data.texts;
+          }
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')
@@ -186,18 +209,18 @@ export default class TextsPage extends Vue {
 
   add() {
     let text: Text = {
-      key: '',
-      value: {},
-      id: ""
+      Key: '',
+      Value: {},
+      Id: ""
     };
     for (const lang of this.languages) {
-      text.value[lang] = "";
+      text.Value[lang] = "";
     }
     this.texts.push(text);
   }
 
   remove(item: Text) {
-    this.$axios.delete("/text/" + item.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete('/' + this.$route.query.siteId +"/text/" + item.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseTexts) => {
         if (response.data.success) {
           this.updateText(response.data.message);

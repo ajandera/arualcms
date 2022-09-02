@@ -48,6 +48,12 @@
               <v-spacer></v-spacer>
               <v-btn
                 color="blue darken-1"
+                @click="save"
+              >
+                Save
+              </v-btn>
+              <v-btn
+                color="blue darken-1"
                 text
                 @click="close"
               >
@@ -58,23 +64,23 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.src="{ item }">
+    <template v-slot:item.Src="{ item }">
       <div class="p-5">
-        <v-img :src="item.src" :alt="item.name" height="auto" width="200px"></v-img>
+        <v-img :src="'http://localhost:9009'+item.Src" :alt="item.Name" height="auto" width="200px"></v-img>
       </div>
     </template>
-    <template v-slot:item.gallery="{ item }">
+    <template v-slot:item.Gallery="{ item }">
       <v-text-field
-        v-model="item.gallery"
+        v-model="item.Gallery"
         :counter="20"
-        v-on:change="saveGallery(item.id, item.gallery)"
+        v-on:change="saveGallery(item.Id, item.Gallery)"
       ></v-text-field>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon
         small
         class="mr-2"
-        @click="remove(item)"
+        @click="remove(item.Id)"
       >
         mdi-delete
       </v-icon>
@@ -128,10 +134,10 @@ export default class FilesPage extends Vue {
       text: "Image",
       align: 'start',
       sortable: true,
-      value: 'src',
+      value: 'Src',
     },
-    {text: "Name", value: 'name', sortable: true},
-    {text: "Gallery", value: 'gallery', sortable: true},
+    {text: "Name", value: 'Name', sortable: true},
+    {text: "Gallery", value: 'Gallery', sortable: true},
     {text: "Actions", value: 'actions', sortable: false}
   ];
 
@@ -140,7 +146,7 @@ export default class FilesPage extends Vue {
   }
 
   remove(id: string) {
-    this.$axios.delete("files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/" + this.$route.query.siteId + "files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseFiles) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -161,8 +167,8 @@ export default class FilesPage extends Vue {
 
   save() {
     let formData = new FormData();
-    formData.append('file', this.file.toString());
-    this.$axios.post('files/upload',
+    formData.append('file', this.file);
+    this.$axios.post('/' + this.$route.query.siteId + '/files/upload',
       formData,
       {
         headers: {
@@ -184,7 +190,7 @@ export default class FilesPage extends Vue {
   }
 
   load() {
-    this.$axios.get("files")
+    this.$axios.get("/" + this.$route.query.siteId + "/files")
       .then((response: IResponseFiles) => {
         if (response.data.success) {
           this.files = response.data.files;
@@ -197,7 +203,7 @@ export default class FilesPage extends Vue {
   }
 
   saveGallery(id: string, gallery: string) {
-    this.$axios.put('files/gallery/' + id,
+    this.$axios.put('/' + this.$route.query.siteId + '/files/' + id,
       {'gallery': gallery},
       {headers: {'Content-Type': "application/json;charset=utf-8"}}
     ).then((response: IResponseFiles) => {

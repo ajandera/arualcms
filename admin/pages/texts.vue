@@ -169,7 +169,7 @@ export default class TextsPage extends Vue {
           this.close(text.Key);
         });
     } else {
-      text.Id = null;
+      text.Id = "";
       this.$axios.post('/' + this.$route.query.siteId +"/text", text)
         .then((response: IResponseTexts) => {
           if (response.data.success) {
@@ -192,7 +192,7 @@ export default class TextsPage extends Vue {
       .then((response: IResponseTexts) => {
         if (response.data.success === true) {
           if (response.data.texts !== null) {
-            response.data.texts.forEach(text => {
+            response.data.texts.forEach((text: any) => {
               if (text.Value !== "") {
                 text.Value = JSON.parse(text.Value.toString())
               }
@@ -249,7 +249,6 @@ export default class TextsPage extends Vue {
   }
 
   close(key: string) {
-    console.log(this.dialog[key]);
     this.dialog[key] = false;
   }
 }

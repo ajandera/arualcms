@@ -6,9 +6,7 @@ export default interface Post {
     Excerpt: any;
     Published: any;
     Id: string;
-    Meta: {
-      Title: any,
-      Keywords: any,
-      Description: any
-    }
+    MetaTitle: any;
+    Keywords: any;
+    Description: any;
 }

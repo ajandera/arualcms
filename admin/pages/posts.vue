@@ -33,8 +33,9 @@
             </v-btn>
           </template>
           <v-card>
-            <v-img :src="$config.hostname + '/storage/' + post.src" height="auto" width="500px"></v-img>
-            <v-row>
+            <br>
+            <v-img v-if="post.Id !== ''" :src="$config.hostname + '/storage/' + post.Src" height="auto" width="500px"></v-img>
+            <v-row v-if="post.Id !== ''">
               <v-col cols="8">
                 <v-file-input
                   accept="image/*"
@@ -123,21 +124,21 @@
                         @ready="onEditorReady($event)"
                       />
                       <v-text-field
-                        v-model="post.Meta.Title[language]"
+                        v-model="post.MetaTitle[language]"
                         :counter="100"
                         :rules="rules"
                         label="Meta title"
                         required
                       ></v-text-field>
                       <v-text-field
-                        v-model="post.Meta.Description[language]"
+                        v-model="post.Description[language]"
                         :counter="150"
                         :rules="rules"
                         label="Meta description"
                         required
                       ></v-text-field>
                       <v-text-field
-                        v-model="post.Meta.Keywords[language]"
+                        v-model="post.Keywords[language]"
                         :counter="100"
                         :rules="rules"
                         label="Meta keywords"
@@ -195,7 +196,7 @@
       <v-icon
         small
         class="mr-2"
-        @click="remove(item)"
+        @click="remove(item.Id)"
       >
         mdi-delete
       </v-icon>
@@ -253,11 +254,9 @@ export default class PostsPage extends Vue {
     Excerpt: this.createClearTranslationObject(),
     Published: '',
     Id: '',
-    Meta: {
-      Title: this.createClearTranslationObject(),
-      Keywords: this.createClearTranslationObject(),
-      Description: this.createClearTranslationObject()
-    }
+    MetaTitle: this.createClearTranslationObject(),
+    Keywords: this.createClearTranslationObject(),
+    Description: this.createClearTranslationObject()
   };
   dialog: boolean = false;
   valid: boolean = true;
@@ -288,8 +287,8 @@ export default class PostsPage extends Vue {
 
   edit(post: Post) {
     this.post = post;
-    this.title = this.post.title[this.language];
-    this.fromDateVal = post.published[0].toISOString().split('T')[0].toString();
+    this.title = this.post.Title[this.language];
+    this.fromDateVal = post.Published[0].toISOString().split('T')[0].toString();
     this.dialog = true;
   }
 
@@ -316,16 +315,20 @@ export default class PostsPage extends Vue {
       Excerpt: this.createClearTranslationObject(),
       Published: '',
       Id: '',
-      Meta: {
-        Title: this.createClearTranslationObject(),
-        Keywords: this.createClearTranslationObject(),
-        Description: this.createClearTranslationObject()
-      }
+      MetaTitle: this.createClearTranslationObject(),
+      Keywords: this.createClearTranslationObject(),
+      Description: this.createClearTranslationObject()
     };
   }
 
   save(close: boolean) {
     this.post.Published = this.fromDateVal;
+    this.post.Title = JSON.stringify(this.post.Title);
+    this.post.Excerpt = JSON.stringify(this.post.Excerpt);
+    this.post.Body = JSON.stringify(this.post.Body);
+    this.post.MetaTitle = JSON.stringify(this.post.MetaTitle);
+    this.post.Keywords = JSON.stringify(this.post.Keywords);
+    this.post.Description = JSON.stringify(this.post.Description);
     if (this.post.Id !== "") {
       this.$axios.put("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
@@ -341,7 +344,7 @@ export default class PostsPage extends Vue {
           this.load();
         });
     } else {
-      this.post.Id = null;
+      this.post.Id = "";
       this.$axios.post("/" + this.$route.query.siteId + "/posts", this.post, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponsePosts) => {
           if (response.data.success) {
@@ -416,6 +419,18 @@ export default class PostsPage extends Vue {
         if (response.data.success) {
           for (let index in response.data.posts) {
             response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
+            response.data.posts[index].Title = JSON.parse(response.data.posts[index].Title.toString());
+            response.data.posts[index].Excerpt = JSON.parse(response.data.posts[index].Excerpt.toString());
+            response.data.posts[index].Body = JSON.parse(response.data.posts[index].Body.toString());
+            if (response.data.posts[index].MetaTitle !== "") {
+              response.data.posts[index].MetaTitle = JSON.parse(response.data.posts[index].MetaTitle.toString());
+            }
+            if (response.data.posts[index].Keywords !== "") {
+              response.data.posts[index].Keywords = JSON.parse(response.data.posts[index].Keywords.toString());
+            }
+            if (response.data.posts[index].Description !== "") {
+              response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
+            }
             this.posts.push(response.data.posts[index]);
           }
         } else {
@@ -432,8 +447,8 @@ export default class PostsPage extends Vue {
     this.$axios.post("/" + this.$route.query.siteId + '/files/upload', formData)
       .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.post.file = response.data.file;
-          this.post.src = response.data.file;
+          this.post.File = response.data.file;
+          this.post.Src = response.data.file;
           this.save(false);
         } else {
           this.updateText(response.data.message);
@@ -448,7 +463,7 @@ export default class PostsPage extends Vue {
   }
 
   createClearTranslationObject() {
-    const response = {};
+    const response: any = {};
     for (const lang of this.languages) {
       response[lang] = "";
     }

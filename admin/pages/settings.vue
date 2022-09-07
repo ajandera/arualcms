@@ -51,7 +51,7 @@ export default class SettingsPage extends Vue {
       .then((response: IResponseSetting) => {
         if (response.data.success) {
           response.data.settings.forEach(setting => {
-            if (setting.Value !== "") {
+            if (setting.Value.toString() !== "") {
               setting.Value = JSON.parse(setting.Value.toString())
             }
           });

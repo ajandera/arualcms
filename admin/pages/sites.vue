@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="languages"
+    :items="sites"
     :items-per-page="50"
     class="elevation-1"
   >
@@ -9,7 +9,7 @@
       <v-toolbar
         flat
       >
-        <v-toolbar-title>Languages</v-toolbar-title>
+        <v-toolbar-title>Sites</v-toolbar-title>
         <v-divider
           class="mx-4"
           inset
@@ -38,18 +38,11 @@
             <v-card-text>
               <v-container>
                 <v-text-field
-                  v-model="langObject.Key"
-                  :counter="5"
-                  label="Code"
+                  v-model="siteObject.Name"
+                  :counter="50"
+                  label="Site"
                   required
                 ></v-text-field>
-                <v-text-field
-                  v-model="langObject.Name"
-                  :counter="30"
-                  label="Name"
-                  required
-                ></v-text-field>
-                <v-checkbox v-model="langObject.Default" label="Default"/>
               </v-container>
             </v-card-text>
             <v-card-actions>
@@ -64,7 +57,7 @@
               <v-btn
                 color="primary"
                 dark
-                @click="save(langObject)"
+                @click="save(siteObject)"
               >
                 Save
               </v-btn>
@@ -105,15 +98,15 @@
 
 <script lang="ts">
 import {Component, Vue} from 'nuxt-property-decorator';
-import IResponseLanguage from '~/model/IResponseLanguage';
-import Language from '~/model/Language';
 import IHeader from "~/model/IHeader";
 import {namespace} from 'vuex-class';
+import Site from '~/model/Site';
+import IResponseSite from '~/model/IResponseSite';
 
 const snackbar = namespace('Snackbar');
 
 @Component
-export default class LanguagesPage extends Vue {
+export default class SitesPage extends Vue {
   @snackbar.Action
   public updateText!: (newText: string) => void
 
@@ -123,16 +116,13 @@ export default class LanguagesPage extends Vue {
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
 
-  langObject: Language = {
-    Key: "",
-    Name: "",
-    Default: false,
+  siteObject: Site = {
     Id: "",
-    SiteId: this.$route.query.siteId.toString()
+    Name: ""
   };
-  title: string = 'Create language'
+  title: string = 'Create site'
   $axios: any;
-  languages: Language[] = [];
+  sites: Site[] = [];
   dialog: boolean = false;
   headers: IHeader[] = [
     {
@@ -141,8 +131,6 @@ export default class LanguagesPage extends Vue {
       sortable: true,
       value: 'Name',
     },
-    {text: "Code", value: 'Key', sortable: false},
-    {text: "Default", value: 'Default', sortable: false},
     {text: "Actions", value: 'actions', sortable: false}
   ];
 
@@ -151,14 +139,14 @@ export default class LanguagesPage extends Vue {
   }
 
   create(): void {
-    this.title = "New Language";
+    this.title = "New Site";
     this.dialog = true;
   }
 
-  save(language: Language) {
-    if (language.Id !== '') {
-      this.$axios.put("/" + this.$route.query.siteId + "/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-        .then((response: IResponseLanguage) => {
+  save(site: Site) {
+    if (site.Id !== '') {
+      this.$axios.put("/sites", site, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseSite) => {
           if (response.data.success) {
             this.updateText(response.data.message);
             this.updateColor('green')
@@ -172,8 +160,8 @@ export default class LanguagesPage extends Vue {
           }
         });
     } else {
-      this.$axios.post("/" + this.$route.query.siteId + "/languages", language, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-        .then((response: IResponseLanguage) => {
+      this.$axios.post("/sites", site, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseSite) => {
           if (response.data.success) {
             this.updateText(response.data.message);
             this.updateColor('green')
@@ -191,10 +179,10 @@ export default class LanguagesPage extends Vue {
 
   load() {
     this.dialog = false;
-    this.$axios.get("/" + this.$route.query.siteId + "/languages")
-      .then((response: IResponseLanguage) => {
+    this.$axios.get("/sites")
+      .then((response: IResponseSite) => {
         if (response.data.success) {
-          this.languages = response.data.languages;
+          this.sites = response.data.sites;
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')
@@ -203,15 +191,15 @@ export default class LanguagesPage extends Vue {
       });
   }
 
-  edit(langObject: Language) {
-    this.title = langObject.Name;
-    this.langObject = langObject;
+  edit(siteObject: Site) {
+    this.title = siteObject.Name;
+    this.siteObject = siteObject;
     this.dialog = true;
   }
 
-  remove(language: Language) {
-    this.$axios.delete("/languages/" + language.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponseLanguage) => {
+  remove(site: Site) {
+    this.$axios.delete("/sites/" + site.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseSite) => {
         if (response.data.success) {
           this.updateText(response.data.message);
           this.updateColor('green')
@@ -226,15 +214,11 @@ export default class LanguagesPage extends Vue {
   }
 
   close() {
-    this.langObject = {
+    this.siteObject = {
       Id: "",
-      Key: "",
-      Name: "",
-      Default: false,
-      SiteId: this.$route.query.siteId.toString()
+      Name: ""
     };
     this.dialog = false;
   }
 }
 </script>
-

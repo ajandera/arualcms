@@ -1,4 +1,9 @@
 export default interface Setting {
-    key: string;
-    value: object;
+    Key: string;
+    Value: SettingObject;
+    Id: string;
+}
+
+interface SettingObject {
+  [key: string]: string | number;
 }

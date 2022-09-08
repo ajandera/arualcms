@@ -5,6 +5,7 @@ export default interface IResponsePosts {
       success: boolean,
       post: Post[],
       posts: Post[],
+      files: any[],
       message: string,
       error: string
     }

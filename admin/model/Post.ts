@@ -1,14 +1,12 @@
 export default interface Post {
-    src?: File;
-    file?: File;
-    body: any;
-    title: any;
-    excerpt: any;
-    published: any;
-    _id: string;
-    meta: {
-      title: any,
-      keywords: any,
-      description: any
-    }
+    File?: string;
+    Src?: string;
+    Body: any;
+    Title: any;
+    Excerpt: any;
+    Published: any;
+    Id: string;
+    MetaTitle: any;
+    Keywords: any;
+    Description: any;
 }

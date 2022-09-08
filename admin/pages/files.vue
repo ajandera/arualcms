@@ -48,6 +48,12 @@
               <v-spacer></v-spacer>
               <v-btn
                 color="blue darken-1"
+                @click="save"
+              >
+                Save
+              </v-btn>
+              <v-btn
+                color="blue darken-1"
                 text
                 @click="close"
               >
@@ -58,23 +64,23 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.src="{ item }">
+    <template v-slot:item.Src="{ item }">
       <div class="p-5">
-        <v-img :src="item.src" :alt="item.name" height="auto" width="200px"></v-img>
+        <v-img :src="$config.storage + item.Src" :alt="item.Name" height="auto" width="200px"></v-img>
       </div>
     </template>
-    <template v-slot:item.gallery="{ item }">
+    <template v-slot:item.Gallery="{ item }">
       <v-text-field
-        v-model="item.gallery"
+        v-model="item.Gallery"
         :counter="20"
-        v-on:change="saveGallery(item.id, item.gallery)"
+        v-on:change="saveGallery(item.Id, item.Gallery)"
       ></v-text-field>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon
         small
         class="mr-2"
-        @click="remove(item)"
+        @click="remove(item.Id)"
       >
         mdi-delete
       </v-icon>
@@ -85,121 +91,137 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
+import {Component, Vue} from 'nuxt-property-decorator';
 import IResponseFiles from '~/model/IResponseFiles';
-import Message from "~/model/Message";
 import IHeader from "~/model/IHeader";
+import {namespace} from 'vuex-class';
+
+const snackbar = namespace('Snackbar');
 
 @Component
 export default class FilesPage extends Vue {
-    files: File[] = [];
-    file: File = {
-      lastModified: 0, name: "", webkitRelativePath: "",
-      size: 0,
-      type: '',
-      arrayBuffer: function (): Promise<ArrayBuffer> {
-        throw new Error('Function not implemented.');
-      },
-      slice: function (start?: number, end?: number, contentType?: string): Blob {
-        throw new Error('Function not implemented.');
-      },
-      stream: function (): ReadableStream<any> {
-        throw new Error('Function not implemented.');
-      },
-      text: function (): Promise<string> {
-        throw new Error('Function not implemented.');
-      }
-    };
-    message: Message = {class: "", text: ""};
-    $axios: any;
-    $refs: any;
-    dialog: boolean = false;
-    headers: IHeader[] = [
-      {
-        text: "Image",
-        align: 'start',
-        sortable: true,
-        value: 'src',
-      },
-      {text: "Name", value: 'name', sortable: true},
-      {text: "Gallery", value: 'gallery', sortable: true},
-      {text: "Actions", value: 'actions', sortable: false}
-    ];
+  @snackbar.Action
+  public updateText!: (newText: string) => void
 
-    mounted() {
-        this.load();
+  @snackbar.Action
+  public updateColor!: (newColor: string) => void
+
+  @snackbar.Action
+  public updateShow!: (newShow: boolean) => void
+  files: File[] = [];
+  file: File = {
+    lastModified: 0, name: "", webkitRelativePath: "",
+    size: 0,
+    type: '',
+    arrayBuffer: function (): Promise<ArrayBuffer> {
+      throw new Error('Function not implemented.');
+    },
+    slice: function (start?: number, end?: number, contentType?: string): Blob {
+      throw new Error('Function not implemented.');
+    },
+    stream: function (): ReadableStream<any> {
+      throw new Error('Function not implemented.');
+    },
+    text: function (): Promise<string> {
+      throw new Error('Function not implemented.');
     }
+  };
+  $axios: any;
+  $refs: any;
+  dialog: boolean = false;
+  headers: IHeader[] = [
+    {
+      text: "Image",
+      align: 'start',
+      sortable: true,
+      value: 'Src',
+    },
+    {text: "Name", value: 'Name', sortable: true},
+    {text: "Gallery", value: 'Gallery', sortable: true},
+    {text: "Actions", value: 'actions', sortable: false}
+  ];
 
-    remove(id:string) {
-      this.$axios.delete("files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-          .then((response: IResponseFiles) => {
-            if (response.data.success) {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-success";
-              this.load();
-            } else {
-              this.message.text = response.data.message;
-              this.message.class = "alert alert-danger";
-            }
-          });
-    }
+  mounted() {
+    this.load();
+  }
 
-    create() {
-
-    }
-
-    save() {
-      let formData = new FormData();
-      formData.append('file', this.file.toString());
-      this.$axios.post('files/upload',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      ).then((response: IResponseFiles) => {
+  remove(id: string) {
+    this.$axios.delete("/" + this.$route.query.siteId + "files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.updateText(response.data.message);
+          this.updateColor('green')
+          this.updateShow(true);
           this.load();
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
-    }
+  }
 
-    load() {
-      this.$axios.get("files")
-          .then((response: IResponseFiles) => {
-            if (response.data.success) {
-              this.files = response.data.files;
-            } else {
-              this.message.text = response.data.error;
-              this.message.class = 'danger';
-            }
-          });
-    }
+  create() {
 
-    saveGallery(id: string, gallery: string) {
-      this.$axios.put( 'files/gallery/'+id,
-        {'gallery': gallery},
-        {headers: {'Content-Type': "application/json;charset=utf-8"}}
-      ).then((response: IResponseFiles) => {
+  }
+
+  save() {
+    let formData = new FormData();
+    formData.append('file', this.file);
+    this.$axios.post('/' + this.$route.query.siteId + '/files/upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    ).then((response: IResponseFiles) => {
+      if (response.data.success) {
+        this.updateText(response.data.message);
+        this.updateColor('green')
+        this.updateShow(true);
+        this.load();
+      } else {
+        this.updateText(response.data.message);
+        this.updateColor('red')
+        this.updateShow(true);
+      }
+    });
+  }
+
+  load() {
+    this.$axios.get("/" + this.$route.query.siteId + "/files")
+      .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-success";
+          this.files = response.data.files;
         } else {
-          this.message.text = response.data.message;
-          this.message.class = "alert alert-danger";
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
-    }
+  }
 
-    close() {
-      this.dialog = false;
-    }
+  saveGallery(id: string, gallery: string) {
+    this.$axios.put('/' + this.$route.query.siteId + '/files/' + id,
+      {'gallery': gallery},
+      {headers: {'Content-Type': "application/json;charset=utf-8"}}
+    ).then((response: IResponseFiles) => {
+      if (response.data.success) {
+        this.updateText(response.data.message);
+        this.updateColor('green')
+        this.updateShow(true);
+      } else {
+        this.updateText(response.data.message);
+        this.updateColor('red')
+        this.updateShow(true);
+      }
+    });
+  }
+
+  close() {
+    this.dialog = false;
+  }
 }
 </script>
 

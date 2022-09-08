@@ -1,8 +1,7 @@
 export default interface Language {
-    key: string;
-    value: string;
-    default: boolean;
-    _id: {
-      $oid: string;
-    }
+  Key: string;
+  Name: string;
+  Default: boolean;
+  Id: string;
+  SiteId: string;
 }

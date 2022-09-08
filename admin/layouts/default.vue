@@ -19,7 +19,7 @@
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
+            <v-list-item-title v-text="item.title"/>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -35,8 +35,34 @@
       >
         <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
       </v-btn>
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
+      <v-toolbar-title v-text="title"/>
+      <v-spacer/>
+      <v-menu
+        bottom
+        origin="center center"
+        transition="scale-transition"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="secondary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            {{ site.Name }}
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            v-for="(item, i) in sites"
+            :key="i"
+            @click="onSiteChange(item)"
+          >
+            <v-list-item-title>{{ item.Name }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-menu
         bottom
         origin="center center"
@@ -73,7 +99,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtChild :language="language" />
+        <NuxtChild :language="language" :languages="languages" />
       </v-container>
     </v-main>
     <v-footer
@@ -82,88 +108,129 @@
     >
       <span>v0.9.2 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
-    <v-snackbar
-      v-model="message.text !== ''"
-      :timeout="2000"
-      :color="message.class"
-    >
-      {{ message.text }}
-
-    </v-snackbar>
+    <Snackbar/>
   </v-app>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
-import Message from "~/model/Message";
+import {Component, Vue, Watch} from 'nuxt-property-decorator'
 import IResponseLanguage from "~/model/IResponseLanguage";
+import Snackbar from "~/components/Snackbar.vue";
+import IResponseSite from "~/model/IResponseSite";
+import Site from '~/model/Site';
 
-@Component
+@Component({
+  components: {
+    Snackbar
+  }
+})
 export default class DefaultLayout extends Vue {
-    clipped: boolean = true
-    drawer: boolean = true
-    fixed: boolean = true
-    languages: string[] = []
-    language: string = ""
-    message: Message = {text: "", class: ""}
-    items: Array<any> = [
-        {
-          icon: 'mdi-apps',
-          title: 'Posts',
-          to: '/posts'
-        },
-        {
-          icon: 'mdi-card-text',
-          title: 'Texts',
-          to: '/texts'
-        },
-        {
-          icon: 'mdi-file-multiple',
-          title: 'Files',
-          to: '/files'
-        },
-        {
-          icon: 'mdi-flag',
-          title: 'Languages',
-          to: '/languages'
-        },
-        {
-          icon: 'mdi-cog',
-          title: 'Setting',
-          to: '/settings'
-        },
-        {
-          icon: 'mdi-account',
-          title: 'Users',
-          to: '/users'
-        }
-
-      ]
-    miniVariant: boolean = false
-    title: string = 'arualCMS'
-    $axios: any
-    $router: any;
-    $i18n: any;
-
-    mounted() {
-        this.getDefaultLanguage();
+  clipped: boolean = true
+  drawer: boolean = true
+  fixed: boolean = true
+  languages: string[] = []
+  language: string = ""
+  items: Array<any> = [
+    {
+      icon: 'mdi-apps',
+      title: 'Posts',
+      to: '/posts'
+    },
+    {
+      icon: 'mdi-card-text',
+      title: 'Texts',
+      to: '/texts'
+    },
+    {
+      icon: 'mdi-file-multiple',
+      title: 'Files',
+      to: '/files'
+    },
+    {
+      icon: 'mdi-flag',
+      title: 'Languages',
+      to: '/languages'
+    },
+    {
+      icon: 'mdi-earth',
+      title: 'Sites',
+      to: '/sites'
+    },
+    {
+      icon: 'mdi-cog',
+      title: 'Setting',
+      to: '/settings'
+    },
+    {
+      icon: 'mdi-account',
+      title: 'Users',
+      to: '/users'
     }
 
-    logout(): void {
-      window.localStorage.removeItem("jwt");
-      this.$router.push('in');
-    }
+  ]
+  miniVariant: boolean = false
+  title: string = 'arualCMS'
+  $axios: any
+  $router: any;
+  $i18n: any;
+  $auth: any;
+  $nuxt: any;
+  sites: Site[] = [];
+  site: Site = {Id: "", Name: ""};
 
-    getDefaultLanguage(): void {
-      this.$axios.get("/languages")
-        .then((response: IResponseLanguage) => {
-          this.language = response.data.languages.filter(item => item.default)[0].key;
-          this.languages = response.data.languages.map(item => item.key);
-        });
-    }
+  mounted() {
+    this.guard();
+  }
 
-    onLangChange(lang: string): void {
-      this.language = lang;
+  @Watch('$route')
+  onPropertyChanged(value: string, oldValue: string) {
+    if (!this.$route.query.siteId && this.site !== null) {
+      if (this.site.Id === undefined) {
+        this.$router.push({path: this.$route.path, query: {siteId: this.site}})
+      } else {
+        this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
+      }
     }
+  }
+
+  guard() {
+    if (!this.$auth.loggedIn) {
+      this.$nuxt.$options.router.push('/in');
+    } else {
+      this.getSites();
+    }
+  }
+
+  async logout() {
+    await this.$auth.logout();
+    this.$nuxt.$options.router.push('/in');
+  }
+
+  getDefaultLanguage(siteId: string): void {
+    this.$axios.get("/" + siteId +"/languages")
+      .then((response: IResponseLanguage) => {
+        this.language = response.data.languages.filter(item => item.Default)[0].Key;
+        this.languages = response.data.languages.map(item => item.Key);
+      });
+  }
+
+  getSites(): void {
+    this.$axios.get("/sites")
+      .then((response: IResponseSite) => {
+        this.sites = response.data.sites;
+        this.site = this.sites[0];
+        this.$router.push({path: this.$route.path, query: {storeId: this.site.Id}});
+        this.getDefaultLanguage(this.site.Id)
+      });
+  }
+
+  onLangChange(lang: string): void {
+    this.language = lang;
+  }
+
+  onSiteChange(site: Site): void {
+    this.site = site;
+    this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
+  }
 }
 </script>

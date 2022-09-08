@@ -103,9 +103,10 @@ export default {
   build: {},
 
   publicRuntimeConfig: {
-    hostname: process.env.VUE_APP_API || 'http://localhost:9009/',
+    hostname: process.env.VUE_APP_API || 'http://localhost:9009/v1/',
+    storage: process.env.VUE_APP_STORAGE || 'http://localhost:9009',
     axios: {
-      baseURL: process.env.VUE_APP_API || 'http://localhost:9009/'
+      baseURL: process.env.VUE_APP_API || 'http://localhost:9009/v1/'
     }
   }
 }

@@ -34,7 +34,7 @@
           </template>
           <v-card>
             <br>
-            <v-img v-if="post.Id !== ''" :src="$config.hostname + '/storage/' + post.Src" height="auto" width="500px"></v-img>
+            <v-img v-if="post.Id !== ''" :src="$config.storage + post.Src" height="auto" width="500px"></v-img>
             <v-row v-if="post.Id !== ''">
               <v-col cols="8">
                 <v-file-input
@@ -170,9 +170,9 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.file="{ item }">
+    <template v-slot:item.Src="{ item }">
       <div class="p-5">
-        <v-img :src="$config.hostname + '/storage/' + item.file" :alt="item.Title[language]" height="auto"
+        <v-img :src="$config.storage + item.Src" :alt="item.Title[language]" height="auto"
                width="200px"></v-img>
       </div>
     </template>
@@ -241,7 +241,7 @@ export default class PostsPage extends Vue {
       text: "Image",
       align: 'start',
       sortable: false,
-      value: 'File',
+      value: 'Src',
     },
     {text: "Title", value: 'Title'},
     {text: "Excerpt", value: 'Excerpt'},
@@ -287,6 +287,7 @@ export default class PostsPage extends Vue {
 
   edit(post: Post) {
     this.post = post;
+    console.log(this.post);
     this.title = this.post.Title[this.language];
     this.fromDateVal = post.Published[0].toISOString().split('T')[0].toString();
     this.dialog = true;
@@ -431,6 +432,12 @@ export default class PostsPage extends Vue {
             if (response.data.posts[index].Description !== "") {
               response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
             }
+            if (response.data.posts[index].File !== "") {
+              response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
+            }   else {
+              response.data.posts[index].Src = "";
+            }
+            console.log(response.data.posts[index]);
             this.posts.push(response.data.posts[index]);
           }
         } else {
@@ -448,7 +455,7 @@ export default class PostsPage extends Vue {
       .then((response: IResponseFiles) => {
         if (response.data.success) {
           this.post.File = response.data.file;
-          this.post.Src = response.data.file;
+          this.post.Src = response.data.src;
           this.save(false);
         } else {
           this.updateText(response.data.message);

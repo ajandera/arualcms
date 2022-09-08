@@ -215,7 +215,6 @@ export default class UsersPage extends Vue {
         this.dialog = false;
         if (response.data.success === true) {
           this.users = response.data.users;
-          console.log(this.users);
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')

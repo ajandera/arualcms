@@ -311,9 +311,16 @@ func getPosts(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 
 		var posts []model.Post
+		var files []model.File
 		c.db.Model(&model.Post{}).Where("site_id = ?", siteId).Scan(&posts)
+		for _, v := range posts {
+			var f model.File
+			c.db.Model(&model.File{}).Where("id = ?", v.File).Scan(&f)
+			files = append(files, f)
+		}
 		response.Set("success", true)
 		response.Set("posts", posts)
+		response.Set("files", files)
 
 		w.WriteHeader(http.StatusOK)
 
@@ -405,7 +412,7 @@ func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 			MetaTitle:   post.MetaTitle,
 			Keywords:    post.Keywords,
 			Description: post.Description,
-			SiteId:      siteId})
+			File:        post.File})
 		response.Set("success", true)
 		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
@@ -1080,6 +1087,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 		response.Set("success", true)
 		response.Set("file", f.Id)
+		response.Set("src", "/"+siteId+"/"+handle.Filename)
 
 		payload, err := response.MarshalJSON()
 		if err != nil {

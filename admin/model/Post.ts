@@ -1,6 +1,6 @@
 export default interface Post {
-    Src?: File;
-    File?: File;
+    File?: string;
+    Src?: string;
     Body: any;
     Title: any;
     Excerpt: any;

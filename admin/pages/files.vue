@@ -66,7 +66,7 @@
     </template>
     <template v-slot:item.Src="{ item }">
       <div class="p-5">
-        <v-img :src="'http://localhost:9009'+item.Src" :alt="item.Name" height="auto" width="200px"></v-img>
+        <v-img :src="$config.storage + item.Src" :alt="item.Name" height="auto" width="200px"></v-img>
       </div>
     </template>
     <template v-slot:item.Gallery="{ item }">

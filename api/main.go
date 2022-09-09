@@ -863,15 +863,30 @@ func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 		if hashErr != nil {
 			log.Fatalf(hashErr.Error())
 		}
+
+		var u = model.User{}
+
 		c.db.Create(&model.User{
 			Name:     user.Name,
 			Username: user.Username,
 			Password: pw,
 			ParentId: user.ParentId,
-		})
+		}).Scan(&u)
+
+		// generate permission
+		var sites []model.Site
+		c.db.Model(&model.Site{}).Where("user_id = ?", user.ParentId).Scan(&sites)
+		for _, v := range sites {
+			c.db.Create(&model.Permission{
+				UserId: u.Id,
+				SiteId: v.Id,
+				Role:   "admin",
+			})
+		}
+
 		response.Set("success", true)
 		response.Set("message", "User created successfully.")
-		response.Set("post", user.Id)
+		response.Set("user", u.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1435,7 +1450,21 @@ func createSite(w http.ResponseWriter, r *http.Request, c ClientData) {
 		response := simplejson.New()
 		res.UserId = userId
 		res.Name = site.Name
-		c.db.Create(&res)
+
+		var s = model.Site{}
+		c.db.Create(&res).Scan(&s)
+
+		// generate permission
+		var users []model.User
+		c.db.Model(&model.User{}).Where("parent_id = ?", userId).Scan(&users)
+		for _, u := range users {
+			c.db.Create(&model.Permission{
+				UserId: u.Id,
+				SiteId: s.Id,
+				Role:   "admin",
+			})
+		}
+
 		createDefaultSetting(res.Id, c)
 		response.Set("success", true)
 		response.Set("message", "Site created successfully.")
@@ -1930,9 +1959,12 @@ func me(w http.ResponseWriter, r *http.Request, c ClientData) {
 		claims := token.Claims.(jwt.MapClaims)
 		response := simplejson.New()
 		var user model.User
+		var permission []model.Permission
 		c.db.First(&model.User{}, "id = ?", fmt.Sprintf("%v", claims["id"])).Scan(&user)
+		c.db.Model(&model.Permission{}).Where("user_id = ?", fmt.Sprintf("%v", claims["id"])).Scan(&permission)
 		response.Set("success", true)
 		response.Set("user", user)
+		response.Set("permission", permission)
 
 		payload, err := response.MarshalJSON()
 		if err != nil {

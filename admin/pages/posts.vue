@@ -287,7 +287,6 @@ export default class PostsPage extends Vue {
 
   edit(post: Post) {
     this.post = post;
-    console.log(this.post);
     this.title = this.post.Title[this.language];
     this.fromDateVal = post.Published[0].toISOString().split('T')[0].toString();
     this.dialog = true;
@@ -437,7 +436,6 @@ export default class PostsPage extends Vue {
             }   else {
               response.data.posts[index].Src = "";
             }
-            console.log(response.data.posts[index]);
             this.posts.push(response.data.posts[index]);
           }
         } else {

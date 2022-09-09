@@ -230,7 +230,6 @@ func refresh(w http.ResponseWriter, r *http.Request, c ClientData) {
 			response := simplejson.New()
 			if IsValidUUID(user.Id) == true && err == nil {
 				response.Set("success", true)
-				response.Set("account", user)
 				response.Set("jwt", newTokenPair)
 			} else {
 				response.Set("success", false)
@@ -276,7 +275,6 @@ func auth(w http.ResponseWriter, r *http.Request, c ClientData) {
 		token, err := GenerateJWT(account.Name, account.Id)
 		if IsValidUUID(account.Id) == true && err == nil {
 			response.Set("success", true)
-			response.Set("account", account)
 			response.Set("jwt", token)
 			w.WriteHeader(http.StatusOK)
 		} else {
@@ -368,6 +366,7 @@ func createPost(w http.ResponseWriter, r *http.Request, c ClientData) {
 			SiteId:      siteId,
 		})
 		response.Set("success", true)
+		response.Set("message", "Post created successfully.")
 		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -414,6 +413,7 @@ func updatePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Description: post.Description,
 			File:        post.File})
 		response.Set("success", true)
+		response.Set("message", "Post updated successfully.")
 		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -471,6 +471,7 @@ func deletePost(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.Post{}).Where("id = ?", id).Delete(&p)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "Post deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -491,7 +492,6 @@ func getSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	vars := mux.Vars(r)
 	siteId := vars["siteId"]
-	log.Println(siteId)
 	if auth, _ := isAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
@@ -540,6 +540,7 @@ func createSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Value: setting.Value,
 		})
 		response.Set("success", true)
+		response.Set("message", "Setting created successfully.")
 		response.Set("post", setting.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -579,6 +580,7 @@ func updateSetting(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Key:   setting.Key,
 			Value: setting.Value})
 		response.Set("success", true)
+		response.Set("message", "Setting updated successfully.")
 		response.Set("setting", setting.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -649,6 +651,7 @@ func createText(w http.ResponseWriter, r *http.Request, c ClientData) {
 			SiteId: siteId,
 		})
 		response.Set("success", true)
+		response.Set("message", "Text created successfully.")
 		response.Set("post", text.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -689,6 +692,7 @@ func updateText(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Key:   text.Key,
 			Value: text.Value})
 		response.Set("success", true)
+		response.Set("message", "Text updated successfully.")
 		response.Set("post", text.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -747,6 +751,7 @@ func deleteText(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.Text{}).Where("id = ?", id).Delete(&t)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "text deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -818,6 +823,7 @@ func createRegistration(w http.ResponseWriter, r *http.Request, c ClientData) {
 		ParentId: "",
 	})
 	response.Set("success", true)
+	response.Set("message", "Your registration was successful.")
 	response.Set("post", user.Id)
 	w.WriteHeader(http.StatusOK)
 
@@ -864,6 +870,7 @@ func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 			ParentId: user.ParentId,
 		})
 		response.Set("success", true)
+		response.Set("message", "User created successfully.")
 		response.Set("post", user.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -904,6 +911,7 @@ func updateUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name:     user.Name,
 			Username: user.Username})
 		response.Set("success", true)
+		response.Set("message", "User updated successfully.")
 		response.Set("post", user.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -963,6 +971,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.User{}).Where("id = ?", id).Delete(&u)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "User deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1062,6 +1071,7 @@ func updateFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(model.File{}).Where("id = ?", fileId).Updates(model.File{
 			Gallery: file.Gallery})
 		response.Set("success", true)
+		response.Set("message", "File updated successfully.")
 		response.Set("post", file.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -1129,6 +1139,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		// prepare data to response
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "File uploaded successfully.")
 		response.Set("file", f.Id)
 		response.Set("src", "/"+siteId+"/"+handle.Filename)
 
@@ -1190,6 +1201,7 @@ func deleteFile(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.File{}).Where("id = ?", id).Delete(&f)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "File deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1261,6 +1273,7 @@ func createLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 		})
 
 		response.Set("success", true)
+		response.Set("message", "Language created successfully.")
 		response.Set("language", language.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -1303,6 +1316,7 @@ func updateLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Default: language.Default})
 
 		response.Set("success", true)
+		response.Set("message", "Language updated successfully.")
 		response.Set("language", language.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -1361,6 +1375,7 @@ func deleteLanguage(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.Language{}).Where("id = ?", id).Delete(&l)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "Language deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1423,6 +1438,7 @@ func createSite(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Create(&res)
 		createDefaultSetting(res.Id, c)
 		response.Set("success", true)
+		response.Set("message", "Site created successfully.")
 		response.Set("site", res.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -1474,6 +1490,7 @@ func updateSite(w http.ResponseWriter, r *http.Request, c ClientData) {
 			Name: site.Name})
 
 		response.Set("success", true)
+		response.Set("message", "Setting updated successfully.")
 		response.Set("site", site.Id)
 		w.WriteHeader(http.StatusOK)
 
@@ -1500,6 +1517,7 @@ func deleteSite(w http.ResponseWriter, r *http.Request, c ClientData) {
 		c.db.Model(&model.Language{}).Where("id = ?", siteId).Delete(&s)
 		response := simplejson.New()
 		response.Set("success", true)
+		response.Set("message", "Setting deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1538,6 +1556,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c ClientData) {
 		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.HtmlString, c, r)
 
 		response.Set("success", true)
+		response.Set("message", "Email send successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -1665,6 +1684,7 @@ func recovery(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	response := simplejson.New()
 	response.Set("success", true)
+	response.Set("message", "You password updated successfully.")
 
 	payload, err := response.MarshalJSON()
 	if err != nil {
@@ -1934,6 +1954,7 @@ func logout(w http.ResponseWriter, r *http.Request, c ClientData) {
 
 	response := simplejson.New()
 	response.Set("success", true)
+	response.Set("message", "You have sign out successfully.")
 
 	payload, err := response.MarshalJSON()
 	if err != nil {

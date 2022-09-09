@@ -92,7 +92,7 @@
                   <v-btn
                     color="blue darken-1"
                     text
-                    @click="close(item.key)"
+                    @click="close(item.Key)"
                   >
                     Close
                   </v-btn>
@@ -170,7 +170,7 @@ export default class TextsPage extends Vue {
         });
     } else {
       text.Id = "";
-      this.$axios.post('/' + this.$route.query.siteId +"/text", text)
+      this.$axios.post('/' + this.$route.query.siteId +"/text", text, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseTexts) => {
           if (response.data.success) {
             this.updateText(response.data.message);

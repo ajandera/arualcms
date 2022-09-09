@@ -787,6 +787,49 @@ func getUsers(w http.ResponseWriter, r *http.Request, c ClientData) {
 	}
 }
 
+func createRegistration(w http.ResponseWriter, r *http.Request, c ClientData) {
+	setupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	// Declare a new User struct.
+	var user model.User
+
+	// Try to decode the request body into the struct. If there is an error,
+	// respond to the client with the error message and a 400 status code.
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatalf(err.Error())
+		return
+	}
+
+	response := simplejson.New()
+
+	pw, hashErr := HashPassword(user.Password)
+	if hashErr != nil {
+		log.Fatalf(hashErr.Error())
+	}
+	c.db.Create(&model.User{
+		Name:     user.Name,
+		Username: user.Username,
+		Password: pw,
+		ParentId: "",
+	})
+	response.Set("success", true)
+	response.Set("post", user.Id)
+	w.WriteHeader(http.StatusOK)
+
+	payload, err := response.MarshalJSON()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
+}
+
 func createUser(w http.ResponseWriter, r *http.Request, c ClientData) {
 	setupCORS(&w)
 	if (*r).Method == "OPTIONS" {
@@ -1976,6 +2019,10 @@ func main() {
 
 	api.HandleFunc("/{siteId}/users", func(w http.ResponseWriter, r *http.Request) {
 		createUser(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	api.HandleFunc("/registration", func(w http.ResponseWriter, r *http.Request) {
+		createRegistration(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
 
 	api.HandleFunc("/{siteId}/users", func(w http.ResponseWriter, r *http.Request) {

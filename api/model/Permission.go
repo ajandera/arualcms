@@ -7,13 +7,15 @@ import (
 
 type Permission struct {
 	gorm.Model
-	Id     string `gorm:"primary_key; unique"`
+	Id     uuid.UUID `gorm:"primary_key; unique"`
 	UserId string
 	SiteId string
 	Role   string
+	Site   Site `gorm:"foreignKey:SiteId"`
+	User   User `gorm:"foreignKey:UserId"`
 }
 
 func (permission *Permission) BeforeCreate(db *gorm.DB) error {
-	permission.Id = uuid.New().String()
+	permission.Id = uuid.New()
 	return nil
 }

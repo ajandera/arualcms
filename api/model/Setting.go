@@ -7,13 +7,14 @@ import (
 
 type Setting struct {
 	gorm.Model
-	Id     string `gorm:"primary_key; unique"`
+	Id     uuid.UUID `gorm:"primary_key; unique"`
 	Key    string
 	Value  string
 	SiteId string
+	Site   Site `gorm:"foreignKey:SiteId"`
 }
 
 func (setting *Setting) BeforeCreate(db *gorm.DB) error {
-	setting.Id = uuid.New().String()
+	setting.Id = uuid.New()
 	return nil
 }

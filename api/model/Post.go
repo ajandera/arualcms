@@ -7,7 +7,7 @@ import (
 
 type Post struct {
 	gorm.Model
-	Id          string `gorm:"primary_key; unique"`
+	Id          uuid.UUID `gorm:"primary_key; unique"`
 	File        string
 	Body        string
 	Title       string
@@ -17,9 +17,10 @@ type Post struct {
 	Keywords    string
 	Description string
 	SiteId      string
+	Site        Site `gorm:"foreignKey:SiteId"`
 }
 
 func (post *Post) BeforeCreate(db *gorm.DB) error {
-	post.Id = uuid.New().String()
+	post.Id = uuid.New()
 	return nil
 }

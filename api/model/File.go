@@ -7,14 +7,15 @@ import (
 
 type File struct {
 	gorm.Model
-	Id      string `gorm:"primary_key; unique"`
+	Id      uuid.UUID `gorm:"primary_key; unique"`
 	Name    string
 	Src     string
 	Gallery string
 	SiteId  string
+	Site    Site `gorm:"foreignKey:SiteId"`
 }
 
 func (file *File) BeforeCreate(db *gorm.DB) error {
-	file.Id = uuid.New().String()
+	file.Id = uuid.New()
 	return nil
 }

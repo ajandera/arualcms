@@ -8,6 +8,7 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"html/template"
@@ -715,6 +716,16 @@ func main() {
 	api.HandleFunc("/{siteId}/mail", func(w http.ResponseWriter, r *http.Request) {
 		sendEmail(w, r, client)
 	}).Methods(http.MethodPost, http.MethodOptions)
+
+	// health check
+	api.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.HealthCheck(w, r)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// add swagger
+	if os.Getenv("API_DOC") == "true" {
+		r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+	}
 
 	log.Fatal(http.ListenAndServe(":8888", r))
 }

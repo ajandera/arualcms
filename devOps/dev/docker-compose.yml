@@ -2,6 +2,7 @@ version: '3'
 services:
     arual-api:
         build: .
+        entrypoint: [ "sh", "/entrypoint.sh" ]
         environment:
             - HOST=arual-data
             - USER=demo

@@ -1,3 +1,3 @@
 #!/bin/bash
-echo "start"
-cd /application && go run main
+cd /application/ && go run main;
+tail -f /dev/null;

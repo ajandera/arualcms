@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row v-if="setting.length > 0">
+    <v-row v-if="setting !== null && setting.length > 0">
       <v-col
         v-for="(item, index) in setting"
         v-bind:key="index"
@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'nuxt-property-decorator'
+import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator'
 import Setting from '~/model/Setting';
 import IResponseSetting from "~/model/IResponseSetting";
 import {namespace} from 'vuex-class';
@@ -46,15 +46,22 @@ export default class SettingsPage extends Vue {
     this.load();
   }
 
-  load() {
+  @Watch('$route.query')
+  onPropertyChanged(value: string, oldValue: string) {
+    this.load();
+  }
+
+  async load() {
     this.$axios.get("/" + this.$route.query.siteId + "/setting")
       .then((response: IResponseSetting) => {
         if (response.data.success) {
-          response.data.settings.forEach(setting => {
-            if (setting.Value.toString() !== "") {
-              setting.Value = JSON.parse(setting.Value.toString())
-            }
-          });
+          if (response.data.settings !== null) {
+            response.data.settings.forEach(setting => {
+              if (setting.Value.toString() !== "") {
+                setting.Value = JSON.parse(setting.Value.toString())
+              }
+            });
+          }
           this.setting = response.data.settings;
         } else {
           this.updateText(response.data.message);

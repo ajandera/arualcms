@@ -206,7 +206,7 @@ export default class DefaultLayout extends Vue {
     this.$nuxt.$options.router.push('/in');
   }
 
-  getDefaultLanguage(siteId: string): void {
+  async getDefaultLanguage(siteId: string): Promise<void> {
     this.$axios.get("/" + siteId +"/languages")
       .then((response: IResponseLanguage) => {
         this.language = response.data.languages.filter(item => item.Default)[0].Key;
@@ -214,7 +214,7 @@ export default class DefaultLayout extends Vue {
       });
   }
 
-  getSites(): void {
+  async getSites(): Promise<void> {
     this.$axios.get("/sites")
       .then((response: IResponseSite) => {
         this.sites = response.data.sites;
@@ -231,6 +231,7 @@ export default class DefaultLayout extends Vue {
   onSiteChange(site: Site): void {
     this.site = site;
     this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
+    this.getDefaultLanguage(this.site.Id)
   }
 }
 </script>

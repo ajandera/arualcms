@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'nuxt-property-decorator';
+import {Component, Vue, Watch} from 'nuxt-property-decorator';
 import IResponseFiles from '~/model/IResponseFiles';
 import IHeader from "~/model/IHeader";
 import {namespace} from 'vuex-class';
@@ -145,6 +145,11 @@ export default class FilesPage extends Vue {
     this.load();
   }
 
+  @Watch('$route.query')
+  onPropertyChanged(value: string, oldValue: string) {
+    this.load();
+  }
+
   remove(id: string) {
     this.$axios.delete("/" + this.$route.query.siteId + "files/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseFiles) => {
@@ -189,11 +194,11 @@ export default class FilesPage extends Vue {
     });
   }
 
-  load() {
+  async load() {
     this.$axios.get("/" + this.$route.query.siteId + "/files")
       .then((response: IResponseFiles) => {
         if (response.data.success) {
-          this.files = response.data.files;
+          this.files = response.data.files !== null ? response.data.files : [];
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')

@@ -207,7 +207,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'nuxt-property-decorator';
+import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator';
 import Post from "~/model/Post";
 import IResponsePosts from "~/model/IResponsePosts";
 import IResponseFiles from '~/model/IResponseFiles';
@@ -282,6 +282,11 @@ export default class PostsPage extends Vue {
   };
 
   mounted() {
+    this.load();
+  }
+
+  @Watch('$route.query')
+  onPropertyChanged(value: string, oldValue: string) {
     this.load();
   }
 
@@ -412,7 +417,7 @@ export default class PostsPage extends Vue {
     this.content = html
   }
 
-  load() {
+  async load() {
     this.posts = [];
     this.$axios.get("/" + this.$route.query.siteId + "/posts")
       .then((response: IResponsePosts) => {

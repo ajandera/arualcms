@@ -104,7 +104,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'nuxt-property-decorator';
+import {Component, Vue, Watch} from 'nuxt-property-decorator';
 import IResponseLanguage from '~/model/IResponseLanguage';
 import Language from '~/model/Language';
 import IHeader from "~/model/IHeader";
@@ -150,6 +150,11 @@ export default class LanguagesPage extends Vue {
     this.load();
   }
 
+  @Watch('$route.query')
+  onPropertyChanged(value: string, oldValue: string) {
+    this.load();
+  }
+
   create(): void {
     this.title = "New Language";
     this.dialog = true;
@@ -189,7 +194,7 @@ export default class LanguagesPage extends Vue {
     }
   }
 
-  load() {
+  async load() {
     this.dialog = false;
     this.$axios.get("/" + this.$route.query.siteId + "/languages")
       .then((response: IResponseLanguage) => {

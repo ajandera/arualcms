@@ -122,7 +122,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'nuxt-property-decorator';
+import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator';
 import Text from '~/model/Text';
 import IResponseTexts from "~/model/IResponseTexts";
 import {namespace} from 'vuex-class';
@@ -149,6 +149,11 @@ export default class TextsPage extends Vue {
   dialog: any = {};
 
   mounted() {
+    this.load();
+  }
+
+  @Watch('$route.query')
+  onPropertyChanged(value: string, oldValue: string) {
     this.load();
   }
 
@@ -187,7 +192,7 @@ export default class TextsPage extends Vue {
     }
   }
 
-  load() {
+  async load() {
     this.$axios.get('/' + this.$route.query.siteId +"/text")
       .then((response: IResponseTexts) => {
         if (response.data.success === true) {

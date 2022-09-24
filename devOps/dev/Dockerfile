@@ -7,3 +7,5 @@ RUN git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
 
 # wkhtmltopdf
 RUN apk add xvfb wkhtmltopdf
+
+COPY ./entrypoint.sh /

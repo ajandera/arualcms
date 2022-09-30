@@ -152,7 +152,7 @@ func DeleteSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		errD := c.Db.Delete(&model.Language{}, siteId).Error
+		errD := c.Db.Delete(&model.Site{}, siteId).Error
 		if errD != nil {
 			log.Println(errD.Error())
 		}

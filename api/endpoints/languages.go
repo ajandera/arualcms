@@ -50,7 +50,7 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
-		var language model.Language
+		var language = model.Language{}
 		var languageToCrate decode.Language
 
 		// Try to decode the request body into the struct. If there is an error,
@@ -100,7 +100,7 @@ func UpdateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
-		var language model.Language
+		var language = model.Language{}
 		var languageToEdit decode.Language
 
 		// Try to decode the request body into the struct. If there is an error,

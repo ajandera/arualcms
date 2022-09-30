@@ -179,7 +179,8 @@ func DeleteLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		errD := c.Db.Delete(&model.Language{}, vars["languageId"]).Error
+		languageId, _ := uuid.Parse(vars["languageId"])
+		errD := c.Db.Delete(&model.Language{}, languageId).Error
 		response := simplejson.New()
 		if errD != nil {
 			response.Set("success", false)

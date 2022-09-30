@@ -50,7 +50,6 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
-		var language = model.Language{}
 		var languageToCrate decode.Language
 
 		// Try to decode the request body into the struct. If there is an error,
@@ -73,11 +72,10 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 			Default: languageToCrate.Default,
 			SiteId:  siteId.String(),
 			Site:    site,
-		}).Scan(&language)
+		})
 
 		response.Set("success", true)
 		response.Set("message", "Language created successfully.")
-		response.Set("language", language.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()

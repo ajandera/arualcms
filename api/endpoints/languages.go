@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"log"
+	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
@@ -31,7 +32,7 @@ func GetLanguages(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		payload, err := response.MarshalJSON()
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -50,13 +51,14 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var language model.Language
+		var languageToCrate decode.Language
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
-		err := json.NewDecoder(r.Body).Decode(&language)
+		err := json.NewDecoder(r.Body).Decode(&languageToCrate)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 			return
 		}
 
@@ -66,12 +68,12 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 		response := simplejson.New()
 
 		c.Db.Create(&model.Language{
-			Name:    language.Name,
-			Key:     language.Key,
-			Default: language.Default,
+			Name:    languageToCrate.Name,
+			Key:     languageToCrate.Key,
+			Default: languageToCrate.Default,
 			SiteId:  siteId.String(),
 			Site:    site,
-		})
+		}).Scan(&language)
 
 		response.Set("success", true)
 		response.Set("message", "Language created successfully.")
@@ -80,7 +82,7 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 		payload, err := response.MarshalJSON()
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -99,10 +101,11 @@ func UpdateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var language model.Language
+		var languageToEdit decode.Language
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
-		err := json.NewDecoder(r.Body).Decode(&language)
+		err := json.NewDecoder(r.Body).Decode(&languageToEdit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Fatalf(err.Error())
@@ -115,11 +118,11 @@ func UpdateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 		response := simplejson.New()
 
 		c.Db.Model(model.Language{}).Where("id = ?", language.Id).Updates(model.Language{
-			Name:    language.Name,
-			Key:     language.Key,
-			Default: language.Default,
+			Name:    languageToEdit.Name,
+			Key:     languageToEdit.Key,
+			Default: languageToEdit.Default,
 			SiteId:  siteId.String(),
-			Site:    site})
+			Site:    site}).Scan(&language)
 
 		response.Set("success", true)
 		response.Set("message", "Language updated successfully.")

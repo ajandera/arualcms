@@ -215,7 +215,7 @@ export default class LanguagesPage extends Vue {
   }
 
   remove(language: Language) {
-    this.$axios.delete("/languages/" + language.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/" + this.$route.query.siteId + "/languages/" + language.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseLanguage) => {
         if (response.data.success) {
           this.updateText(response.data.message);

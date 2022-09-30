@@ -69,7 +69,6 @@ func CreateSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			Key:    setting.Key,
 			Value:  setting.Value,
 			SiteId: siteId.String(),
-			Site:   site,
 		})
 		response.Set("success", true)
 		response.Set("message", "Setting created successfully.")

@@ -129,8 +129,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			c.Db.Create(&model.Permission{
 				UserId: u.Id.String(),
 				SiteId: v.Id.String(),
-				Site:   v,
-				User:   u,
 				Role:   "admin",
 			})
 		}

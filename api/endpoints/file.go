@@ -136,7 +136,6 @@ func UploadFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			Src:     "/" + siteId.String() + "/" + handle.Filename,
 			Gallery: "",
 			SiteId:  siteId.String(),
-			Site:    site,
 		}).Scan(&f)
 
 		// prepare data to response

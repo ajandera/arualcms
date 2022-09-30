@@ -69,8 +69,6 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			c.Db.Create(&model.Permission{
 				UserId: u.Id.String(),
 				SiteId: s.Id.String(),
-				User:   u,
-				Site:   s,
 				Role:   "admin",
 			})
 		}

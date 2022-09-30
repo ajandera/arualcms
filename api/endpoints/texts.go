@@ -69,7 +69,6 @@ func CreateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			Key:    text.Key,
 			Value:  text.Value,
 			SiteId: siteId.String(),
-			Site:   site,
 		})
 		response.Set("success", true)
 		response.Set("message", "Text created successfully.")

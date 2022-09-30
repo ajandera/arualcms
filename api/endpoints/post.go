@@ -81,7 +81,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			Keywords:    post.Keywords,
 			Description: post.Description,
 			SiteId:      siteId.String(),
-			Site:        site,
 		})
 		response.Set("success", true)
 		response.Set("message", "Post created successfully.")

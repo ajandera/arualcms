@@ -64,14 +64,14 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 		var site model.Site
 		c.Db.First(&model.Site{}, "id = ?", siteId).Scan(&site)
-
+		log.Println(site)
 		response := simplejson.New()
 
 		c.Db.Create(&model.Language{
 			Name:    languageToCrate.Name,
 			Key:     languageToCrate.Key,
 			Default: languageToCrate.Default,
-			SiteId:  site.Id.String(),
+			SiteId:  siteId.String(),
 			Site:    site,
 		}).Scan(&language)
 
@@ -180,7 +180,10 @@ func DeleteLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		id := vars["languageId"]
-		c.Db.Delete(&model.Language{}, id)
+		errD := c.Db.Delete(&model.Language{}, id).Error
+		if errD != nil {
+			log.Println(errD.Error())
+		}
 		response := simplejson.New()
 		response.Set("success", true)
 		response.Set("message", "Language deleted successfully.")
@@ -188,7 +191,7 @@ func DeleteLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 		payload, err := response.MarshalJSON()
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")

@@ -152,11 +152,10 @@ func DeleteSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		var s model.Site
-		c.Db.Model(&model.Language{}).Where("id = ?", siteId).Delete(&s)
+		c.Db.Delete(&model.Language{}, siteId)
 		response := simplejson.New()
 		response.Set("success", true)
-		response.Set("message", "Setting deleted successfully.")
+		response.Set("message", "Site deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()

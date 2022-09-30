@@ -63,16 +63,18 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 		var site model.Site
 		c.Db.First(&model.Site{}, "id = ?", siteId).Scan(&site)
-		log.Println(site)
 		response := simplejson.New()
 
-		c.Db.Create(&model.Language{
+		e := c.Db.Create(&model.Language{
 			Name:    languageToCrate.Name,
 			Key:     languageToCrate.Key,
 			Default: languageToCrate.Default,
 			SiteId:  siteId.String(),
-			Site:    site,
-		})
+		}).Error
+
+		if e != nil {
+			log.Println(e.Error())
+		}
 
 		response.Set("success", true)
 		response.Set("message", "Language created successfully.")

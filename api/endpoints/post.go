@@ -180,7 +180,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		id := vars["postId"]
+		id, _ := uuid.Parse(vars["postId"])
 		e := c.Db.Delete(&model.Post{}, id).Error
 		if e != nil {
 			log.Println(e.Error())

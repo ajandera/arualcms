@@ -164,7 +164,7 @@ func DeleteText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		id := vars["textId"]
+		id, _ := uuid.Parse(vars["textId"])
 		e := c.Db.Delete(&model.Text{}, id).Error
 		if e != nil {
 			log.Fatalf(e.Error())

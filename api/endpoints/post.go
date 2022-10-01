@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"log"
+	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
@@ -56,7 +57,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Post struct.
-		var post model.Post
+		var post decode.Post
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
@@ -66,9 +67,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			log.Fatalf(err.Error())
 			return
 		}
-
-		var site model.Site
-		c.Db.Model(&model.Site{}).Where("id = ?", siteId).Scan(&site)
 
 		response := simplejson.New()
 
@@ -84,7 +82,6 @@ func CreatePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		})
 		response.Set("success", true)
 		response.Set("message", "Post created successfully.")
-		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -129,9 +126,9 @@ func UpdatePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			Keywords:    post.Keywords,
 			Description: post.Description,
 			File:        post.File})
+
 		response.Set("success", true)
 		response.Set("message", "Post updated successfully.")
-		response.Set("post", post.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -183,9 +180,11 @@ func DeletePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		var p model.Post
 		id := vars["postId"]
-		c.Db.Model(&model.Post{}).Where("id = ?", id).Delete(&p)
+		e := c.Db.Delete(&model.Post{}, id).Error
+		if e != nil {
+			log.Println(e.Error())
+		}
 		response := simplejson.New()
 		response.Set("success", true)
 		response.Set("message", "Post deleted successfully.")
@@ -193,7 +192,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		payload, err := response.MarshalJSON()
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 		}
 
 		w.Header().Set("Content-Type", "application/json")

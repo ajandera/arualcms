@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"log"
+	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
@@ -49,7 +50,7 @@ func CreateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Text struct.
-		var text model.Text
+		var text decode.Text
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
@@ -60,9 +61,6 @@ func CreateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			return
 		}
 
-		var site model.Site
-		c.Db.Model(&model.Site{}).Where("id = ?", siteId).Scan(&site)
-
 		response := simplejson.New()
 
 		c.Db.Create(&model.Text{
@@ -72,7 +70,6 @@ func CreateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		})
 		response.Set("success", true)
 		response.Set("message", "Text created successfully.")
-		response.Set("post", text.Id)
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()
@@ -111,6 +108,7 @@ func UpdateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		c.Db.Model(model.Text{}).Where("id = ?", text.Id).Updates(model.Text{
 			Key:   text.Key,
 			Value: text.Value})
+
 		response.Set("success", true)
 		response.Set("message", "Text updated successfully.")
 		response.Set("post", text.Id)
@@ -166,9 +164,11 @@ func DeleteText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
-		var t model.Text
 		id := vars["textId"]
-		c.Db.Model(&model.Text{}).Where("id = ?", id).Delete(&t)
+		e := c.Db.Delete(&model.Text{}, id).Error
+		if e != nil {
+			log.Fatalf(e.Error())
+		}
 		response := simplejson.New()
 		response.Set("success", true)
 		response.Set("message", "text deleted successfully.")

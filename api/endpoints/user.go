@@ -65,15 +65,19 @@ func CreateRegistration(w http.ResponseWriter, r *http.Request, c utils.ClientDa
 	if hashErr != nil {
 		log.Fatalf(hashErr.Error())
 	}
-	c.Db.Create(&model.User{
+	e := c.Db.Create(&model.User{
 		Name:     user.Name,
 		Username: user.Username,
 		Password: pw,
 		ParentId: "",
-	})
-	response.Set("success", true)
-	response.Set("message", "Your registration was successful.")
-	response.Set("post", user.Id)
+	}).Error
+	if e != nil {
+		response.Set("success", true)
+		response.Set("message", e.Error())
+	} else {
+		response.Set("success", true)
+		response.Set("message", "Your registration was successful.")
+	}
 	w.WriteHeader(http.StatusOK)
 
 	payload, err := response.MarshalJSON()

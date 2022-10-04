@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"log"
+	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
@@ -45,8 +46,9 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	if auth, userId := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
 		// Declare a new Language struct.
-		var site model.Site
+		var site decode.Site
 		var res model.Site
+
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
 		err := json.NewDecoder(r.Body).Decode(&site)
@@ -60,7 +62,11 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		res.Name = site.Name
 
 		var s = model.Site{}
-		c.Db.Create(&res).Scan(&s)
+		e := c.Db.Create(&res).Scan(&s).Error
+		if e != nil {
+			log.Fatalf(e.Error())
+			return
+		}
 
 		// generate permission
 		var users []model.User

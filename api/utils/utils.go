@@ -133,7 +133,8 @@ func isPermitted(userId uuid.UUID, siteId uuid.UUID, c ClientData) bool {
 	var site model.Site
 	// special check for exit uuid
 	c.Db.First(&model.Site{}, "id = ?", siteId).Scan(&site)
-	if IsValidUUID(site.Id) == false {
+	// fix for new site record
+	if site.Id.String() == "00000000-0000-0000-0000-000000000000" {
 		return true
 	} else {
 		c.Db.First(&model.Site{}, "user_id = ? AND id = ?", userId, siteId).Scan(&site)

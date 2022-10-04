@@ -166,6 +166,7 @@ export default class TextsPage extends Vue {
             this.updateText(response.data.message);
             this.updateColor('green')
             this.updateShow(true);
+            this.load();
           } else {
             this.updateText(response.data.message);
             this.updateColor('red')
@@ -179,12 +180,12 @@ export default class TextsPage extends Vue {
         .then((response: IResponseTexts) => {
           if (response.data.success) {
             this.updateText(response.data.message);
-            this.updateColor('green')
+            this.updateColor('green');
             this.updateShow(true);
             this.load();
           } else {
             this.updateText(response.data.message);
-            this.updateColor('red')
+            this.updateColor('red');
             this.updateShow(true);
           }
           this.close(text.Key);

@@ -24,7 +24,7 @@ func GetTexts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		response := simplejson.New()
 
 		var texts []model.Text
-		c.Db.Model(&model.Text{}).Where("site_id = ?", siteId).Scan(&texts)
+		c.Db.Model(&model.Text{}).Where("site_id = ?", siteId).Order("created_at asc").Scan(&texts)
 		response.Set("success", true)
 		response.Set("texts", texts)
 

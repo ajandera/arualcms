@@ -38,9 +38,10 @@ type Reset struct {
 }
 
 type Email struct {
-	Email      string
-	Subject    string
-	HtmlString string
+	Email   string
+	Subject string
+	Body    string
+	Lang    string
 }
 
 func NewConnect(dsn string) utils.ClientData {
@@ -184,7 +185,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		response := simplejson.New()
 
-		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.HtmlString, c, r)
+		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body, c, r)
 
 		response.Set("success", true)
 		response.Set("message", "Email send successfully.")
@@ -438,12 +439,16 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string, c
 		}
 	}
 
+	log.Println(smtpHost)
+	log.Println(smtpPort)
+	log.Println(from)
+	log.Println(password)
 	var body bytes.Buffer
 
 	// Setup headers
 	headers := make(map[string]string)
-	headers["From"] = from
-	headers["To"] = email
+	headers["From"] = email
+	headers["To"] = from
 	headers["Subject"] = subject
 
 	for k, v := range headers {
@@ -462,7 +467,7 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string, c
 	}
 
 	// Here is the key, you need to call tls.Dial instead of smtp.Dial
-	// for smtp servers running on 465 that require an ssl connection
+	// for smtp servers running on 465 that require a ssl connection
 	// from the very beginning (no starttls)
 	servername := smtpHost + ":" + smtpPort
 	conn, err := tls.Dial("tcp", servername, tlsconfig)

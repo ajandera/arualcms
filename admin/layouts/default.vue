@@ -219,7 +219,7 @@ export default class DefaultLayout extends Vue {
       .then((response: IResponseSite) => {
         this.sites = response.data.sites;
         this.site = this.sites[0];
-        this.$router.push({path: this.$route.path, query: {storeId: this.site.Id}});
+        this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}});
         this.getDefaultLanguage(this.site.Id)
       });
   }

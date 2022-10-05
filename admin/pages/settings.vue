@@ -39,6 +39,8 @@ export default class SettingsPage extends Vue {
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
   @Prop() readonly language!: string;
+  @Prop() readonly languages!: string[];
+
   setting: Setting[] = [];
   $axios: any;
 
@@ -47,8 +49,10 @@ export default class SettingsPage extends Vue {
   }
 
   @Watch('$route.query')
-  onPropertyChanged(value: string, oldValue: string) {
-    this.load();
+  onPropertyChanged(value: any, oldValue: any) {
+    if (value.siteId !== oldValue.siteId) {
+      this.load();
+    }
   }
 
   async load() {
@@ -59,6 +63,8 @@ export default class SettingsPage extends Vue {
             response.data.settings.forEach(setting => {
               if (setting.Value.toString() !== "") {
                 setting.Value = JSON.parse(setting.Value.toString())
+              } else {
+                setting.Value = this.createClearTranslationObject()
               }
             });
           }
@@ -72,7 +78,10 @@ export default class SettingsPage extends Vue {
   }
 
   save(setting: Setting) {
-    this.$axios.put("/" + this.$route.query.siteId + "/setting/"+setting.Id, setting, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.put("/" + this.$route.query.siteId + "/setting/"+setting.Id, {
+      "Id": setting.Id,
+      "Value":  JSON.stringify(setting.Value)
+    }, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseSetting) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -84,6 +93,14 @@ export default class SettingsPage extends Vue {
           this.updateShow(true);
         }
       });
+  }
+
+  createClearTranslationObject() {
+    const response: any = {};
+    for (const lang of this.languages) {
+      response[lang] = "";
+    }
+    return response
   }
 }
 </script>

@@ -39,6 +39,7 @@ type Reset struct {
 
 type Email struct {
 	Email   string
+	To      string
 	Subject string
 	Body    string
 	Lang    string
@@ -185,7 +186,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		response := simplejson.New()
 
-		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body, c, r)
+		sendEmailWithoutTemplate(mail.Email, mail.To, mail.Subject, mail.Body, c, r)
 
 		response.Set("success", true)
 		response.Set("message", "Email send successfully.")
@@ -297,32 +298,11 @@ func recovery(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 }
 
 func sendEmailWithTemplate(email string, subject string, templateName string, token string, c utils.ClientData, r *http.Request) {
-	vars := mux.Vars(r)
-	siteId := vars["siteId"]
-	var settings []model.Setting
-	c.Db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
-	var smtpHost string
-	var smtpPort string
-	var from string
-	var password string
-
-	for _, v := range settings {
-		if v.Key == "smtpHost" {
-			smtpHost = v.Value
-		}
-
-		if v.Key == "smtpPort" {
-			smtpPort = v.Value
-		}
-
-		if v.Key == "smtpUser" {
-			from = v.Value
-		}
-
-		if v.Key == "smtpPassword" {
-			password = v.Value
-		}
-	}
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
+	from := os.Getenv("SMTP_FROM")
+	username := os.Getenv("SMTP_USER")
+	password := os.Getenv("SMTP_PW")
 
 	// prepare template
 	t, _ := template.ParseFiles("templates/" + templateName + ".html")
@@ -360,7 +340,7 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 		}
 
 		// Here is the key, you need to call tls.Dial instead of smtp.Dial
-		// for smtp servers running on 465 that require an ssl connection
+		// for smtp servers running on 465 that require a ssl connection
 		// from the very beginning (no starttls)
 		servername := smtpHost + ":" + smtpPort
 		conn, err := tls.Dial("tcp", servername, tlsconfig)
@@ -374,7 +354,7 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 		}
 
 		// Auth
-		auth := smtp.PlainAuth("", from, password, smtpHost)
+		auth := smtp.PlainAuth("", username, password, smtpHost)
 		if err = c.Auth(auth); err != nil {
 			log.Println(err)
 		}
@@ -410,45 +390,19 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 	}
 }
 
-func sendEmailWithoutTemplate(email string, subject string, htmlString string, c utils.ClientData, r *http.Request) {
+func sendEmailWithoutTemplate(email string, to string, subject string, htmlString string, c utils.ClientData, r *http.Request) {
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
+	from := os.Getenv("SMTP_FROM")
+	username := os.Getenv("SMTP_USER")
+	password := os.Getenv("SMTP_PW")
 
-	vars := mux.Vars(r)
-	siteId := vars["siteId"]
-	var settings []model.Setting
-	c.Db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
-	var smtpHost string
-	var smtpPort string
-	var from string
-	var password string
-
-	for _, v := range settings {
-		if v.Key == "smtpHost" {
-			smtpHost = v.Value
-		}
-
-		if v.Key == "smtpPort" {
-			smtpPort = v.Value
-		}
-
-		if v.Key == "smtpUser" {
-			from = v.Value
-		}
-
-		if v.Key == "smtpPassword" {
-			password = v.Value
-		}
-	}
-
-	log.Println(smtpHost)
-	log.Println(smtpPort)
-	log.Println(from)
-	log.Println(password)
 	var body bytes.Buffer
 
 	// Setup headers
 	headers := make(map[string]string)
-	headers["From"] = email
-	headers["To"] = from
+	headers["From"] = from
+	headers["To"] = to
 	headers["Subject"] = subject
 
 	for k, v := range headers {
@@ -457,7 +411,7 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string, c
 
 	sub := "Subject: " + subject + "\n"
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	content := "<html><body>" + htmlString + "</body></html>"
+	content := "<html><body>" + htmlString + "<br><br>" + email + "</body></html>"
 	body.Write([]byte(sub + mimeHeaders + content))
 
 	// TLS config
@@ -481,7 +435,7 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string, c
 	}
 
 	// Auth
-	auth := smtp.PlainAuth("", from, password, smtpHost)
+	auth := smtp.PlainAuth("", username, password, smtpHost)
 	if err = cl.Auth(auth); err != nil {
 		log.Println(err)
 	}

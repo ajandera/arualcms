@@ -96,7 +96,7 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 }
 
 func createDefaultSetting(siteId string, c utils.ClientData) {
-	settings := [...]string{"subtitle", "author", "contactEmail", "contactPhone", "metaTitle", "metaDescription", "metaKeywords", "smtp", "smtp_user", "smtp_password", "smtp_port", "title"}
+	settings := [...]string{"subtitle", "author", "contactEmail", "contactPhone", "metaTitle", "metaDescription", "metaKeywords", "title"}
 	for _, v := range settings {
 		c.Db.Create(&model.Setting{
 			Key:    v,

@@ -9,6 +9,11 @@ services:
             - PASSWORD=demo
             - DATABASE=arual
             - PORT=5432
+            - SMTP_HOST=in-v3.mailjet.com
+            - SMTP_PORT=587
+            - SMTP_FROM=info@arualcms.eu
+            - SMTP_USER=1effbfb5b0b27aa6082fa82a830061db
+            - SMTP_PW=9007a316cdae207cccda97edaabc5ca4
         volumes:
             - "../../api:/application"
         ports:

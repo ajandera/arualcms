@@ -39,7 +39,6 @@ type Reset struct {
 
 type Email struct {
 	Email   string
-	To      string
 	Subject string
 	Body    string
 	Lang    string
@@ -186,7 +185,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		response := simplejson.New()
 
-		sendEmailWithoutTemplate(mail.Email, mail.To, mail.Subject, mail.Body, c, r)
+		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body, c, r)
 
 		response.Set("success", true)
 		response.Set("message", "Email send successfully.")
@@ -390,7 +389,7 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 	}
 }
 
-func sendEmailWithoutTemplate(email string, to string, subject string, htmlString string, c utils.ClientData, r *http.Request) {
+func sendEmailWithoutTemplate(email string, subject string, htmlString string, c utils.ClientData, r *http.Request) {
 	smtpHost := os.Getenv("SMTP_HOST")
 	smtpPort := os.Getenv("SMTP_PORT")
 	from := os.Getenv("SMTP_FROM")
@@ -398,10 +397,10 @@ func sendEmailWithoutTemplate(email string, to string, subject string, htmlStrin
 	password := os.Getenv("SMTP_PW")
 	addr := smtpHost + ":" + smtpPort
 	sub := "Subject: " + subject + "\n"
-	content := "<html><body>" + htmlString + "<br><br>" + email + "</body></html>"
+	content := "<html><body>" + htmlString + "</body></html>"
 
 	auth := smtp.PlainAuth("", username, password, smtpHost)
-	err := smtp.SendMail(addr, auth, from, []string{to}, []byte(sub+content))
+	err := smtp.SendMail(addr, auth, from, []string{email}, []byte(sub+content))
 	if err != nil {
 		log.Println("send mail:", err)
 		return

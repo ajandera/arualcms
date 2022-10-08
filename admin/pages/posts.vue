@@ -196,6 +196,13 @@
       <v-icon
         small
         class="mr-2"
+        @click="translate(item)"
+      >
+        mdi-flag
+      </v-icon>
+      <v-icon
+        small
+        class="mr-2"
         @click="remove(item.Id)"
       >
         mdi-delete
@@ -213,6 +220,7 @@ import IResponsePosts from "~/model/IResponsePosts";
 import IResponseFiles from '~/model/IResponseFiles';
 import IHeader from '~/model/IHeader';
 import {namespace} from 'vuex-class';
+import Text from "~/model/Text";
 
 const snackbar = namespace('Snackbar');
 
@@ -228,6 +236,8 @@ export default class PostsPage extends Vue {
   public updateShow!: (newShow: boolean) => void
   @Prop() readonly languages!: string[];
   @Prop() readonly language!: string;
+  @Prop() readonly defaultLanguage!: string;
+
   posts: Post[] = [];
   title: string = "";
   editorOption: any = {
@@ -482,6 +492,49 @@ export default class PostsPage extends Vue {
 
   get editor() {
     return this.$refs.myQuillEditor.quill
+  }
+
+  async translate(item: Post) {
+    const title = {
+      Text: item.Title[this.defaultLanguage],
+      Lang: this.language
+    }
+
+    const excerpt = {
+      Text: item.Excerpt[this.defaultLanguage],
+      Lang: this.language
+    }
+
+    const body = {
+      Text: item.Body[this.defaultLanguage],
+      Lang: this.language
+    }
+    await this.$axios.post("/deepl", title, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: any) => {
+        if (response.data.success === true) {
+          const data = JSON.parse(response.data.text);
+          item.Title[this.language] = data.translations[0].text;
+        }
+      });
+
+    await this.$axios.post("/deepl", excerpt, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: any) => {
+        if (response.data.success === true) {
+          const data = JSON.parse(response.data.text);
+          item.Excerpt[this.language] = data.translations[0].text;
+        }
+      });
+
+    await this.$axios.post("/deepl", body, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: any) => {
+        if (response.data.success === true) {
+          const data = JSON.parse(response.data.text);
+          item.Body[this.language] = data.translations[0].text;
+        }
+      });
+
+    this.post = item;
+    await this.save(false);
   }
 }
 </script>

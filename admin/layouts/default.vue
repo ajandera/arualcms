@@ -99,14 +99,14 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtChild :language="language" :languages="languages" />
+        <NuxtChild :language="language" :languages="languages" :defaultLanguage="defaultLanguage" />
       </v-container>
     </v-main>
     <v-footer
       :absolute="!fixed"
       app
     >
-      <span>v0.9.2 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
+      <span>v0.9.3 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
     <Snackbar/>
   </v-app>
@@ -130,6 +130,7 @@ export default class DefaultLayout extends Vue {
   fixed: boolean = true
   languages: string[] = []
   language: string = ""
+  defaultLanguage: string = ""
   items: Array<any> = [
     {
       icon: 'mdi-apps',
@@ -210,6 +211,7 @@ export default class DefaultLayout extends Vue {
     this.$axios.get("/" + siteId +"/languages")
       .then((response: IResponseLanguage) => {
         this.language = response.data.languages.filter(item => item.Default)[0].Key;
+        this.defaultLanguage = response.data.languages.filter(item => item.Default)[0].Key;
         this.languages = response.data.languages.map(item => item.Key);
       });
   }

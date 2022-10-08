@@ -43,6 +43,11 @@ type Email struct {
 	Lang    string
 }
 
+type Deepl struct {
+	Text string
+	Lang string
+}
+
 func NewConnect(dsn string) utils.ClientData {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -562,6 +567,11 @@ func main() {
 	api.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.HealthCheck(w, r)
 	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// deepl
+	api.HandleFunc("/deepl", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.Translate(w, r)
+	}).Methods(http.MethodPost, http.MethodOptions)
 
 	// add swagger
 	if os.Getenv("API_DOC") == "true" {

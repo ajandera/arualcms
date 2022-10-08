@@ -106,6 +106,14 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
+            <v-btn @click="translate(item)" class="warning">
+              <v-icon
+                small
+                class="mr-2"
+              >
+                mdi-flag
+              </v-icon>
+            </v-btn>
             <v-btn @click="remove(item)" class="error">
               <v-icon
                 small
@@ -141,6 +149,8 @@ export default class TextsPage extends Vue {
   public updateShow!: (newShow: boolean) => void
   @Prop() readonly languages!: string[];
   @Prop() readonly language!: string;
+  @Prop() readonly defaultLanguage!: string;
+
   texts: Text[] = [];
   text?: Text;
   editorOption: any = {};
@@ -256,6 +266,22 @@ export default class TextsPage extends Vue {
 
   close(key: string) {
     this.dialog[key] = false;
+  }
+
+  translate(item: Text) {
+    const text = {
+      Text: item.Value[this.defaultLanguage],
+      Lang: this.language
+    }
+
+    this.$axios.post("/deepl", text, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: any) => {
+          if (response.data.success === true) {
+            const data = JSON.parse(response.data.text);
+            item.Value[this.language] = data.translations[0].text;
+            this.save(item);
+          }
+      });
   }
 }
 </script>

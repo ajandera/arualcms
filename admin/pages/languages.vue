@@ -89,11 +89,11 @@
         mdi-delete
       </v-icon>
     </template>
-    <template v-slot:item.default="{ item }">
+    <template v-slot:item.Default="{ item }">
       <v-icon
         small
         class="mr-2"
-        v-if="item.default === true"
+        v-if="item.Default === true"
       >
         mdi-check
       </v-icon>

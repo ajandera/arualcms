@@ -396,77 +396,15 @@ func sendEmailWithoutTemplate(email string, to string, subject string, htmlStrin
 	from := os.Getenv("SMTP_FROM")
 	username := os.Getenv("SMTP_USER")
 	password := os.Getenv("SMTP_PW")
-
-	var body bytes.Buffer
-
-	// Setup headers
-	headers := make(map[string]string)
-	headers["From"] = from
-	headers["To"] = to
-	headers["Subject"] = subject
-
-	for k, v := range headers {
-		body.Write([]byte(fmt.Sprintf("%s: %s\r\n", k, v)))
-	}
-
+	addr := smtpHost + ":" + smtpPort
 	sub := "Subject: " + subject + "\n"
-	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	content := "<html><body>" + htmlString + "<br><br>" + email + "</body></html>"
-	body.Write([]byte(sub + mimeHeaders + content))
 
-	// TLS config
-	tlsconfig := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         smtpHost,
-	}
-
-	// Here is the key, you need to call tls.Dial instead of smtp.Dial
-	// for smtp servers running on 465 that require a ssl connection
-	// from the very beginning (no starttls)
-	servername := smtpHost + ":" + smtpPort
-	conn, err := tls.Dial("tcp", servername, tlsconfig)
-	if err != nil {
-		log.Println(err)
-	}
-
-	cl, err := smtp.NewClient(conn, smtpHost)
-	if err != nil {
-		log.Println(err)
-	}
-
-	// Auth
 	auth := smtp.PlainAuth("", username, password, smtpHost)
-	if err = cl.Auth(auth); err != nil {
-		log.Println(err)
-	}
-
-	// To && From
-	if err = cl.Mail(from); err != nil {
-		log.Println(err)
-	}
-
-	if err = cl.Rcpt(email); err != nil {
-		log.Println(err)
-	}
-
-	// Data
-	wr, err := cl.Data()
+	err := smtp.SendMail(addr, auth, from, []string{to}, []byte(sub+content))
 	if err != nil {
-		log.Println(err)
-	}
-
-	_, err = wr.Write(body.Bytes())
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = wr.Close()
-	if err != nil {
-		log.Println(err)
-	}
-	errC := cl.Quit()
-	if errC != nil {
-		log.Println(err.Error())
+		log.Println("send mail:", err)
+		return
 	}
 }
 

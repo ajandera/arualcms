@@ -340,8 +340,12 @@ func sendEmailWithoutTemplate(email string, subject string, htmlString string) {
 	sub := "Subject: " + subject + "\n"
 	content := "<html><body>" + htmlString + "</body></html>"
 
+	var body bytes.Buffer
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf(sub+"%s\n\n"+content, mimeHeaders)))
+
 	auth := smtp.PlainAuth("", username, password, smtpHost)
-	err := smtp.SendMail(addr, auth, from, []string{email}, []byte(sub+content))
+	err := smtp.SendMail(addr, auth, from, []string{email}, body.Bytes())
 	if err != nil {
 		log.Println("send mail:", err)
 		return

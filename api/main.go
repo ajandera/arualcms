@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
@@ -185,7 +184,7 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		response := simplejson.New()
 
-		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body, c, r)
+		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body)
 
 		response.Set("success", true)
 		response.Set("message", "Email send successfully.")
@@ -230,7 +229,7 @@ func forgot(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		ForgotToken: token,
 		ValidToken:  t})
 
-	sendEmailWithTemplate(username, "Recover your password", "forgot", token, c, r)
+	sendEmailWithTemplate(username, "Recover your password", "forgot", token)
 
 	response := simplejson.New()
 	response.Set("success", true)
@@ -296,30 +295,20 @@ func recovery(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	w.Write(payload)
 }
 
-func sendEmailWithTemplate(email string, subject string, templateName string, token string, c utils.ClientData, r *http.Request) {
+func sendEmailWithTemplate(email string, subject string, templateName string, token string) {
 	smtpHost := os.Getenv("SMTP_HOST")
 	smtpPort := os.Getenv("SMTP_PORT")
 	from := os.Getenv("SMTP_FROM")
 	username := os.Getenv("SMTP_USER")
 	password := os.Getenv("SMTP_PW")
+	addr := smtpHost + ":" + smtpPort
 
-	// prepare template
-	t, _ := template.ParseFiles("templates/" + templateName + ".html")
 	var body bytes.Buffer
-
-	// Setup headers
-	headers := make(map[string]string)
-	headers["From"] = from
-	headers["To"] = email
-	headers["Subject"] = subject
-
-	for k, v := range headers {
-		body.Write([]byte(fmt.Sprintf("%s: %s\r\n", k, v)))
-	}
-
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: "+subject+" \n%s\n\n", mimeHeaders)))
 
+	// prepare template
+	t, _ := template.ParseFiles("templates/" + templateName + ".html")
 	err := t.Execute(&body, struct {
 		Email string
 		Link  string
@@ -331,65 +320,17 @@ func sendEmailWithTemplate(email string, subject string, templateName string, to
 	if err != nil {
 		log.Printf(err.Error())
 		return
-	} else {
-		// TLS config
-		tlsconfig := &tls.Config{
-			InsecureSkipVerify: true,
-			ServerName:         smtpHost,
-		}
+	}
 
-		// Here is the key, you need to call tls.Dial instead of smtp.Dial
-		// for smtp servers running on 465 that require a ssl connection
-		// from the very beginning (no starttls)
-		servername := smtpHost + ":" + smtpPort
-		conn, err := tls.Dial("tcp", servername, tlsconfig)
-		if err != nil {
-			log.Println(err)
-		}
-
-		c, err := smtp.NewClient(conn, smtpHost)
-		if err != nil {
-			log.Println(err)
-		}
-
-		// Auth
-		auth := smtp.PlainAuth("", username, password, smtpHost)
-		if err = c.Auth(auth); err != nil {
-			log.Println(err)
-		}
-
-		// To && From
-		if err = c.Mail(from); err != nil {
-			log.Println(err)
-		}
-
-		if err = c.Rcpt(email); err != nil {
-			log.Println(err)
-		}
-
-		// Data
-		wr, err := c.Data()
-		if err != nil {
-			log.Println(err)
-		}
-
-		_, err = wr.Write(body.Bytes())
-		if err != nil {
-			log.Println(err)
-		}
-
-		err = wr.Close()
-		if err != nil {
-			log.Println(err)
-		}
-		errC := c.Quit()
-		if errC != nil {
-			log.Println(err.Error())
-		}
+	auth := smtp.PlainAuth("", username, password, smtpHost)
+	e := smtp.SendMail(addr, auth, from, []string{email}, body.Bytes())
+	if e != nil {
+		log.Println("send mail:", err)
+		return
 	}
 }
 
-func sendEmailWithoutTemplate(email string, subject string, htmlString string, c utils.ClientData, r *http.Request) {
+func sendEmailWithoutTemplate(email string, subject string, htmlString string) {
 	smtpHost := os.Getenv("SMTP_HOST")
 	smtpPort := os.Getenv("SMTP_PORT")
 	from := os.Getenv("SMTP_FROM")

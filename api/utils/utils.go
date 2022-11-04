@@ -91,9 +91,9 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 	}
 }
 
-func IsAuthorizedByApiKey(w http.ResponseWriter, r *http.Request, apiKey string, c ClientData) (bool, string) {
+func IsAuthorizedByApiKey(w http.ResponseWriter, r *http.Request, apiToken string, c ClientData) (bool, string) {
 	var site model.Site
-	c.Db.Model(&model.Site{ApiToken: apiKey}).First(&site)
+	c.Db.First(&model.Site{}, "api_token = ?", apiToken).Scan(&site)
 	if IsValidUUID(site.Id) {
 		return true, fmt.Sprintf("%v", site.Id)
 	} else {

@@ -3,15 +3,16 @@ package endpoints
 import (
 	"encoding/json"
 	"errors"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"main/model"
 	utils "main/utils"
 	"net/http"
 	"os"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetFiles(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -23,6 +24,35 @@ func GetFiles(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+
+		response := simplejson.New()
+
+		var files []model.File
+		c.Db.Model(&model.File{}).Where("site_id = ?", siteId).Scan(&files)
+		response.Set("success", true)
+		response.Set("files", files)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetFilesPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["siteId"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 
 		response := simplejson.New()
 
@@ -166,6 +196,37 @@ func GetFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		vars := mux.Vars(r)
+		fileId := vars["fileId"]
+
+		response := simplejson.New()
+
+		var file model.File
+		c.Db.First(&model.File{}, "id = ?", fileId).Scan(&file)
+		response.Set("success", true)
+		response.Set("file", file)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetFilePublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, _ := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		vars := mux.Vars(r)
 		fileId := vars["fileId"]
 

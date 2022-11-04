@@ -2,10 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"log"
 	"main/model"
 	"math/rand"
@@ -13,6 +9,11 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 var (
@@ -39,7 +40,7 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func CheckPasswordHash(password, hash string) bool {
+func CheckPasswordHash(password string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
@@ -86,6 +87,17 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 		return true, fmt.Sprintf("%v", claims["id"])
 	} else {
 		http.Error(w, "Not Authorized", http.StatusForbidden)
+		return false, ""
+	}
+}
+
+func IsAuthorizedByApiKey(w http.ResponseWriter, r *http.Request, apiKey string, c ClientData) (bool, string) {
+	var site model.Site
+	c.Db.Model(&model.Site{ApiToken: apiKey}).First(&site)
+	if IsValidUUID(site.Id) {
+		return true, fmt.Sprintf("%v", site.Id)
+	} else {
+		http.Error(w, "Not Permitted", http.StatusForbidden)
 		return false, ""
 	}
 }

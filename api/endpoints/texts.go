@@ -2,14 +2,15 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetTexts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -21,6 +22,34 @@ func GetTexts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		var texts []model.Text
+		c.Db.Model(&model.Text{}).Where("site_id = ?", siteId).Order("created_at asc").Scan(&texts)
+		response.Set("success", true)
+		response.Set("texts", texts)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetTextsPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		var texts []model.Text
@@ -133,6 +162,37 @@ func GetText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		vars := mux.Vars(r)
+		key := vars["key"]
+
+		var text model.Text
+		c.Db.First(&model.Text{}, "key = ? AND site_id = ?", key, siteId).Scan(&text)
+		response.Set("success", true)
+		response.Set("text", text)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetTextPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		vars := mux.Vars(r)

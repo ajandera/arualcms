@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
-	httpSwagger "github.com/swaggo/http-swagger"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"html/template"
 	"log"
 	endpoints "main/endpoints"
@@ -20,6 +14,13 @@ import (
 	"net/smtp"
 	"os"
 	"time"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type tokenReqBody struct {
@@ -140,9 +141,9 @@ func auth(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	var account model.User
 	c.Db.First(&model.User{}, "username = ?", a.Username).Scan(&account)
 	pw := utils.CheckPasswordHash(a.Password, account.Password)
-	if pw == true {
+	if pw {
 		token, err := utils.GenerateJWT(account.Name, account.Id.String())
-		if utils.IsValidUUID(account.Id) == true && err == nil {
+		if utils.IsValidUUID(account.Id) && err == nil {
 			response.Set("success", true)
 			response.Set("jwt", token)
 			w.WriteHeader(http.StatusOK)
@@ -175,6 +176,45 @@ func sendEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		// Declare a new Email struct.
+		var mail Email
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&mail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		sendEmailWithoutTemplate(mail.Email, mail.Subject, mail.Body)
+
+		response.Set("success", true)
+		response.Set("message", "Email send successfully.")
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func sendEmailPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, _ := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		// Declare a new Email struct.
 		var mail Email
 
@@ -384,8 +424,12 @@ func main() {
 	client := NewConnect(dsn)
 
 	r := mux.NewRouter()
-	// For serving api endpoints
+	// For serving admin api endpoints
 	api := r.PathPrefix("/v1").Subrouter()
+
+	// For serving public api endpoints
+	public := r.PathPrefix("/v1/public").Subrouter()
+
 	// For serving static files
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./files")))
 
@@ -577,6 +621,54 @@ func main() {
 	if os.Getenv("API_DOC") == "true" {
 		r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	}
+
+	// public endpoints
+
+	// posts
+	public.HandleFunc("/{apiToken}/posts", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetPostsPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	public.HandleFunc("/{apiToken}/posts/{postId}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetPostDetailPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// texts
+	public.HandleFunc("/{apiToken}/text", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetTextsPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	public.HandleFunc("/{apiToken}/text/{key}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetTextPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// files
+	public.HandleFunc("/{apiToken}/files", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetFilesPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	public.HandleFunc("/{apiToken}/files/{fileId}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetFilePublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// mail
+	public.HandleFunc("/{apiToken}/mail", func(w http.ResponseWriter, r *http.Request) {
+		sendEmailPublic(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	// languages
+	public.HandleFunc("/{apiToken}/languages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetLanguagesPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	public.HandleFunc("/{apiToken}/languages/{code}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetLanguageByCodePublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// setting
+	public.HandleFunc("/{apiToken}/setting", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetSettingPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
 
 	log.Fatal(http.ListenAndServe(":8888", r))
 }

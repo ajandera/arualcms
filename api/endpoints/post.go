@@ -2,14 +2,15 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetPosts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -21,6 +22,41 @@ func GetPosts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		var posts []model.Post
+		var files []model.File
+		c.Db.Model(&model.Post{}).Where("site_id = ?", siteId).Scan(&posts)
+		for _, v := range posts {
+			var f model.File
+			c.Db.Model(&model.File{}).Where("id = ?", v.File).Scan(&f)
+			files = append(files, f)
+		}
+		response.Set("success", true)
+		response.Set("posts", posts)
+		response.Set("files", files)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetPostsPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		var posts []model.Post
@@ -150,6 +186,36 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		postId := vars["postId"]
+
+		var post model.Post
+		c.Db.First(&model.Post{}, "id = ?", postId).Scan(&post)
+		response.Set("success", true)
+		response.Set("post", post)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetPostDetailPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, _ := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		postId := vars["postId"]

@@ -2,14 +2,15 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetLanguages(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -21,6 +22,34 @@ func GetLanguages(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		var languages []model.Language
+		c.Db.Model(&model.Language{}).Where("site_id = ?", siteId).Scan(&languages)
+		response.Set("success", true)
+		response.Set("languages", languages)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Println(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetLanguagesPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		var languages []model.Language
@@ -149,6 +178,37 @@ func GetLanguageByCode(w http.ResponseWriter, r *http.Request, c utils.ClientDat
 	siteId, _ := uuid.Parse(vars["siteId"])
 
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		code := vars["code"]
+
+		response := simplejson.New()
+
+		var language model.Language
+		c.Db.First(&model.Language{}, "code = ?", code).Scan(&language)
+		response.Set("success", true)
+		response.Set("language", language)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetLanguageByCodePublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+
+	if auth, _ := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		code := vars["code"]
 
 		response := simplejson.New()

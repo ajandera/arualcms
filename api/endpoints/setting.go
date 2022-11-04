@@ -2,13 +2,14 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"main/model"
 	utils "main/utils"
 	"net/http"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -20,6 +21,34 @@ func GetSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		response := simplejson.New()
+
+		var settings []model.Setting
+		c.Db.Model(&model.Setting{}).Where("site_id = ?", siteId).Scan(&settings)
+		response.Set("success", true)
+		response.Set("settings", settings)
+
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	}
+}
+
+func GetSettingPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	apiToken := vars["apiToken"]
+	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
 		var settings []model.Setting

@@ -51,7 +51,7 @@ func GetFilesPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 	}
 
 	vars := mux.Vars(r)
-	apiToken := vars["siteId"]
+	apiToken := vars["apiToken"]
 	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 
 		response := simplejson.New()

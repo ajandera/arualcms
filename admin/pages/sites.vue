@@ -131,6 +131,7 @@ export default class SitesPage extends Vue {
       sortable: true,
       value: 'Name',
     },
+    {text: "Api Token", value: 'ApiToken', sortable: false},
     {text: "Actions", value: 'actions', sortable: false}
   ];
 

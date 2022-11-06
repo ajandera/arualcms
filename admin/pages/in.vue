@@ -1,63 +1,68 @@
 <template>
-  <v-main>
-    <v-container fluid fill-height>
-      <v-layout align-center justify-center>
-        <v-flex xs12 sm6 md4>
-          <v-card v-if="forgot === false" class="elevation-12">
-            <v-card-text>
-              <v-col cols="12">
-                <v-img class="logo" src="/logo.png"/>
-              </v-col>
-              <v-form>
-                <v-text-field
-                  prepend-icon="person"
-                  name="login"
-                  label="Login"
-                  type="text"
-                  v-model="user.username"
-                ></v-text-field>
-                <v-text-field
-                  id="password"
-                  prepend-icon="lock"
-                  name="password"
-                  label="Password"
-                  type="password"
-                  v-model="user.password"
-                ></v-text-field>
-              </v-form>
+  <v-dialog
+      v-model="dialog"
+      width="500"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn 
+          text
+          class="pink lighten-3"
+          v-bind="attrs"
+          v-on="on">
+            Sign In
+        </v-btn>
+      </template>
+
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2">
+          Sign In
+        </v-card-title>
+
+        <v-card-text v-if="forgot === false">
+          <v-form>
+            <v-text-field
+              prepend-icon="person"
+              name="login"
+              label="Login"
+              type="text"
+              v-model="user.username"
+            ></v-text-field>
+            <v-text-field
+              id="password"
+              prepend-icon="lock"
+              name="password"
+              label="Password"
+              type="password"
+              v-model="user.password"
+            ></v-text-field>
+          </v-form>
               <p @click="forgotForm()" class="fp">Forgot your password?</p>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="primary" @click="login()">Login</v-btn>
-            </v-card-actions>
-          </v-card>
-          <v-card v-if="forgot === true" class="elevation-12">
-            <v-card-text>
-              <v-col cols="12">
-                <v-img class="logo"
-                       src="https://user-images.githubusercontent.com/4760295/112476277-04b9b680-8d72-11eb-8433-fb53ddb9f78a.png"></v-img>
-              </v-col>
-              <v-form>
-                <v-text-field
-                  prepend-icon="person"
-                  name="login"
-                  label="Registered password"
-                  type="email"
-                  v-model="forgotMail"
-                ></v-text-field>
-              </v-form>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="default" @click="forgotForm()">Back to login</v-btn>
-              <v-btn color="primary" @click="requestNewPw()">Request new Password</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-flex>
-      </v-layout>
-    </v-container>
-  </v-main>
+        </v-card-text>
+        <v-card-actions v-if="forgot === false">
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" text @click="dialog = false">
+            Close
+          </v-btn>
+          <v-btn color="primary" @click="login()">Login</v-btn>
+        </v-card-actions>
+        <v-card-text v-if="forgot === true">
+          <v-form>
+            <v-text-field
+              prepend-icon="person"
+              name="login"
+              label="Registered password"
+              type="email"
+              v-model="forgotMail"
+            ></v-text-field>
+          </v-form>
+        </v-card-text>
+        <v-card-actions v-if="forgot === true">
+          <v-spacer></v-spacer>
+          <v-btn color="default" @click="forgotForm()">Back to login</v-btn>
+          <v-btn color="primary" @click="requestNewPw()">Request new Password</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 </template>
 
 <script lang="ts">
@@ -80,6 +85,7 @@ export default class InPage extends Vue {
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
 
+  dialog: boolean = false
   forgot: boolean = false
   forgotMail: string = ""
   user: User = {username: "", password: "", id: ""}

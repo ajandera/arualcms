@@ -38,13 +38,13 @@
             <v-card-text>
               <v-container>
                 <v-text-field
-                  v-model="user.username"
+                  v-model="user.Username"
                   :counter="30"
                   label="Username"
                   required
                 ></v-text-field>
                 <v-text-field
-                  v-model="user.password"
+                  v-model="user.Password"
                   :counter="20"
                   type="password"
                   label="Password"
@@ -120,9 +120,10 @@ export default class UsersPage extends Vue {
   users: User[] = [];
   dialog: boolean = false;
   user: User = {
-    username: "",
-    password: "",
-    id: ""
+    Username: "",
+    Password: "",
+    Id: "",
+    ParentId: ""
   };
   headers: IHeader[] = [
     {
@@ -139,20 +140,27 @@ export default class UsersPage extends Vue {
     {text: "Actions", value: 'actions', sortable: false}
   ];
   $axios: any;
+  $auth: any;
 
   mounted() {
     this.load();
+    this.user = {
+      Username: "",
+      Password: "",
+      Id: "",
+      ParentId: this.$auth.user.Id
+    };
   }
 
   edit(user: User) {
     this.user = user;
-    this.title = this.user.username;
+    this.title = this.user.Username;
     this.isEdit = true;
     this.dialog = true;
   }
 
   remove(user: User) {
-    this.$axios.delete("/" + this.$route.query.siteId + "/users/" + user.id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+    this.$axios.delete("/" + this.$route.query.siteId + "/user/" + user.Id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
       .then((response: IResponseUsers) => {
         if (response.data.success) {
           this.updateText(response.data.message);
@@ -165,15 +173,6 @@ export default class UsersPage extends Vue {
           this.updateShow(true);
         }
       });
-  }
-
-  create() {
-    this.isEdit = false;
-    this.user = {
-      username: "",
-      password: "",
-      id: ""
-    };
   }
 
   save() {
@@ -225,6 +224,13 @@ export default class UsersPage extends Vue {
 
   close() {
     this.dialog = false;
+    this.isEdit = false;
+    this.user = {
+      Username: "",
+      Password: "",
+      Id: "",
+      ParentId: this.$auth.user.Id
+    };
   }
 }
 </script>

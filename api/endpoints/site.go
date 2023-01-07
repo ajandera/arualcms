@@ -2,14 +2,15 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"main/decode"
 	"main/model"
 	utils "main/utils"
 	"net/http"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func GetSites(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -54,7 +55,7 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		err := json.NewDecoder(r.Body).Decode(&site)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
 			return
 		}
 		response := simplejson.New()
@@ -64,7 +65,7 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		var s = model.Site{}
 		e := c.Db.Create(&res).Scan(&s).Error
 		if e != nil {
-			log.Fatalf(e.Error())
+			log.Println(e.Error())
 			return
 		}
 

@@ -88,7 +88,7 @@ export default class InPage extends Vue {
   dialog: boolean = false
   forgot: boolean = false
   forgotMail: string = ""
-  user: User = {username: "", password: "", id: ""}
+  user: User = {Username: "", Password: "", Id: ""}
   $axios: any;
   $router: any;
   $auth: any;
@@ -97,8 +97,8 @@ export default class InPage extends Vue {
   async login(): Promise<void> {
     try {
       let login = {
-        "username": this.user.username,
-        "password": this.user.password
+        "username": this.user.Username,
+        "password": this.user.Password
       }
       await this.$auth.loginWith('local', { data: login })
       await this.$nuxt.$options.router.push('/');

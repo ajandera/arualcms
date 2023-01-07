@@ -62,6 +62,7 @@ func NewConnect(dsn string) utils.ClientData {
 	// Migrate the schema
 	db.AutoMigrate(
 		&model.Post{},
+		&model.Page{},
 		&model.User{},
 		&model.Text{},
 		&model.Language{},
@@ -622,6 +623,23 @@ func main() {
 		r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	}
 
+	// pages
+	api.HandleFunc("/{siteId}/pages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetPages(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/pages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.CreatePage(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/pages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.UpdatePage(w, r, client)
+	}).Methods(http.MethodPut, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/pages/{pageId}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.DeletePage(w, r, client)
+	}).Methods(http.MethodDelete, http.MethodOptions)
+
 	// public endpoints
 
 	// posts
@@ -668,6 +686,15 @@ func main() {
 	// setting
 	public.HandleFunc("/{apiToken}/setting", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.GetSettingPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// pages
+	public.HandleFunc("/{apiToken}/pages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetPagesPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	public.HandleFunc("/{apiToken}/pages/{key}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetPageByKeyPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	log.Fatal(http.ListenAndServe(":8888", r))

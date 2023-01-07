@@ -138,6 +138,11 @@ export default class DefaultLayout extends Vue {
       to: '/posts'
     },
     {
+      icon: 'mdi-pencil',
+      title: 'Pages',
+      to: '/pages'
+    },
+    {
       icon: 'mdi-card-text',
       title: 'Texts',
       to: '/texts'

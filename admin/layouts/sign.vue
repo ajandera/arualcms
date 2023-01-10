@@ -68,10 +68,10 @@
       <section>
         <v-parallax :src="imageLink.sub_main" height="600">
           <v-layout column align-center justify-center class="white--text">
-            <h1 class="white--text mb-2 display-1 text-xs-center" style="font-weight: 900; text-shadow: 3px 2px #000000">
+            <h1 class="white--text mb-2 display-1 text-xs-center" style="font-weight: 900;text-shadow: 3px 2px rgb(204, 202, 202);color: #000 !important">
               The headless CMS for epic content
             </h1>
-            <div class="white--text subheading mb-3 text-xs-center" style="font-weight: 900; text-shadow: 2px 2px #000000">
+            <div class="white--text subheading mb-3 text-xs-center" style="font-weight: 900;text-shadow: 3px 2px rgb(204, 202, 202);color: #000 !important">
               Unlesh your creativity without limitations
             </div>
             <v-btn class="blue lighten-2 mt-5" dark large @click="register = true">
@@ -155,7 +155,7 @@
       <section>
         <v-parallax :src="imageLink.main" height="380">
           <v-layout column align-center justify-center>
-            <div class="headline white--text mb-3 text-xs-center">arualCMS is a headless CMS that allows everyone to reach a huge audience with a tap </div>
+            <div class="headline white--text mb-3 text-xs-center" style="font-weight: 900;text-shadow: 3px 2px rgb(204, 202, 202);color: #000 !important">arualCMS is a headless CMS that allows everyone to reach a huge audience with a tap </div>
             <em>With the power of arualCMS you don't need to be famous or post pics of cute cats in order to get visibility</em>
             <v-btn class="blue lighten-2 mt-5" dark large @click="register = true">
               Get more info
@@ -269,11 +269,11 @@ export default class SignLayout extends Vue {
   dialogReg: boolean = false;
   imageLink: ILanding = {
     main:
-      "https://firebasestorage.googleapis.com/v0/b/endorfinevue.appspot.com/o/assets%2Fb13f0434-b228-11e6-8e5d-5252025056ab_web_scale_0.4666667_0.4666667__.jpg?alt=media&token=660df23e-599e-434b-9313-ba69c973eeea",
+      "/posts.png",
     sub_main:
-      "https://firebasestorage.googleapis.com/v0/b/endorfinevue.appspot.com/o/assets%2FNight-Club-Clubbing-Jobs-Abroad2.jpg?alt=media&token=82bbda7d-5df4-430b-9217-adaf1c8485c5",
+      "/post-detail.png",
     social_cover:
-      "https://firebasestorage.googleapis.com/v0/b/endorfinevue.appspot.com/o/assets%2Fo-NIGHTCLUB-facebook.jpg?alt=media&token=cefc5c4c-9714-41da-9c22-f63caf5e89a4"
+      "/text-detail.png"
   };
   user: UserRegistration = {username: "", password: "", name: ""}
   $axios: any;
@@ -301,5 +301,7 @@ export default class SignLayout extends Vue {
 </script>
 
 <style>
-
+.v-parallax__image-container {
+  opacity: 0.4;
+}
 </style>

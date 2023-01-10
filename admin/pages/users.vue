@@ -72,6 +72,47 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <v-dialog
+          v-model="permisionDialog"
+          max-width="1000px"
+        >
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">{{ title }}</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row v-for="(permission, index) in user.Permission" :key="index">
+                  <v-col cols="6">
+                    {{ sites.find(s => s.Id === permission.SiteId).Name }}
+                  </v-col>
+                  <v-col cols="6">
+                    <v-form ref="form">
+                      <v-select
+                        v-model="permission.Role"
+                        :items="['admin', 'author']"
+                        label="Select"
+                        single-line
+                        @change="updatePermision(permission)"
+                      ></v-select>
+                    </v-form>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="closePermissionDialog"
+              >
+                Close
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
@@ -85,6 +126,13 @@
       <v-icon
         small
         class="mr-2"
+        @click="openPermission(item)"
+      >
+        mdi-account-lock
+      </v-icon>
+      <v-icon
+        small
+        class="mr-2"
         @click="remove(item)"
       >
         mdi-delete
@@ -94,13 +142,14 @@
     </template>
   </v-data-table>
 </template>
-
 <script lang="ts">
-import {Component, Vue} from 'nuxt-property-decorator'
+import {Component, Vue, Prop} from 'nuxt-property-decorator'
 import User from '~/model/User';
 import IResponseUsers from '~/model/IResponseUsers';
+import Permission from '~/model/Permission';
 import IHeader from "~/model/IHeader";
 import {namespace} from 'vuex-class';
+import Site from '~/model/Site';
 
 const snackbar = namespace('Snackbar');
 
@@ -115,10 +164,14 @@ export default class UsersPage extends Vue {
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
 
+  @Prop() readonly sites!: Site[];
+  @Prop() readonly permissions!: Permission[];
+
   isEdit: boolean = false;
-  title: string = 'Users';
+  title?: string = 'Users';
   users: User[] = [];
   dialog: boolean = false;
+  permisionDialog: boolean = false;
   user: User = {
     Username: "",
     Password: "",
@@ -141,8 +194,10 @@ export default class UsersPage extends Vue {
   ];
   $axios: any;
   $auth: any;
+  $nuxt: any;
 
   mounted() {
+    this.checkPermission();
     this.load();
     this.user = {
       Username: "",
@@ -152,9 +207,16 @@ export default class UsersPage extends Vue {
     };
   }
 
+  checkPermission() {
+    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    if (role !== 'admin') {
+      this.$nuxt.$options.router.push('/');
+    }
+  }
+
   edit(user: User) {
     this.user = user;
-    this.title = this.user.Username;
+    this.title = this.user.Name;
     this.isEdit = true;
     this.dialog = true;
   }
@@ -173,6 +235,12 @@ export default class UsersPage extends Vue {
           this.updateShow(true);
         }
       });
+  }
+
+  openPermission(user: User) {
+    this.user = user;
+    this.title = this.user.Name;
+    this.permisionDialog = true;
   }
 
   save() {
@@ -213,6 +281,10 @@ export default class UsersPage extends Vue {
       .then((response: IResponseUsers) => {
         this.dialog = false;
         if (response.data.success === true) {
+          response.data.users.map((obj: User) => 
+            {
+              obj.Permission = response.data.permissions.filter((item: Permission) => item.UserId === obj.Id)
+            })
           this.users = response.data.users;
         } else {
           this.updateText(response.data.message);
@@ -231,6 +303,25 @@ export default class UsersPage extends Vue {
       Id: "",
       ParentId: this.$auth.user.Id
     };
+  }
+
+  closePermissionDialog() {
+    this.permisionDialog = false;
+  }
+
+  updatePermision(permission: Permission) {
+    this.$axios.put("/" + permission.SiteId + "/" + permission.SiteId + "/permission", permission, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseUsers) => {
+          if (response.data.success) {
+            this.updateText(response.data.message);
+            this.updateColor('green')
+            this.updateShow(true);
+          } else {
+            this.updateText(response.data.message);
+            this.updateColor('red')
+            this.updateShow(true);
+          }
+        });
   }
 }
 </script>

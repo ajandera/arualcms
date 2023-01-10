@@ -97,11 +97,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'nuxt-property-decorator';
+import {Component, Prop, Vue} from 'nuxt-property-decorator';
 import IHeader from "~/model/IHeader";
 import {namespace} from 'vuex-class';
 import Site from '~/model/Site';
 import IResponseSite from '~/model/IResponseSite';
+import Permission from '~/model/Permission';
 
 const snackbar = namespace('Snackbar');
 
@@ -115,6 +116,8 @@ export default class SitesPage extends Vue {
 
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
+
+  @Prop() readonly permissions!: Permission[];
 
   siteObject: Site = {
     Id: "",
@@ -134,9 +137,18 @@ export default class SitesPage extends Vue {
     {text: "Api Token", value: 'ApiToken', sortable: false},
     {text: "Actions", value: 'actions', sortable: false}
   ];
+  $nuxt: any;
 
   mounted(): void {
+    this.checkPermission();
     this.load();
+  }
+
+  checkPermission() {
+    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    if (role !== 'admin') {
+      this.$nuxt.$options.router.push('/');
+    }
   }
 
   create(): void {

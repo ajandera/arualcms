@@ -104,11 +104,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue, Watch} from 'nuxt-property-decorator';
+import {Component, Vue, Prop, Watch} from 'nuxt-property-decorator';
 import IResponseLanguage from '~/model/IResponseLanguage';
 import Language from '~/model/Language';
 import IHeader from "~/model/IHeader";
 import {namespace} from 'vuex-class';
+import Permission from '~/model/Permission';
 
 const snackbar = namespace('Snackbar');
 
@@ -122,6 +123,8 @@ export default class LanguagesPage extends Vue {
 
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
+
+  @Prop() readonly permissions!: Permission[];
 
   langObject: Language = {
     Key: "",
@@ -145,14 +148,24 @@ export default class LanguagesPage extends Vue {
     {text: "Default", value: 'Default', sortable: false},
     {text: "Actions", value: 'actions', sortable: false}
   ];
+  $nuxt: any;
 
   mounted(): void {
+    this.checkPermission();
     this.load();
   }
 
   @Watch('$route.query')
   onPropertyChanged(value: string, oldValue: string) {
+    this.checkPermission();
     this.load();
+  }
+
+  checkPermission() {
+    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    if (role !== 'admin') {
+      this.$nuxt.$options.router.push('/');
+    }
   }
 
   create(): void {

@@ -640,6 +640,15 @@ func main() {
 		endpoints.DeletePage(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
+	// permission
+	api.HandleFunc("/{siteId}/{userId}/permission", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.UpdatePermission(w, r, client)
+	}).Methods(http.MethodPut, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/pages", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.CreatePage(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
 	// public endpoints
 
 	// posts

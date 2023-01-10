@@ -25,6 +25,7 @@ import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator'
 import Setting from '~/model/Setting';
 import IResponseSetting from "~/model/IResponseSetting";
 import {namespace} from 'vuex-class';
+import Permission from '~/model/Permission';
 
 const snackbar = namespace('Snackbar');
 
@@ -40,18 +41,29 @@ export default class SettingsPage extends Vue {
   public updateShow!: (newShow: boolean) => void
   @Prop() readonly language!: string;
   @Prop() readonly languages!: string[];
+  @Prop() readonly permissions!: Permission[];
 
   setting: Setting[] = [];
   $axios: any;
+  $nuxt: any;
 
   mounted() {
+    this.checkPermission();
     this.load();
   }
 
   @Watch('$route.query')
   onPropertyChanged(value: any, oldValue: any) {
     if (value.siteId !== oldValue.siteId) {
+      this.checkPermission();
       this.load();
+    }
+  }
+
+  checkPermission() {
+    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    if (role !== 'admin') {
+      this.$nuxt.$options.router.push('/');
     }
   }
 

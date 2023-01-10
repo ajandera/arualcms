@@ -15,6 +15,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type MeObj struct {
+	Id          uuid.UUID
+	Name        string
+	Username    string
+	Permissions []model.Permission
+}
+
 func GetUsers(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	utils.SetupCORS(&w)
 	if (*r).Method == "OPTIONS" {
@@ -23,13 +30,22 @@ func GetUsers(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, id := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var users []model.User
-		c.Db.Model(&model.User{}).Scan(&users)
+		var permissions []model.Permission
+
+		c.Db.Model(&model.User{}).Where("id = ? OR parent_id = ?", id, id).Scan(&users)
+
+		var userIds []string
+		for _, v := range users {
+			userIds = append(userIds, v.Id.String())
+		}
+		c.Db.Model(&model.Permission{}).Where("user_id IN ?", userIds).Scan(&permissions)
 		response.Set("success", true)
 		response.Set("users", users)
+		response.Set("permissions", permissions)
 
 		w.WriteHeader(http.StatusOK)
 
@@ -307,8 +323,12 @@ func Me(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		c.Db.First(&model.User{}, "id = ?", fmt.Sprintf("%v", claims["id"])).Scan(&user)
 		c.Db.Model(&model.Permission{}).Where("user_id = ?", fmt.Sprintf("%v", claims["id"])).Scan(&permission)
 		response.Set("success", true)
-		response.Set("user", user)
-		response.Set("permission", permission)
+		response.Set("user", &MeObj{
+			Id:          user.Id,
+			Name:        user.Name,
+			Username:    user.Username,
+			Permissions: permission,
+		})
 
 		payload, err := response.MarshalJSON()
 		if err != nil {
@@ -318,6 +338,46 @@ func Me(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		w.Write(payload)
+	}
+}
+
+func UpdatePermission(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
+	utils.SetupCORS(&w)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
+	vars := mux.Vars(r)
+	siteId, _ := uuid.Parse(vars["siteId"])
+
+	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+		// Declare a new User struct.
+		var role model.Permission
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := json.NewDecoder(r.Body).Decode(&role)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Fatalf(err.Error())
+			return
+		}
+
+		response := simplejson.New()
+
+		c.Db.Model(model.Permission{}).Where("id = ?", role.Id).Updates(model.Permission{
+			Role: role.Role})
+		response.Set("success", true)
+		response.Set("message", "User permission set successfully.")
+		w.WriteHeader(http.StatusOK)
+
+		payload, err := response.MarshalJSON()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(payload)
 	}
 }

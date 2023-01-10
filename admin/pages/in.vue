@@ -25,7 +25,7 @@
               name="login"
               label="Login"
               type="text"
-              v-model="user.username"
+              v-model="user.Username"
             ></v-text-field>
             <v-text-field
               id="password"
@@ -33,7 +33,7 @@
               name="password"
               label="Password"
               type="password"
-              v-model="user.password"
+              v-model="user.Password"
             ></v-text-field>
           </v-form>
               <p @click="forgotForm()" class="fp">Forgot your password?</p>

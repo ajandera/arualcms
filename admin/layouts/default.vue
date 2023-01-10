@@ -99,7 +99,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtChild :language="language" :languages="languages" :defaultLanguage="defaultLanguage" />
+        <NuxtChild :language="language" :languages="languages" :defaultLanguage="defaultLanguage" :sites="sites" :permissions="permissions" />
       </v-container>
     </v-main>
     <v-footer
@@ -118,6 +118,7 @@ import IResponseLanguage from "~/model/IResponseLanguage";
 import Snackbar from "~/components/Snackbar.vue";
 import IResponseSite from "~/model/IResponseSite";
 import Site from '~/model/Site';
+import Permission from '~/model/Permission';
 
 @Component({
   components: {
@@ -133,12 +134,12 @@ export default class DefaultLayout extends Vue {
   defaultLanguage: string = ""
   items: Array<any> = [
     {
-      icon: 'mdi-apps',
+      icon: 'mdi-book-open-page-variant',
       title: 'Posts',
       to: '/posts'
     },
     {
-      icon: 'mdi-pencil',
+      icon: 'mdi-application-outline',
       title: 'Pages',
       to: '/pages'
     },
@@ -183,6 +184,7 @@ export default class DefaultLayout extends Vue {
   $nuxt: any;
   sites: Site[] = [];
   site: Site = {Id: "", Name: ""};
+  permissions: Permission[] = [];
 
   mounted() {
     this.guard();
@@ -193,8 +195,10 @@ export default class DefaultLayout extends Vue {
     if (!this.$route.query.siteId && this.site !== null) {
       if (this.site.Id === undefined) {
         this.$router.push({path: this.$route.path, query: {siteId: this.site}})
+        this.setRole(this.site)
       } else {
         this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
+        this.setRole(this.site.Id)
       }
     }
   }
@@ -204,6 +208,7 @@ export default class DefaultLayout extends Vue {
       this.$nuxt.$options.router.push('/in');
     } else {
       this.getSites();
+      this.permissions = this.$auth.user.Permissions;
     }
   }
 
@@ -239,6 +244,79 @@ export default class DefaultLayout extends Vue {
     this.site = site;
     this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}})
     this.getDefaultLanguage(this.site.Id)
+    this.setRole(this.site.Id)
+  }
+
+  setRole(siteId: string) {
+    // check permission
+    const role = this.permissions.find(p => p.SiteId === siteId).Role;
+    if(role === 'admin') {
+      this.items = [
+        {
+          icon: 'mdi-book-open-page-variant',
+          title: 'Posts',
+          to: '/posts'
+        },
+        {
+          icon: 'mdi-application-outline',
+          title: 'Pages',
+          to: '/pages'
+        },
+        {
+          icon: 'mdi-card-text',
+          title: 'Texts',
+          to: '/texts'
+        },
+        {
+          icon: 'mdi-file-multiple',
+          title: 'Files',
+          to: '/files'
+        },
+        {
+          icon: 'mdi-flag',
+          title: 'Languages',
+          to: '/languages'
+        },
+        {
+          icon: 'mdi-earth',
+          title: 'Sites',
+          to: '/sites'
+        },
+        {
+          icon: 'mdi-cog',
+          title: 'Setting',
+          to: '/settings'
+        },
+        {
+          icon: 'mdi-account',
+          title: 'Users',
+          to: '/users'
+        }
+      ];
+    } else {
+      this.items = [
+        {
+          icon: 'mdi-book-open-page-variant',
+          title: 'Posts',
+          to: '/posts'
+        },
+        {
+          icon: 'mdi-application-outline',
+          title: 'Pages',
+          to: '/pages'
+        },
+        {
+          icon: 'mdi-card-text',
+          title: 'Texts',
+          to: '/texts'
+        },
+        {
+          icon: 'mdi-file-multiple',
+          title: 'Files',
+          to: '/files'
+        }
+      ];
+    }
   }
 }
 </script>

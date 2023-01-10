@@ -61,7 +61,8 @@ export default class SettingsPage extends Vue {
   }
 
   checkPermission() {
-    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    const siteId = this.$route.query.siteId;
+    const role = this.permissions.find((p: Permission) => p.SiteId === siteId)?.Role;
     if (role !== 'admin') {
       this.$nuxt.$options.router.push('/');
     }

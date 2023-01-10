@@ -149,6 +149,7 @@ export default class LanguagesPage extends Vue {
     {text: "Actions", value: 'actions', sortable: false}
   ];
   $nuxt: any;
+  $route: any;
 
   mounted(): void {
     this.checkPermission();
@@ -162,7 +163,8 @@ export default class LanguagesPage extends Vue {
   }
 
   checkPermission() {
-    const role = this.permissions.find((p: Permission) => p.SiteId === this.$route.query.siteId).Role;
+    const siteId = this.$route.query.siteId;
+    const role = this.permissions.find((p: Permission) => p.SiteId === siteId)?.Role;
     if (role !== 'admin') {
       this.$nuxt.$options.router.push('/');
     }

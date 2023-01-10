@@ -247,9 +247,9 @@ export default class DefaultLayout extends Vue {
     this.setRole(this.site.Id)
   }
 
-  setRole(siteId: string) {
+  setRole(siteId: string | Site) {
     // check permission
-    const role = this.permissions.find(p => p.SiteId === siteId).Role;
+    const role = this.permissions.find(p => p.SiteId === siteId)?.Role;
     if(role === 'admin') {
       this.items = [
         {

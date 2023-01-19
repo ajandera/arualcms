@@ -68,10 +68,10 @@
       <section>
         <v-parallax :src="imageLink.sub_main" height="600">
           <v-layout column align-center justify-center class="white--text">
-            <h1 class="white--text mb-2 display-1 text-xs-center" style="font-weight: 900;text-shadow: 3px 2px rgb(204, 202, 202);color: #000 !important">
+            <h1 class="mb-2 display-1 text-xs-center mainHeadline">
               The headless CMS for epic content
             </h1>
-            <div class="white--text subheading mb-3 text-xs-center" style="font-weight: 900;text-shadow: 3px 2px rgb(204, 202, 202);color: #000 !important">
+            <div class="subheading mb-3 text-xs-center">
               Unlesh your creativity without limitations
             </div>
             <v-btn class="red darken-3 mt-5" dark large @click="dialogReg = true">

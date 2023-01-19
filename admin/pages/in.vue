@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on, attrs }">
         <v-btn 
           text
-          class="pink lighten-3"
+          class="success"
           v-bind="attrs"
           v-on="on">
             Sign In
@@ -14,7 +14,7 @@
       </template>
 
       <v-card>
-        <v-card-title class="text-h5 grey lighten-2">
+        <v-card-title class="text-h5 teal white--text lighten-2">
           Sign In
         </v-card-title>
 
@@ -43,7 +43,7 @@
           <v-btn color="secondary" text @click="dialog = false">
             Close
           </v-btn>
-          <v-btn color="primary" @click="login()">Login</v-btn>
+          <v-btn color="success" @click="login()">Login</v-btn>
         </v-card-actions>
         <v-card-text v-if="forgot === true">
           <v-form>
@@ -59,7 +59,7 @@
         <v-card-actions v-if="forgot === true">
           <v-spacer></v-spacer>
           <v-btn color="default" @click="forgotForm()">Back to login</v-btn>
-          <v-btn color="primary" @click="requestNewPw()">Request new Password</v-btn>
+          <v-btn color="success" @click="requestNewPw()">Request new Password</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -8,5 +8,6 @@ type Page struct {
 	Keywords    string
 	Description string
 	SiteId      string
+	ID          int    `json:"ID"`
 	Id          string `json:"Id"`
 }

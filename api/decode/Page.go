@@ -9,4 +9,5 @@ type Page struct {
 	Description string
 	SiteId      string
 	Id          string
+	ID          int
 }

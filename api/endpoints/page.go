@@ -137,6 +137,7 @@ func UpdatePage(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			return
 		}
 
+		log.Println(page)
 		response := simplejson.New()
 		c.Db.Model(model.Post{}).Where("id = ?", page.Id).Updates(model.Page{
 			Body:        page.Body,

@@ -93,6 +93,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		response := simplejson.New()
 
 		c.Db.Create(&model.Page{
+			Key:         page.Key,
 			Body:        page.Body,
 			Title:       page.Title,
 			MetaTitle:   page.MetaTitle,

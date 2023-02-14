@@ -231,7 +231,7 @@ func DeleteText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		}
 		response := simplejson.New()
 		response.Set("success", true)
-		response.Set("message", "text deleted successfully.")
+		response.Set("message", "Text deleted successfully.")
 		w.WriteHeader(http.StatusOK)
 
 		payload, err := response.MarshalJSON()

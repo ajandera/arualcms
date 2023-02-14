@@ -8,4 +8,5 @@ type Page struct {
 	Keywords    string
 	Description string
 	SiteId      string
+	Id          string
 }

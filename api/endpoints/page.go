@@ -126,7 +126,7 @@ func UpdatePage(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 
 		// Declare a new Page struct.
-		var page model.Page
+		var page decode.Page
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.

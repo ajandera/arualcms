@@ -66,10 +66,11 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 		if IsValidUUID(site) {
 			var user userPermission
 			idFromClaim, _ := uuid.Parse(fmt.Sprintf("%v", claims["id"]))
-			log.Println(idFromClaim)
 			c.Db.Model(&model.User{Id: idFromClaim}).First(&user)
-			log.Println(user)
 			userId = user.ParentId.String()
+			if userId == "00000000-0000-0000-0000-000000000000" {
+				userId = user.Id.String()
+			}
 			if IsValidUUID(user.ParentId) {
 				if isPermitted(user.ParentId, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)

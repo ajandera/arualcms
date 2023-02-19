@@ -50,7 +50,7 @@ func IsValidUUID(uuid uuid.UUID) bool {
 	return r.MatchString(uuid.String())
 }
 
-func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c ClientData) (bool, string) {
+func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c ClientData) (bool, string, string) {
 	if r.Header["Authorization"] != nil {
 		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
 		token, err := jwt.Parse(sendToken, func(token *jwt.Token) (interface{}, error) {
@@ -60,6 +60,7 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 			return mySigningKey, nil
 		})
 
+		var userId string
 		claims := token.Claims.(jwt.MapClaims)
 		// check if store belongs to account
 		if IsValidUUID(site) {
@@ -67,14 +68,15 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 			idFromClaim, _ := uuid.Parse(fmt.Sprintf("%v", claims["id"]))
 			c.Db.Model(&model.User{Id: idFromClaim}).First(&user)
 			if IsValidUUID(user.ParentId) {
+				userId = user.ParentId.String()
 				if isPermitted(user.ParentId, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)
-					return false, ""
+					return false, "", ""
 				}
 			} else {
 				if isPermitted(user.Id, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)
-					return false, ""
+					return false, "", ""
 				}
 			}
 		}
@@ -82,12 +84,12 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 		if err != nil && token != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Fatalf(err.Error())
-			return false, ""
+			return false, "", ""
 		}
-		return true, fmt.Sprintf("%v", claims["id"])
+		return true, fmt.Sprintf("%v", claims["id"]), userId
 	} else {
 		http.Error(w, "Not Authorized", http.StatusForbidden)
-		return false, ""
+		return false, "", ""
 	}
 }
 

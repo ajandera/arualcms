@@ -23,7 +23,7 @@ func GetFiles(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 
 		response := simplejson.New()
 
@@ -82,7 +82,7 @@ func UpdateFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 	fileId := vars["fileId"]
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var file model.File
 
@@ -122,7 +122,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		e := r.ParseMultipartForm(50 << 20)
 		if e != nil {
 			log.Printf("F: " + e.Error())
@@ -195,7 +195,7 @@ func GetFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		fileId := vars["fileId"]
 
@@ -257,7 +257,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		var f model.File
 		vars := mux.Vars(r)
 		id := vars["fileId"]

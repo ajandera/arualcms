@@ -448,7 +448,7 @@ export default class PostsPage extends Vue {
             }
             if (response.data.posts[index].File !== "") {
               response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
-            }   else {
+            } else {
               response.data.posts[index].Src = "";
             }
             this.posts.push(response.data.posts[index]);

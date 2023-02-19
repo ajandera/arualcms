@@ -21,7 +21,7 @@ func GetTexts(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var texts []model.Text
@@ -77,7 +77,7 @@ func CreateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Text struct.
 		var text decode.Text
 
@@ -119,7 +119,7 @@ func UpdateText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Text struct.
 		var text model.Text
 
@@ -161,7 +161,7 @@ func GetText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		vars := mux.Vars(r)
@@ -223,7 +223,7 @@ func DeleteText(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		id, _ := uuid.Parse(vars["textId"])
 		e := c.Db.Delete(&model.Text{}, id).Error
 		if e != nil {

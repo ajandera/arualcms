@@ -30,7 +30,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, id := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, id, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var users []model.User
@@ -115,7 +115,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var user decode.User
 		response := simplejson.New()
@@ -185,7 +185,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var user model.User
 
@@ -226,7 +226,7 @@ func GetUser(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		userId := vars["userId"]
 
@@ -257,7 +257,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		var u model.User
 		vars := mux.Vars(r)
 		id := vars["userId"]
@@ -285,7 +285,7 @@ func GetUserByEmail(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		vars := mux.Vars(r)
 		username := vars["username"]
 
@@ -314,7 +314,7 @@ func Me(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		return
 	}
 
-	if auth, _ := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
 		var sendToken = strings.Replace(r.Header["Authorization"][0], "Bearer ", "", 1)
 		claims, err := utils.GetClaim(sendToken)
 		response := simplejson.New()
@@ -351,7 +351,7 @@ func UpdatePermission(w http.ResponseWriter, r *http.Request, c utils.ClientData
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new User struct.
 		var role model.Permission
 

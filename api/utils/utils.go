@@ -67,8 +67,8 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request, site uuid.UUID, c Clie
 			var user userPermission
 			idFromClaim, _ := uuid.Parse(fmt.Sprintf("%v", claims["id"]))
 			c.Db.Model(&model.User{Id: idFromClaim}).First(&user)
+			userId = user.ParentId.String()
 			if IsValidUUID(user.ParentId) {
-				userId = user.ParentId.String()
 				if isPermitted(user.ParentId, site, c) == false {
 					http.Error(w, "Not Permitted", http.StatusForbidden)
 					return false, "", ""

@@ -23,7 +23,7 @@ func GetSites(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		response := simplejson.New()
 
 		var sites []model.Site
-		c.Db.Model(&model.Site{}).Where("user_id = ?", []string{userId, parentUserId}).Scan(&sites)
+		c.Db.Model(&model.Site{}).Where("user_id = ? OR user_id = ?", userId, parentUserId).Scan(&sites)
 		response.Set("success", true)
 		response.Set("sites", sites)
 

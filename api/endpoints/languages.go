@@ -21,7 +21,7 @@ func GetLanguages(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var languages []model.Language
@@ -77,7 +77,7 @@ func CreateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var languageToCrate decode.Language
 
@@ -127,7 +127,7 @@ func UpdateLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var language = model.Language{}
 		var languageToEdit decode.Language
@@ -177,7 +177,7 @@ func GetLanguageByCode(w http.ResponseWriter, r *http.Request, c utils.ClientDat
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
 
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		code := vars["code"]
 
 		response := simplejson.New()
@@ -238,7 +238,7 @@ func DeleteLanguage(w http.ResponseWriter, r *http.Request, c utils.ClientData) 
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		languageId, _ := uuid.Parse(vars["languageId"])
 		errD := c.Db.Delete(&model.Language{}, languageId).Error
 		response := simplejson.New()

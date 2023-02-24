@@ -197,14 +197,14 @@ export default class UsersPage extends Vue {
   $nuxt: any;
 
   mounted() {
-    this.checkPermission();
-    this.load();
     this.user = {
       Username: "",
       Password: "",
       Id: "",
       ParentId: this.$auth.user.Id
     };
+    this.checkPermission();
+    this.load();
   }
 
   checkPermission() {
@@ -282,7 +282,7 @@ export default class UsersPage extends Vue {
       .then((response: IResponseUsers) => {
         this.dialog = false;
         if (response.data.success === true) {
-          response.data.users.map((obj: User) => 
+          response.data.users.map((obj: User) =>
             {
               obj.Permission = response.data.permissions.filter((item: Permission) => item.UserId === obj.Id)
             })

@@ -20,7 +20,7 @@ func GetSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
 		var settings []model.Setting
@@ -76,7 +76,7 @@ func CreateSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Setting struct.
 		var setting model.Setting
 
@@ -122,7 +122,7 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Setting struct.
 		var setting model.Setting
 

@@ -19,11 +19,11 @@ func GetSites(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		return
 	}
 
-	if auth, userId := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
+	if auth, userId, parentUserId := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
 		response := simplejson.New()
 
 		var sites []model.Site
-		c.Db.Model(&model.Site{}).Where("user_id = ?", userId).Scan(&sites)
+		c.Db.Model(&model.Site{}).Where("user_id = ? OR user_id = ?", userId, parentUserId).Scan(&sites)
 		response.Set("success", true)
 		response.Set("sites", sites)
 
@@ -45,7 +45,7 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		return
 	}
 
-	if auth, userId := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
+	if auth, userId, _ := utils.IsAuthorized(w, r, uuid.New(), c); auth == true {
 		// Declare a new Language struct.
 		var site decode.Site
 		var res model.Site
@@ -115,7 +115,7 @@ func UpdateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		// Declare a new Language struct.
 		var site model.Site
 
@@ -156,7 +156,7 @@ func DeleteSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 	vars := mux.Vars(r)
 	siteId, _ := uuid.Parse(vars["siteId"])
-	if auth, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
+	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		errD := c.Db.Delete(&model.Site{}, siteId).Error
 		if errD != nil {
 			log.Println(errD.Error())

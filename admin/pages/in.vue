@@ -14,11 +14,12 @@
       </template>
 
       <v-card>
-        <v-card-title class="text-h5 teal white--text lighten-2">
+        <v-card-title class="text-h5 amber black--text lighten-2">
           Sign In
         </v-card-title>
 
         <v-card-text v-if="forgot === false">
+          <br>
           <v-form>
             <v-text-field
               prepend-icon="person"

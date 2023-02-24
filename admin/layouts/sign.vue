@@ -1,11 +1,11 @@
 <template>
   <v-app light>
-    <v-toolbar class="red darken-3">
+    <v-toolbar class="amber lighten-3">
       <v-toolbar-side-icon>
         <img src="/logosm.png" alt="arualCMS" class="logo">
       </v-toolbar-side-icon>
-      <v-toolbar-title class="mx-0 white--text" v-text="title"></v-toolbar-title>
-      <p>Beta</p>
+      <v-toolbar-title class="mx-0 black--text" v-text="title"></v-toolbar-title>
+      <p class="green--text">Beta</p>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-dialog
@@ -17,13 +17,13 @@
               text
               v-bind="attrs"
               v-on="on"
-              class="white--text">
+              class="black--text">
               Sign Up
             </v-btn>
           </template>
 
           <v-card>
-            <v-card-title class="text-h5 teal white--text lighten-2">
+            <v-card-title class="text-h5 teal black--text lighten-2">
               Sign Up
             </v-card-title>
             <v-card-text>
@@ -81,7 +81,7 @@
         </v-parallax>
       </section>
 
-      <section class="red darken-3 mb-5">
+      <section class="amber lighten-3 mb-5">
         <v-layout
           column
           wrap
@@ -90,7 +90,7 @@
         >
           <v-flex xs12 sm4 class="my-3 mt-5">
             <div class="text-center">
-              <h2 class="headline white--text">
+              <h2 class="headline black--text">
                 The best way to share your amazing stuff
               </h2>
               <span class="subheading">
@@ -107,7 +107,7 @@
                       <v-icon x-large class="teal--text text--lighten-2">public</v-icon>
                     </v-card-text>
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-xs-center white--text">Reach the world</div>
+                      <div class="headline text-xs-center black--text">Reach the world</div>
                     </v-card-title>
                     <v-card-text class="black--text">
                       Show your stuff to the whole internet not only to your mum or your friends.
@@ -123,7 +123,7 @@
                       <v-icon x-large class="teal--text text--lighten-2">flash_on</v-icon>
                     </v-card-text>
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline white--text">Fast communication</div>
+                      <div class="headline black--text">Fast communication</div>
                     </v-card-title>
                     <v-card-text class="black--text">
                       Time is important, we don't want you to waste it. So our Rest API reponse is only <strong>30ms</strong>.
@@ -138,7 +138,7 @@
                       <v-icon x-large class="teal--text text--lighten-2">share</v-icon>
                     </v-card-text>
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-xs-center white--text">Create new consumers</div>
+                      <div class="headline text-xs-center black--text">Create new consumers</div>
                     </v-card-title>
                     <v-card-text class="black--text">
                       Imagine if you can directly speak with the world's population.
@@ -168,13 +168,13 @@
         </v-parallax>
       </section>
 
-      <section class="red darken-3">
+      <section class="amber lighten-3">
         <v-container grid-list-xl>
           <v-layout row wrap justify-center class="my-5">
             <v-flex xs12 sm4>
               <v-card class="elevation-0 transparent">
                 <v-card-title primary-title class="layout justify-center">
-                  <div class="headline white--text">Company info</div>
+                  <div class="headline black--text">Company info</div>
                 </v-card-title>
                 <v-card-text class="black--text">
                   We are not a company. We hate companies.
@@ -185,7 +185,7 @@
             <v-flex xs12 sm4 offset-sm1>
               <v-card class="elevation-0 transparent">
                 <v-card-title primary-title class="layout justify-center">
-                  <div class="headline white--text">We are hiring</div>
+                  <div class="headline black--text">We are hiring</div>
                 </v-card-title>
                 <v-card-text class="black--text">
                   Are you a creative person? Do you like techy stuff? 

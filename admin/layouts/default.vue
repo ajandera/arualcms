@@ -98,7 +98,7 @@
       </v-btn>
     </v-app-bar>
     <v-main>
-      <v-container>
+      <v-container fluid>
         <NuxtChild :language="language" :languages="languages" :defaultLanguage="defaultLanguage" :sites="sites" :permissions="permissions" />
       </v-container>
     </v-main>

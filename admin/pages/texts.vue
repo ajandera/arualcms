@@ -30,7 +30,7 @@
           </v-icon>
         </v-btn>
       </div>
-      <div class="col-sm-3 col-xs-6">
+      <div class="col-sm-2 col-xs-6">
         <v-text-field
           v-model="item.Key"
           :counter="30"
@@ -39,16 +39,14 @@
           @change="save(item)"
         ></v-text-field>
       </div>
-      <div class="col-sm-7 col-xs-6">
-        <v-textarea
-          solo
-          name="input-7-4"
-          label="Solo textarea"
+      <div class="col-sm-6 col-xs-6">
+        <v-text-field
+          label="Value"
           v-model="item.Value[language]"
           @change="save(item)"
-        ></v-textarea>
+        ></v-text-field>
       </div>
-      <div class="col-sm-1 col-xs-12">
+      <div class="col-sm-3 col-xs-12">
         <div class="float-right">
           <div class="btn-group" role="group" aria-label="Basic example">
             <v-dialog

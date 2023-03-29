@@ -49,6 +49,14 @@ type Deepl struct {
 	Lang string
 }
 
+type Menu struct {
+	Name     string
+	Url      string
+	ParentId string
+	PageId   string
+	PostId   string
+}
+
 func NewConnect(dsn string) utils.ClientData {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -70,7 +78,7 @@ func NewConnect(dsn string) utils.ClientData {
 		&model.File{},
 		&model.Site{},
 		&model.Permission{})
-	return utils.ClientData{db}
+	return utils.ClientData{Db: db}
 }
 
 func refresh(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -640,6 +648,23 @@ func main() {
 		endpoints.DeletePage(w, r, client)
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
+	// menu
+	api.HandleFunc("/{siteId}/menu", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetMenu(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/menu", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.CreateMenu(w, r, client)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/menu/{menuId}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.UpdateMenu(w, r, client)
+	}).Methods(http.MethodPut, http.MethodOptions)
+
+	api.HandleFunc("/{siteId}/menu/{menuId}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.DeleteMenu(w, r, client)
+	}).Methods(http.MethodDelete, http.MethodOptions)
+
 	// permission
 	api.HandleFunc("/{siteId}/{userId}/permission", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.UpdatePermission(w, r, client)
@@ -704,6 +729,11 @@ func main() {
 
 	public.HandleFunc("/{apiToken}/pages/{key}", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.GetPageByKeyPublic(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// menu
+	public.HandleFunc("/{apiToken}/menu", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetMenuPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
 	log.Fatal(http.ListenAndServe(":8888", r))

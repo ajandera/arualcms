@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"encoding/json"
-	"github.com/bitly/go-simplejson"
 	"io/ioutil"
 	"log"
 	"main/decode"
@@ -10,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/bitly/go-simplejson"
 )
 
 func Translate(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,6 @@ func Translate(w http.ResponseWriter, r *http.Request) {
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 	req.Header.Add("Authorization", "DeepL-Auth-Key "+os.Getenv("DEEPL"))
 	res, _ := http.DefaultClient.Do(req)
-	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
 	response := simplejson.New()
@@ -48,6 +48,7 @@ func Translate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer res.Body.Close()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(payload)

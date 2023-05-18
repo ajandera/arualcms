@@ -13,6 +13,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type MenuNode struct {
+	model.Menu
+	Children []*MenuNode
+}
+
 func GetMenu(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	utils.SetupCORS(&w)
 	if (*r).Method == "OPTIONS" {
@@ -24,10 +29,9 @@ func GetMenu(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	if auth, _, _ := utils.IsAuthorized(w, r, siteId, c); auth == true {
 		response := simplejson.New()
 
-		var menu []model.Menu
-		c.Db.Model(&model.Menu{}).Where("site_id = ?", siteId).Scan(&menu)
 		response.Set("success", true)
-		response.Set("menu", menu)
+		items, _ := GetAllMenuItems(siteId.String(), c)
+		response.Set("menu", BuildMenuTree(items))
 
 		w.WriteHeader(http.StatusOK)
 
@@ -52,10 +56,9 @@ func GetMenuPublic(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	if auth, siteId := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
-		var menu []model.Menu
-		c.Db.Model(&model.Menu{}).Where("site_id = ?", siteId).Scan(&menu)
+		items, _ := GetAllMenuItems(siteId, c)
 		response.Set("success", true)
-		response.Set("menu", menu)
+		response.Set("menu", BuildMenuTree(items))
 
 		w.WriteHeader(http.StatusOK)
 
@@ -183,4 +186,51 @@ func DeleteMenu(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(payload)
 	}
+}
+
+func GetAllMenuItems(siteId string, c utils.ClientData) ([]model.Menu, error) {
+	var items []model.Menu
+	err := c.Db.Model(&model.Menu{}).Where("site_id = ?", siteId).Order("parent_id, `order`").Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func BuildMenuTree(items []model.Menu) []*MenuNode {
+	// Create a map to look up nodes by ID
+	nodes := make(map[string]*MenuNode)
+
+	// Create the root node
+	root := &MenuNode{}
+
+	// Iterate over items and create a node for each
+	for _, item := range items {
+		node := &MenuNode{
+			Menu: item,
+		}
+		nodes[item.Id.String()] = node
+
+		// Check if this node is the root
+		if item.ParentId == "" {
+			root.Children = append(root.Children, node)
+		} else {
+			// Find the parent node and add this node as a child
+			parent, ok := nodes[item.ParentId]
+			if !ok {
+				// If the parent node hasn't been created yet, create it
+				uuid, _ := uuid.Parse(item.ParentId)
+				parent = &MenuNode{
+					Menu: model.Menu{
+						Id: uuid,
+					},
+				}
+				nodes[item.ParentId] = parent
+			}
+			parent.Children = append(parent.Children, node)
+		}
+	}
+
+	// Return the root node's children
+	return root.Children
 }

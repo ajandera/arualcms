@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on, attrs }">
         <v-btn 
           text
-          class="success"
+          class="main-btn"
           v-bind="attrs"
           v-on="on">
             Sign In

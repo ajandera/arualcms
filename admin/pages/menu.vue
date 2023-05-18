@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="pages"
+    :items="menus"
     :items-per-page="10"
     class="elevation-1"
   >
@@ -9,7 +9,7 @@
       <v-toolbar
         flat
       >
-        <v-toolbar-title>My Pages</v-toolbar-title>
+        <v-toolbar-title>Menu</v-toolbar-title>
         <v-divider
           class="mx-4"
           inset
@@ -48,7 +48,7 @@
                       md="6"
                     >
                       <v-text-field
-                        v-model="page.Title[language]"
+                        v-model="menu.Name[language]"
                         :counter="50"
                         :rules="rules"
                         label="Title"
@@ -61,47 +61,34 @@
                       md="6"
                     >
                       <v-text-field
-                        v-model="page.Key"
+                        v-model="menu.Url"
                         :counter="50"
                         :rules="rules"
-                        label="Key"
+                        label="Url"
                         required
                       ></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
                     <v-col
-                      cols="12"
+                      cols="6"
                     >
-                      <quill-editor
-                        :ref="page.Body[language]"
-                        v-model="page.Body[language]"
-                        :options="editorOption"
-                        @blur="onEditorBlur($event)"
-                        @focus="onEditorFocus($event)"
-                        @ready="onEditorReady($event)"
-                      />
-                      <v-text-field
-                        v-model="page.MetaTitle[language]"
-                        :counter="100"
-                        :rules="rules"
-                        label="Meta title"
-                        required
-                      ></v-text-field>
-                      <v-text-field
-                        v-model="page.Description[language]"
-                        :counter="150"
-                        :rules="rules"
-                        label="Meta description"
-                        required
-                      ></v-text-field>
-                      <v-text-field
-                        v-model="page.Keywords[language]"
-                        :counter="100"
-                        :rules="rules"
-                        label="Meta keywords"
-                        required
-                      ></v-text-field>
+                    <v-select
+                        v-model="menu.PageId"
+                        :items="pages"
+                        label="Page"
+                        single-line
+                      ></v-select>
+                    </v-col>
+                    <v-col
+                      cols="6"
+                    >
+                    <v-select
+                        v-model="menu.PostId"
+                        :items="posts"
+                        label="Post"
+                        single-line
+                      ></v-select>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -128,20 +115,8 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.Src="{ item }">
-      <div class="p-5">
-        <v-img :src="$config.storage + item.Src" :alt="item.Title[language]" height="auto"
-               width="200px"></v-img>
-      </div>
-    </template>
-    <template v-slot:item.Title="{ item }">
-      <p>{{ item.Title[language] }}</p>
-    </template>
-    <template v-slot:item.Excerpt="{ item }">
-      <p>{{ item.Excerpt[language] }}</p>
-    </template>
-    <template v-slot:item.Published="{ item }">
-      <p>{{ item.Published[0].toLocaleDateString() }}</p>
+    <template v-slot:item.Name="{ item }">
+      <p>{{ item.Name[language] }}</p>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon
@@ -173,15 +148,19 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator';
-import Page from "~/model/Page";
-import IResponsePages from "~/model/IResponsePages";
+import Menu from "~/model/Menu";
+import IResponseMenu from "~/model/IResponseMenu";
 import IHeader from '~/model/IHeader';
 import {namespace} from 'vuex-class';
+import Post from '~/model/Post';
+import Page from '~/model/Page';
+import IResponsePages from '~/model/IResponsePages';
+import IResponsePosts from '~/model/IResponsePosts';
 
 const snackbar = namespace('Snackbar');
 
 @Component
-export default class PagesPage extends Vue {
+export default class MenuPage extends Vue {
   @snackbar.Action
   public updateText!: (newText: string) => void
 
@@ -194,34 +173,32 @@ export default class PagesPage extends Vue {
   @Prop() readonly language!: string;
   @Prop() readonly defaultLanguage!: string;
 
-  pages: Page[] = [];
+  menus: Menu[] = [];
   title: string = "";
-  editorOption: any = {
-    // Some Quill options...
-  };
   $axios: any;
-  content: any;
   $refs: any;
   headers: IHeader[] = [
-    {text: "Title", value: 'Title'},
+    {text: "Name", value: 'Name'},
     {text: "Actions", value: 'actions', sortable: false}
   ];
-  page: Page = {
-    Body: this.createClearTranslationObject(),
-    Title: this.createClearTranslationObject(),
-    Id: '',
-    MetaTitle: this.createClearTranslationObject(),
-    Keywords: this.createClearTranslationObject(),
-    Description: this.createClearTranslationObject(),
-    Key: ""
+  menu: Menu = {
+    Id: "",
+    Name: this.createClearTranslationObject(),
+    Url: "",
+    Children: [],
+    PageId: "",
+    PostId: ""
   };
   dialog: boolean = false;
   valid: boolean = true;
   rules: any = [];
   fromDateMenu: boolean = false;
+  posts: Post[] = [];
+  pages: Page[] = [];
 
   mounted() {
     this.load();
+
   }
 
   @Watch('$route.query')
@@ -229,15 +206,15 @@ export default class PagesPage extends Vue {
     this.load();
   }
 
-  edit(page: Page) {
-    this.page = page;
-    this.title = this.page.Title[this.language];
+  edit(menu: Menu) {
+    this.menu = menu;
+    this.title = this.menu.Name;
     this.dialog = true;
   }
 
   remove(id: string) {
-    this.$axios.delete("/" + this.$route.query.siteId + "/pages/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponsePages) => {
+    this.$axios.delete("/" + this.$route.query.siteId + "/menu/" + id, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseMenu) => {
         if (response.data.success) {
           this.updateText(response.data.message);
           this.updateColor('green')
@@ -252,26 +229,21 @@ export default class PagesPage extends Vue {
   }
 
   create() {
-    this.page = {
-      Body: this.createClearTranslationObject(),
-      Title: this.createClearTranslationObject(),
+    this.menu = {
       Id: '',
-      MetaTitle: this.createClearTranslationObject(),
-      Keywords: this.createClearTranslationObject(),
-      Description: this.createClearTranslationObject(),
-      Key: ""
+      Name: this.createClearTranslationObject(),
+      Url: '',
+      Children: [],
+      PageId: "",
+      PostId: ""
     };
   }
 
-  save(close: boolean) {
-    this.page.Title = JSON.stringify(this.page.Title);
-    this.page.Body = JSON.stringify(this.page.Body);
-    this.page.MetaTitle = JSON.stringify(this.page.MetaTitle);
-    this.page.Keywords = JSON.stringify(this.page.Keywords);
-    this.page.Description = JSON.stringify(this.page.Description);
-    if (this.page.Id !== "") {
-      this.$axios.put("/" + this.$route.query.siteId + "/pages", this.page, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-        .then((response: IResponsePages) => {
+  save() {
+    this.menu.Name = JSON.stringify(this.menu.Name);
+    if (this.menu.Id !== "") {
+      this.$axios.put("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseMenu) => {
           if (response.data.success) {
             this.updateText(response.data.message);
             this.updateColor('green')
@@ -284,9 +256,9 @@ export default class PagesPage extends Vue {
           this.load();
         });
     } else {
-      this.page.Id = "";
-      this.$axios.post("/" + this.$route.query.siteId + "/pages", this.page, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-        .then((response: IResponsePages) => {
+      this.menu.Id = "";
+      this.$axios.post("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+        .then((response: IResponseMenu) => {
           if (response.data.success) {
             this.updateText(response.data.message);
             this.updateColor('green')
@@ -298,20 +270,12 @@ export default class PagesPage extends Vue {
           }
           this.load();
         });
-    }
-  }
-
-  autoSave() {
-    if (this.page.Id !== "") {
-      this.createSend();
-    } else {
-      this.editSend();
     }
   }
 
   createSend() {
-    this.$axios.put("/" + this.$route.query.siteId + "/pages", this.page, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponsePages) => {
+    this.$axios.put("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseMenu) => {
         if (response.data.success) {
           this.updateText(response.data.message);
           this.updateColor('green')
@@ -325,8 +289,8 @@ export default class PagesPage extends Vue {
   }
 
   editSend() {
-    this.$axios.post("/" + this.$route.query.siteId + "/pages", this.page, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponsePages) => {
+    this.$axios.post("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: IResponseMenu) => {
         if (response.data.success) {
           this.updateText(response.data.message);
           this.updateColor('green')
@@ -339,20 +303,51 @@ export default class PagesPage extends Vue {
       });
   }
 
-  onEditorBlur(quill: any) {
-  }
-
-  onEditorFocus(quill: any) {
-  }
-
-  onEditorReady(quill: any) {
-  }
-
-  onEditorChange(quill: any, html: any, text: any) {
-    this.content = html
-  }
-
   async load() {
+    this.menus = [];
+    this.$axios.get("/" + this.$route.query.siteId + "/menu")
+      .then((response: IResponseMenu) => {
+        if (response.data.success) {
+            this.menus = response.data.menu;
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
+        }
+      });
+  }
+
+  close() {
+    this.dialog = false;
+  }
+
+  async translate(item: Menu) {
+    const name = {
+      Text: item.Name[this.defaultLanguage],
+      Lang: this.language
+    }
+
+    await this.$axios.post("/deepl", name, {headers: {'Content-Type': "application/json;charset=utf-8"}})
+      .then((response: any) => {
+        if (response.data.success === true) {
+          const data = JSON.parse(response.data.text);
+          item.Name[this.language] = data.translations[0].text;
+        }
+      });
+
+    this.menu = item;
+    await this.save();
+  }
+
+  createClearTranslationObject() {
+    const response: any = {};
+    for (const lang of this.languages) {
+      response[lang] = "";
+    }
+    return response
+  }
+
+  getPages() {
     this.pages = [];
     this.$axios.get("/" + this.$route.query.siteId + "/pages")
       .then((response: IResponsePages) => {
@@ -379,51 +374,38 @@ export default class PagesPage extends Vue {
       });
   }
 
-  close() {
-    this.dialog = false;
-  }
-
-  createClearTranslationObject() {
-    const response: any = {};
-    for (const lang of this.languages) {
-      response[lang] = "";
-    }
-    return response
-  }
-
-  get editor() {
-    return this.$refs.myQuillEditor.quill
-  }
-
-  async translate(item: Page) {
-    const title = {
-      Text: item.Title[this.defaultLanguage],
-      Lang: this.language
-    }
-
-    const body = {
-      Text: item.Body[this.defaultLanguage],
-      Lang: this.language
-    }
-
-    await this.$axios.post("/deepl", title, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: any) => {
-        if (response.data.success === true) {
-          const data = JSON.parse(response.data.text);
-          item.Title[this.language] = data.translations[0].text;
+  getPosts() {
+    this.posts = [];
+    this.$axios.get("/" + this.$route.query.siteId + "/posts")
+      .then((response: IResponsePosts) => {
+        if (response.data.success) {
+          for (let index in response.data.posts) {
+            response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
+            response.data.posts[index].Title = JSON.parse(response.data.posts[index].Title.toString());
+            response.data.posts[index].Excerpt = JSON.parse(response.data.posts[index].Excerpt.toString());
+            response.data.posts[index].Body = JSON.parse(response.data.posts[index].Body.toString());
+            if (response.data.posts[index].MetaTitle !== "") {
+              response.data.posts[index].MetaTitle = JSON.parse(response.data.posts[index].MetaTitle.toString());
+            }
+            if (response.data.posts[index].Keywords !== "") {
+              response.data.posts[index].Keywords = JSON.parse(response.data.posts[index].Keywords.toString());
+            }
+            if (response.data.posts[index].Description !== "") {
+              response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
+            }
+            if (response.data.posts[index].File !== "") {
+              response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
+            } else {
+              response.data.posts[index].Src = "";
+            }
+            this.posts.push(response.data.posts[index]);
+          }
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
         }
       });
-
-    await this.$axios.post("/deepl", body, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: any) => {
-        if (response.data.success === true) {
-          const data = JSON.parse(response.data.text);
-          item.Body[this.language] = data.translations[0].text;
-        }
-      });
-
-    this.page = item;
-    await this.save(false);
   }
 }
 </script>

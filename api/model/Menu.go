@@ -14,6 +14,7 @@ type Menu struct {
 	Children []*Menu `gorm:"foreignkey:ParentId"`
 	SiteId   string
 	Site     Site `gorm:"foreignKey:SiteId"`
+	Order    uint
 }
 
 func (menu *Menu) BeforeCreate(db *gorm.DB) error {

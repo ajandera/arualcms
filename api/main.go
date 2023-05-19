@@ -297,7 +297,6 @@ func forgot(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(payload)
-
 }
 
 func recovery(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
@@ -441,6 +440,9 @@ func main() {
 
 	// For serving static files
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./files")))
+
+	// for serving bot public library
+	r.PathPrefix("/public/").Handler(http.FileServer(http.Dir("./lib")))
 
 	// posts
 	api.HandleFunc("/{siteId}/posts", func(w http.ResponseWriter, r *http.Request) {
@@ -735,6 +737,18 @@ func main() {
 	public.HandleFunc("/{apiToken}/menu", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.GetMenuPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
+
+	// arualBot
+
+	// ask a bot
+	api.HandleFunc("/ask", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.ProceedAsk(w, r)
+	}).Methods(http.MethodPost, http.MethodOptions)
+
+	// train a bot
+	api.HandleFunc("/train/{corpora}", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.ProceedTrain(w, r)
+	}).Methods(http.MethodPost, http.MethodOptions)
 
 	log.Fatal(http.ListenAndServe(":8888", r))
 }

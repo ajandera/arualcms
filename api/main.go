@@ -65,7 +65,7 @@ func NewConnect(dsn string) utils.ClientData {
 
 	errExt := db.Raw("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error
 	if errExt != nil {
-		panic(errExt)
+		panic(errExt.Error())
 	}
 	// Migrate the schema
 	db.AutoMigrate(
@@ -77,7 +77,8 @@ func NewConnect(dsn string) utils.ClientData {
 		&model.Setting{},
 		&model.File{},
 		&model.Site{},
-		&model.Permission{})
+		&model.Permission{},
+		&model.Menu{})
 	return utils.ClientData{Db: db}
 }
 

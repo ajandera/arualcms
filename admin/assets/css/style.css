@@ -8,7 +8,7 @@
 
 ======== */
 /*===========================
-  COMMON css 
+  COMMON css
 ===========================*/
 @import url("https://fonts.googleapis.com/css?family=Poppins:400,700|Lato:300,400,700&display=swap");
 body {
@@ -716,7 +716,7 @@ p {
 }
 
 /*===========================
-  BRAND css 
+  BRAND css
 ===========================*/
 @media (max-width: 767px) {
   .brand-logo {
@@ -770,7 +770,7 @@ p {
 }
 
 /*===========================
-  SERVICES css 
+  SERVICES css
 ===========================*/
 .single-services {
   background-color: #fff;
@@ -880,7 +880,7 @@ p {
 }
 
 /*===========================
-	ABOUT css 
+	ABOUT css
 ===========================*/
 .about-area {
   position: relative;
@@ -948,7 +948,7 @@ p {
 }
 
 /*===========================
-	VIDEO COUNTER css 
+	VIDEO COUNTER css
 ===========================*/
 .video-content {
   position: relative;
@@ -1120,7 +1120,7 @@ p {
 }
 
 /*===========================
-  SUBSCRIBE  css 
+  SUBSCRIBE  css
 ===========================*/
 .subscribe-area {
   padding: 40px 50px 90px;
@@ -1249,7 +1249,7 @@ p {
 }
 
 /*===========================
-	FOOTER  css 
+	FOOTER  css
 ===========================*/
 .footer-area {
   background-position: top center;
@@ -1264,7 +1264,7 @@ p {
   left: 0;
   height: 100%;
   width: 100%;
-  background-image: url(../images/footer/footer-bg.svg);
+  background-image: url(/assets/images/footer/footer-bg.svg);
   background-position: top center;
   z-index: -1;
   background-size: cover;

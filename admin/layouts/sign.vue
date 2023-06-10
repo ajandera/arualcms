@@ -51,7 +51,7 @@
                     width="500"
                   >
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn 
+                      <v-btn
                         text
                         v-bind="attrs"
                         v-on="on"
@@ -60,7 +60,7 @@
                       </v-btn>
                     </template>
                     <v-card>
-                      <v-card-title class="text-h5 teal black--text lighten-2">
+                      <v-card-title class="text-h5 signup white--text lighten-2">
                         Sign Up
                       </v-card-title>
                       <v-card-text>
@@ -175,7 +175,7 @@
     <!--====== HEADER PART ENDS ======-->
 
     <!--====== BRAND PART START ======-->
-    <div class="brand-area pt-90">
+    <div class="brand-area pt-90" style="display: none">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
@@ -513,7 +513,7 @@
             <div class="col-lg-6">
               <div class="subscribe-content mt-45">
                 <h2 class="subscribe-title">
-                  Subscribe Our Newsletter <span>get reguler updates</span>
+                  Subscribe Our Newsletter <span>get regular updates</span>
                 </h2>
               </div>
             </div>
@@ -742,5 +742,8 @@ export default class SignLayout extends Vue {
 .navbar-brand,
 .logo {
   color: #fff !important;
+}
+.signup {
+  background: linear-gradient(to right, #fe8464 0%, #fe6e9a 50%, #fe8464 100%);
 }
 </style>

@@ -4,7 +4,7 @@
       width="500"
     >
       <template v-slot:activator="{ on, attrs }">
-        <v-btn 
+        <v-btn
           text
           class="main-btn"
           v-bind="attrs"
@@ -14,7 +14,7 @@
       </template>
 
       <v-card>
-        <v-card-title class="text-h5 amber black--text lighten-2">
+        <v-card-title class="text-h5 special white--text lighten-2">
           Sign In
         </v-card-title>
 
@@ -142,5 +142,9 @@ export default class InPage extends Vue {
 <style>
 .signin .fp {
   cursor: pointer
+}
+.special {
+  background: #1976d2;
+  color: #fff !important;
 }
 </style>

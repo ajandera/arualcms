@@ -7,7 +7,7 @@
 ## Installation
 ### Production docker container
 
-On docker hub is located ajandera/arualCMS container which contains api and administration app in vuejs. Simply add it to your docker configuration to run you application based on arualCMS.
+On docker hub is located ajandera/arualCMS container which contains api and administration app in vuejs. Simply add it to your docker configuration to run your application based on arualCMS.
 
 ### Use Docker for development
 Copy content of production folder to your destination and run **docker-compose up**, it will create container and app will be running on next urls:

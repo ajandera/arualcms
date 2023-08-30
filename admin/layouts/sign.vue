@@ -2,17 +2,8 @@
   <v-app light>
     <v-container>
       <v-row class="mt-5">
-        <v-col cols="12" class="mt-5">
-          <table class="logo">
-            <tr>
-              <td>
-                <img src="/logosm.png" alt="arualCMS">
-              </td>
-              <td>
-                <span>{{ title }}</span>
-              </td>
-            </tr>
-          </table>
+        <v-col cols="12" class="mt-5 text-center">
+          <img src="/logo.png" class="text-center" alt="arualCMS">
         </v-col>
       </v-row>
       <v-row class="mt-5">
@@ -45,9 +36,6 @@
             </v-card-text>
             <v-card-actions v-if="forgot === false">
               <v-spacer></v-spacer>
-              <v-btn color="secondary" text @click="dialog = false">
-                Close
-              </v-btn>
               <v-btn color="success" @click="login()">Login</v-btn>
             </v-card-actions>
             <v-card-text v-if="forgot === true">
@@ -69,7 +57,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-img src="/assets/images/header/header-hero.png" alt="arualCMS" />
+          <v-img src="/assets/images/header/header-hero.png" class="mt-5" alt="arualCMS" />
         </v-col>
       </v-row>
     </v-container>
@@ -155,12 +143,3 @@ export default class SignLayout extends Vue {
 
 }
 </script>
-
-<style>
-.logo span {
-  font-size: 2rem;
-}
-.logo {
-  margin: 0 auto;
-}
-</style>

@@ -263,7 +263,7 @@ export default class PagesPage extends Vue {
     };
   }
 
-  save(close: boolean) {
+  save() {
     this.page.Title = JSON.stringify(this.page.Title);
     this.page.Body = JSON.stringify(this.page.Body);
     this.page.MetaTitle = JSON.stringify(this.page.MetaTitle);
@@ -281,6 +281,7 @@ export default class PagesPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
+          this.close();
           this.load();
         });
     } else {
@@ -296,6 +297,7 @@ export default class PagesPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
+          this.close();
           this.load();
         });
     }
@@ -423,7 +425,7 @@ export default class PagesPage extends Vue {
       });
 
     this.page = item;
-    await this.save(false);
+    await this.save();
   }
 }
 </script>

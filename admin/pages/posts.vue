@@ -220,7 +220,6 @@ import IResponsePosts from "~/model/IResponsePosts";
 import IResponseFiles from '~/model/IResponseFiles';
 import IHeader from '~/model/IHeader';
 import {namespace} from 'vuex-class';
-import Text from "~/model/Text";
 
 const snackbar = namespace('Snackbar');
 
@@ -234,6 +233,7 @@ export default class PostsPage extends Vue {
 
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
+
   @Prop() readonly languages!: string[];
   @Prop() readonly language!: string;
   @Prop() readonly defaultLanguage!: string;
@@ -298,6 +298,40 @@ export default class PostsPage extends Vue {
   @Watch('$route.query')
   onPropertyChanged(value: string, oldValue: string) {
     this.load();
+  }
+
+  async load() {
+    this.posts = [];
+    this.$axios.get("/" + this.$route.query.siteId + "/posts")
+      .then((response: IResponsePosts) => {
+        if (response.data.success) {
+          for (let index in response.data.posts.reverse()) {
+            response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
+            response.data.posts[index].Title = JSON.parse(response.data.posts[index].Title.toString());
+            response.data.posts[index].Excerpt = JSON.parse(response.data.posts[index].Excerpt.toString());
+            response.data.posts[index].Body = JSON.parse(response.data.posts[index].Body.toString());
+            if (response.data.posts[index].MetaTitle !== "") {
+              response.data.posts[index].MetaTitle = JSON.parse(response.data.posts[index].MetaTitle.toString());
+            }
+            if (response.data.posts[index].Keywords !== "") {
+              response.data.posts[index].Keywords = JSON.parse(response.data.posts[index].Keywords.toString());
+            }
+            if (response.data.posts[index].Description !== "") {
+              response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
+            }
+            if (response.data.posts[index].File !== "") {
+              response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
+            } else {
+              response.data.posts[index].Src = "";
+            }
+            this.posts.push(response.data.posts[index]);
+          }
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
+        }
+      });
   }
 
   edit(post: Post) {
@@ -425,40 +459,6 @@ export default class PostsPage extends Vue {
 
   onEditorChange(quill: any, html: any, text: any) {
     this.content = html
-  }
-
-  async load() {
-    this.posts = [];
-    this.$axios.get("/" + this.$route.query.siteId + "/posts")
-      .then((response: IResponsePosts) => {
-        if (response.data.success) {
-          for (let index in response.data.posts) {
-            response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
-            response.data.posts[index].Title = JSON.parse(response.data.posts[index].Title.toString());
-            response.data.posts[index].Excerpt = JSON.parse(response.data.posts[index].Excerpt.toString());
-            response.data.posts[index].Body = JSON.parse(response.data.posts[index].Body.toString());
-            if (response.data.posts[index].MetaTitle !== "") {
-              response.data.posts[index].MetaTitle = JSON.parse(response.data.posts[index].MetaTitle.toString());
-            }
-            if (response.data.posts[index].Keywords !== "") {
-              response.data.posts[index].Keywords = JSON.parse(response.data.posts[index].Keywords.toString());
-            }
-            if (response.data.posts[index].Description !== "") {
-              response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
-            }
-            if (response.data.posts[index].File !== "") {
-              response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
-            } else {
-              response.data.posts[index].Src = "";
-            }
-            this.posts.push(response.data.posts[index]);
-          }
-        } else {
-          this.updateText(response.data.message);
-          this.updateColor('red')
-          this.updateShow(true);
-        }
-      });
   }
 
   addCover() {

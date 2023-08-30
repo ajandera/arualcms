@@ -18,7 +18,7 @@
         <v-spacer></v-spacer>
         <v-dialog
           v-model="dialog"
-          max-width="1000px"
+          max-width="700px"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -33,14 +33,13 @@
             </v-btn>
           </template>
           <v-card>
-            <br>
-            <v-form
+            <v-card-title>{{ title }}</v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-form
               ref="form"
               v-model="valid"
               lazy-validation>
-              <v-card-title></v-card-title>
-              <v-card-text>
-                <v-container>
                   <v-row>
                     <v-col
                       cols="12"
@@ -76,41 +75,47 @@
                     <v-select
                         v-model="menu.PageId"
                         :items="pages"
+                        item-text="name"
+                        item-value="id"
                         label="Page"
+                        return-object
                         single-line
                       ></v-select>
                     </v-col>
                     <v-col
                       cols="6"
                     >
-                    <v-select
+                      <v-select
                         v-model="menu.PostId"
                         :items="posts"
                         label="Post"
+                        item-text="name"
+                        item-value="id"
+                        return-object
                         single-line
                       ></v-select>
                     </v-col>
                   </v-row>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="blue darken-1"
-                  text
-                  @click="close"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  :disabled="!valid"
-                  @click="save"
-                >
-                  Save
-                </v-btn>
-              </v-card-actions>
-            </v-form>
+              </v-form>
+            </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="close"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                color="primary"
+                :disabled="!valid"
+                @click="save"
+              >
+                Save
+              </v-btn>
+            </v-card-actions>
           </v-card>
         </v-dialog>
       </v-toolbar>
@@ -152,8 +157,6 @@ import Menu from "~/model/Menu";
 import IResponseMenu from "~/model/IResponseMenu";
 import IHeader from '~/model/IHeader';
 import {namespace} from 'vuex-class';
-import Post from '~/model/Post';
-import Page from '~/model/Page';
 import IResponsePages from '~/model/IResponsePages';
 import IResponsePosts from '~/model/IResponsePosts';
 
@@ -169,6 +172,7 @@ export default class MenuPage extends Vue {
 
   @snackbar.Action
   public updateShow!: (newShow: boolean) => void
+
   @Prop() readonly languages!: string[];
   @Prop() readonly language!: string;
   @Prop() readonly defaultLanguage!: string;
@@ -192,13 +196,11 @@ export default class MenuPage extends Vue {
   dialog: boolean = false;
   valid: boolean = true;
   rules: any = [];
-  fromDateMenu: boolean = false;
-  posts: Post[] = [];
-  pages: Page[] = [];
+  posts: any[] = [];
+  pages: any[] = [];
 
   mounted() {
     this.load();
-
   }
 
   @Watch('$route.query')
@@ -229,6 +231,7 @@ export default class MenuPage extends Vue {
   }
 
   create() {
+    this.title = "Add new meni item"
     this.menu = {
       Id: '',
       Name: this.createClearTranslationObject(),
@@ -253,6 +256,7 @@ export default class MenuPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
+          this.close();
           this.load();
         });
     } else {
@@ -268,39 +272,10 @@ export default class MenuPage extends Vue {
             this.updateColor('red')
             this.updateShow(true);
           }
+          this.close();
           this.load();
         });
     }
-  }
-
-  createSend() {
-    this.$axios.put("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponseMenu) => {
-        if (response.data.success) {
-          this.updateText(response.data.message);
-          this.updateColor('green')
-          this.updateShow(true);
-        } else {
-          this.updateText(response.data.message);
-          this.updateColor('red')
-          this.updateShow(true);
-        }
-      });
-  }
-
-  editSend() {
-    this.$axios.post("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
-      .then((response: IResponseMenu) => {
-        if (response.data.success) {
-          this.updateText(response.data.message);
-          this.updateColor('green')
-          this.updateShow(true);
-        } else {
-          this.updateText(response.data.message);
-          this.updateColor('red')
-          this.updateShow(true);
-        }
-      });
   }
 
   async load() {
@@ -308,7 +283,9 @@ export default class MenuPage extends Vue {
     this.$axios.get("/" + this.$route.query.siteId + "/menu")
       .then((response: IResponseMenu) => {
         if (response.data.success) {
-            this.menus = response.data.menu;
+            this.menus = response.data.menu !== null ? response.data.menu : [];
+            this.getPages();
+            this.getPosts();
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')
@@ -353,18 +330,10 @@ export default class MenuPage extends Vue {
       .then((response: IResponsePages) => {
         if (response.data.success) {
           for (let index in response.data.pages) {
-            response.data.pages[index].Title = JSON.parse(response.data.pages[index].Title.toString());
-            response.data.pages[index].Body = JSON.parse(response.data.pages[index].Body.toString());
-            if (response.data.pages[index].MetaTitle !== "") {
-              response.data.pages[index].MetaTitle = JSON.parse(response.data.pages[index].MetaTitle.toString());
-            }
-            if (response.data.pages[index].Keywords !== "") {
-              response.data.pages[index].Keywords = JSON.parse(response.data.pages[index].Keywords.toString());
-            }
-            if (response.data.pages[index].Description !== "") {
-              response.data.pages[index].Description = JSON.parse(response.data.pages[index].Description.toString());
-            }
-            this.pages.push(response.data.pages[index]);
+            this.pages.push({
+              "id": response.data.pages[index].Id,
+              "name": JSON.parse(response.data.pages[index].Title.toString())[this.language]
+            });
           }
         } else {
           this.updateText(response.data.message);
@@ -380,25 +349,10 @@ export default class MenuPage extends Vue {
       .then((response: IResponsePosts) => {
         if (response.data.success) {
           for (let index in response.data.posts) {
-            response.data.posts[index].Published = [new Date(response.data.posts[index].Published)];
-            response.data.posts[index].Title = JSON.parse(response.data.posts[index].Title.toString());
-            response.data.posts[index].Excerpt = JSON.parse(response.data.posts[index].Excerpt.toString());
-            response.data.posts[index].Body = JSON.parse(response.data.posts[index].Body.toString());
-            if (response.data.posts[index].MetaTitle !== "") {
-              response.data.posts[index].MetaTitle = JSON.parse(response.data.posts[index].MetaTitle.toString());
-            }
-            if (response.data.posts[index].Keywords !== "") {
-              response.data.posts[index].Keywords = JSON.parse(response.data.posts[index].Keywords.toString());
-            }
-            if (response.data.posts[index].Description !== "") {
-              response.data.posts[index].Description = JSON.parse(response.data.posts[index].Description.toString());
-            }
-            if (response.data.posts[index].File !== "") {
-              response.data.posts[index].Src = response.data.files.find((f) => f.Id === response.data.posts[index].File).Src
-            } else {
-              response.data.posts[index].Src = "";
-            }
-            this.posts.push(response.data.posts[index]);
+            this.posts.push({
+              "id": response.data.posts[index].Id,
+              "name": JSON.parse(response.data.posts[index].Title.toString())[this.language]
+            });
           }
         } else {
           this.updateText(response.data.message);

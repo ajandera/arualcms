@@ -5,6 +5,6 @@ export default interface User {
   Password: string,
   Id: string,
   ParentId?: string
-  Permission?: Permission
+  Permission?: Permission[]
   Name?: string
 }

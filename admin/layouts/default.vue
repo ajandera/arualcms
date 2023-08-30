@@ -106,7 +106,7 @@
       :absolute="!fixed"
       app
     >
-      <span>v0.9.3 arualcms.eu &copy; {{ new Date().getFullYear() }} </span>
+      <span>v{{ version }} {{ title }} &copy; {{ new Date().getFullYear() }} </span>
     </v-footer>
     <Snackbar/>
   </v-app>
@@ -144,6 +144,11 @@ export default class DefaultLayout extends Vue {
       to: '/pages'
     },
     {
+      icon: 'mdi-application-outline',
+      title: 'Menu',
+      to: '/menu'
+    },
+    {
       icon: 'mdi-card-text',
       title: 'Texts',
       to: '/texts'
@@ -177,6 +182,7 @@ export default class DefaultLayout extends Vue {
   ]
   miniVariant: boolean = false
   title: string = 'arualCMS'
+  version: string = '0.9.8'
   $axios: any
   $router: any;
   $i18n: any;
@@ -261,6 +267,11 @@ export default class DefaultLayout extends Vue {
           icon: 'mdi-application-outline',
           title: 'Pages',
           to: '/pages'
+        },
+        {
+          icon: 'mdi-application-outline',
+          title: 'Menu',
+          to: '/menu'
         },
         {
           icon: 'mdi-card-text',

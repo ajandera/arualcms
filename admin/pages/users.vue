@@ -38,6 +38,12 @@
             <v-card-text>
               <v-container>
                 <v-text-field
+                  v-model="user.Name"
+                  :counter="30"
+                  label="Name"
+                  required
+                ></v-text-field>
+                <v-text-field
                   v-model="user.Username"
                   :counter="30"
                   label="Username"
@@ -82,25 +88,24 @@
             </v-card-title>
             <v-card-text>
               <v-container>
-                <v-row v-for="(permission, index) in user.Permission" :key="index">
+                <v-row v-for="(perm, index) in user.Permission" :key="index">
                   <v-col cols="6">
-                    {{ sites.find(s => s.Id === permission.SiteId).Name }}
+                    {{ sites.find(s => s.Id === perm.SiteId).Name }}
                   </v-col>
                   <v-col cols="6">
                     <v-form ref="form">
                       <v-select
-                        v-model="permission.Role"
+                        v-model="perm.Role"
                         :items="['admin', 'author']"
                         label="Select"
                         single-line
-                        @change="updatePermision(permission)"
+                        @change="updatePermision(perm)"
                       ></v-select>
                     </v-form>
                   </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
-
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
@@ -142,6 +147,7 @@
     </template>
   </v-data-table>
 </template>
+
 <script lang="ts">
 import {Component, Vue, Prop} from 'nuxt-property-decorator'
 import User from '~/model/User';

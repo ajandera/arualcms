@@ -190,7 +190,7 @@ func DeleteMenu(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 
 func GetAllMenuItems(siteId string, c utils.ClientData) ([]model.Menu, error) {
 	var items []model.Menu
-	err := c.Db.Model(&model.Menu{}).Where("site_id = ?", siteId).Order("parent_id, `order`").Scan(&items).Error
+	err := c.Db.Model(&model.Menu{}).Where("site_id = ?", siteId).Order("parent_id ASC").Scan(&items).Error
 	if err != nil {
 		return nil, err
 	}

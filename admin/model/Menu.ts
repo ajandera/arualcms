@@ -5,4 +5,5 @@ export default interface Menu {
     Children: Menu[];
     PostId: string;
     PageId: string;
+    ParentId: string|null
 }

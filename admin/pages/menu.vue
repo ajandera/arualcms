@@ -191,7 +191,8 @@ export default class MenuPage extends Vue {
     Url: "",
     Children: [],
     PageId: "",
-    PostId: ""
+    PostId: "",
+    ParentId: null
   };
   dialog: boolean = false;
   valid: boolean = true;
@@ -238,7 +239,8 @@ export default class MenuPage extends Vue {
       Url: '',
       Children: [],
       PageId: "",
-      PostId: ""
+      PostId: "",
+      ParentId: null
     };
   }
 
@@ -282,10 +284,12 @@ export default class MenuPage extends Vue {
     this.menus = [];
     this.$axios.get("/" + this.$route.query.siteId + "/menu")
       .then((response: IResponseMenu) => {
+        this.menus = [];
         if (response.data.success) {
-            this.menus = response.data.menu !== null ? response.data.menu : [];
-            this.getPages();
-            this.getPosts();
+          for (let index in response.data.menu) {
+            response.data.menu[index].Name = JSON.parse(response.data.menu[index].Name.toString());
+            this.menus.push(response.data.menu[index]);
+          }
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')

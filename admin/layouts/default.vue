@@ -144,7 +144,7 @@ export default class DefaultLayout extends Vue {
       to: '/pages'
     },
     {
-      icon: 'mdi-application-outline',
+      icon: 'mdi-format-list-group',
       title: 'Menu',
       to: '/menu'
     },

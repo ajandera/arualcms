@@ -739,17 +739,5 @@ func main() {
 		endpoints.GetMenuPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-	// arualBot
-
-	// ask a bot
-	api.HandleFunc("/ask", func(w http.ResponseWriter, r *http.Request) {
-		endpoints.ProceedAsk(w, r)
-	}).Methods(http.MethodPost, http.MethodOptions)
-
-	// train a bot
-	api.HandleFunc("/train/{corpora}", func(w http.ResponseWriter, r *http.Request) {
-		endpoints.ProceedTrain(w, r)
-	}).Methods(http.MethodPost, http.MethodOptions)
-
 	log.Fatal(http.ListenAndServe(":8888", r))
 }

@@ -3,9 +3,3 @@
 
 # gitlab ci
 .cache
-
-# arualBot corpus files
-/data/*.gob
-/data/input/trainData_*.json
-/etc/stopwords.txt
-no_answer.log

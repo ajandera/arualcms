@@ -201,14 +201,18 @@ export default class MenuPage extends Vue {
   pages: any[] = [];
 
   mounted() {
-    this.getPages();
-    this.getPosts();
     this.load();
   }
 
   @Watch('$route.query')
   onPropertyChanged(value: string, oldValue: string) {
     this.load();
+  }
+
+  @Watch('language')
+  onLangChanged(value: string, oldValue: string) {
+    this.getPages();
+    this.getPosts();
   }
 
   edit(menu: Menu) {
@@ -234,7 +238,7 @@ export default class MenuPage extends Vue {
   }
 
   create() {
-    this.title = "Add new meni item"
+    this.title = "Add new menu item"
     this.menu = {
       Id: '',
       Name: this.createClearTranslationObject(),

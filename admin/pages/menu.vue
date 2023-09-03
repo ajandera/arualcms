@@ -201,6 +201,8 @@ export default class MenuPage extends Vue {
   pages: any[] = [];
 
   mounted() {
+    this.getPages();
+    this.getPosts();
     this.load();
   }
 

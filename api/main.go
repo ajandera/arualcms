@@ -652,6 +652,10 @@ func main() {
 	}).Methods(http.MethodDelete, http.MethodOptions)
 
 	// menu
+	api.HandleFunc("/{siteId}/menu/root", func(w http.ResponseWriter, r *http.Request) {
+		endpoints.GetMenuRoot(w, r, client)
+	}).Methods(http.MethodGet, http.MethodOptions)
+
 	api.HandleFunc("/{siteId}/menu", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.GetMenu(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)

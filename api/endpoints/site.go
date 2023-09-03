@@ -69,7 +69,13 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			return
 		}
 
-		// generate permission
+		// generate permission for general account
+		c.Db.Create(&model.Permission{
+			UserId: userId,
+			SiteId: s.Id.String(),
+			Role:   "admin",
+		})
+		// generate permission for parent accounts
 		var users []model.User
 		c.Db.Model(&model.User{}).Where("parent_id = ?", userId).Scan(&users)
 		for _, u := range users {
@@ -80,7 +86,31 @@ func CreateSite(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 			})
 		}
 
+		// create default setting
 		createDefaultSetting(res.Id.String(), c)
+
+		// generate default language
+		el := c.Db.Create(&model.Language{
+			Name:    "English",
+			Key:     "en",
+			Default: true,
+			SiteId:  s.Id.String(),
+		}).Error
+
+		if el != nil {
+			log.Println(el.Error())
+		}
+		// generate root menu
+		em := c.Db.Create(&model.Menu{
+			Name:     "Root",
+			Url:      "",
+			ParentId: uuid.New(),
+			SiteId:   s.Id.String(),
+			Root:     true,
+		}).Error
+		if em != nil {
+			log.Println(em.Error())
+		}
 		response.Set("success", true)
 		response.Set("message", "Site created successfully.")
 		response.Set("site", res.Id)

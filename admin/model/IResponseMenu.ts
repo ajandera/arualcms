@@ -8,3 +8,12 @@ export default interface IResponseMenu {
       error: string
     }
 }
+
+export interface IResponseMenuRoot {
+  data: {
+    success: boolean,
+    message: string,
+    menu: Menu,
+    error: string
+  }
+}

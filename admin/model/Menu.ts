@@ -1,9 +1,8 @@
 export default interface Menu {
     Id: string;
     Name: any;
-    Url: string;
-    Children: Menu[];
-    PostId: string;
-    PageId: string;
+    Url: string|null;
+    PostId: string|null;
+    PageId: string|null;
     ParentId: string|null
 }

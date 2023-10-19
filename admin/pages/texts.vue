@@ -53,20 +53,25 @@
               v-model="dialog[item.Key]"
               max-width="1000px"
             >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  class="primary"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon
-                    small
-                    class="mr-2"
-                  >
-                    mdi-pencil
-                  </v-icon>
-                </v-btn>
+              <template v-slot:activator="{ on: dialog, attrs }">
+                <v-tooltip top>
+                  <template v-slot:activator="{ on: tooltip }">
+                    <v-btn
+                      class="primary"
+                      dark
+                      v-bind="attrs"
+                      v-on="{...tooltip, ...dialog }"
+                    >
+                      <v-icon
+                        small
+                        class="mr-2"
+                      >
+                        mdi-pencil
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Edit</span>
+                </v-tooltip>
               </template>
               <v-card>
                 <v-card-title>
@@ -104,22 +109,36 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-            <v-btn @click="translate(item)" class="warning">
-              <v-icon
-                small
-                class="mr-2"
-              >
-                mdi-flag
-              </v-icon>
-            </v-btn>
-            <v-btn @click="remove(item)" class="error">
-              <v-icon
-                small
-                class="mr-2"
-              >
-                mdi-delete
-              </v-icon>
-            </v-btn>
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn @click="translate(item)" class="warning">
+                  <v-icon
+                    small
+                    class="mr-2"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    mdi-flag
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Translate</span>
+            </v-tooltip>
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn @click="remove(item)" class="error">
+                  <v-icon
+                    small
+                    class="mr-2"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    mdi-delete
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Remove</span>
+            </v-tooltip>
           </div>
         </div>
       </div>

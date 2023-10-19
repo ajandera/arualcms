@@ -143,3 +143,8 @@ export default class SignLayout extends Vue {
 
 }
 </script>
+<style scoped>
+.fp {
+  cursor: pointer;
+}
+</style>

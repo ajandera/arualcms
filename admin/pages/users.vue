@@ -28,6 +28,12 @@
               v-bind="attrs"
               v-on="on"
             >
+              <v-icon
+                  small
+                  class="mr-2"
+                >
+                  mdi-plus
+              </v-icon>
               Add
             </v-btn>
           </template>
@@ -121,27 +127,63 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="edit(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        class="mr-2"
-        @click="openPermission(item)"
-      >
-        mdi-account-lock
-      </v-icon>
-      <v-icon
-        small
-        class="mr-2"
-        @click="remove(item)"
-      >
-        mdi-delete
-      </v-icon>
+      <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            @click="edit(item)"
+            class="primary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon
+              small
+              class="mr-2"
+            >
+              mdi-pencil
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Edit</span>
+      </v-tooltip>
+      <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            @click="openPermission(item)"
+            class="success"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon
+              small
+              class="mr-2"
+            >
+              mdi-account-lock
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Translate</span>
+      </v-tooltip>
+      <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            @click="remove(item.Id)"
+            class="error"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon
+              small
+              class="mr-2"
+            >
+              mdi-delete
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Remove</span>
+      </v-tooltip>
     </template>
     <template v-slot:no-data>
     </template>
@@ -196,7 +238,7 @@ export default class UsersPage extends Vue {
       sortable: true,
       value: 'Username',
     },
-    {text: "Actions", value: 'actions', sortable: false}
+    {text: "Actions", align: "right", value: 'actions', sortable: false}
   ];
   $axios: any;
   $auth: any;

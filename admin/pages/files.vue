@@ -28,6 +28,12 @@
               v-bind="attrs"
               v-on="on"
             >
+              <v-icon
+                small
+                class="mr-2"
+              >
+                mdi-plus
+              </v-icon>
               Add
             </v-btn>
           </template>
@@ -77,13 +83,21 @@
       ></v-text-field>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="remove(item.Id)"
-      >
-        mdi-delete
-      </v-icon>
+      <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn @click="remove(item.Id)" class="error">
+            <v-icon
+              small
+              class="mr-2"
+              v-bind="attrs"
+              v-on="on"
+            >
+              mdi-delete
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Remove</span>
+      </v-tooltip>
     </template>
     <template v-slot:no-data>
     </template>

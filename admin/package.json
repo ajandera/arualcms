@@ -3,10 +3,14 @@
   "version": "1.2.0",
   "private": true,
   "scripts": {
-    "dev": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt build",
-    "start": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt start",
-    "generate": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt generate",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "dev18": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt",
+    "build18": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt build",
+    "start18": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt start",
+    "generate18": "export NODE_OPTIONS=--openssl-legacy-provider && nuxt generate",
     "test": "jest"
   },
   "dependencies": {

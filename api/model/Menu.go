@@ -8,12 +8,12 @@ import (
 type Menu struct {
 	gorm.Model
 	Id       uuid.UUID `gorm:"primary_key; unique"`
-	ParentId string
+	ParentId uuid.UUID `gorm:"default:null"`
 	Name     string
 	Url      string
-	Children []*Menu `gorm:"foreignkey:ParentId"`
 	SiteId   string
 	Site     Site `gorm:"foreignKey:SiteId"`
+	Root     bool
 	Order    uint
 }
 

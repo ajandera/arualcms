@@ -236,9 +236,11 @@ export default class DefaultLayout extends Vue {
     this.$axios.get("/sites")
       .then((response: IResponseSite) => {
         this.sites = response.data.sites;
-        this.site = this.sites[0];
-        this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}});
-        this.getDefaultLanguage(this.site.Id)
+        if (this.sites) {
+          this.site = this.sites[0];
+          this.getDefaultLanguage(this.site.Id)
+          this.$router.push({path: this.$route.path, query: {siteId: this.site.Id}});
+        }
       });
   }
 
@@ -255,7 +257,7 @@ export default class DefaultLayout extends Vue {
 
   setRole(siteId: string | Site) {
     // check permission
-    const role = this.permissions.find(p => p.SiteId === siteId)?.Role;
+    const role = this.permissions ? this.permissions.find(p => p.SiteId === siteId)?.Role : "admin";
     if(role === 'admin') {
       this.items = [
         {

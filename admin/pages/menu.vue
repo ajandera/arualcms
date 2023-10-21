@@ -196,7 +196,7 @@
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'nuxt-property-decorator';
 import Menu from "~/model/Menu";
-import IResponseMenu from "~/model/IResponseMenu";
+import IResponseMenu, {IResponseMenuRoot} from "~/model/IResponseMenu";
 import IHeader from '~/model/IHeader';
 import {namespace} from 'vuex-class';
 import IResponsePages from '~/model/IResponsePages';
@@ -231,7 +231,6 @@ export default class MenuPage extends Vue {
     Id: "",
     Name: this.createClearTranslationObject(),
     Url: "",
-    Children: [],
     PageId: "",
     PostId: "",
     ParentId: null
@@ -241,6 +240,7 @@ export default class MenuPage extends Vue {
   rules: any = [];
   posts: any[] = [];
   pages: any[] = [];
+  root: string = '';
 
   mounted() {
     this.load();
@@ -274,12 +274,11 @@ export default class MenuPage extends Vue {
   }
 
   create() {
-    this.title = "Add new meni item"
+    this.title = "Add new menu item"
     this.menu = {
       Id: '',
       Name: this.createClearTranslationObject(),
       Url: '',
-      Children: [],
       PageId: "",
       PostId: "",
       ParentId: null
@@ -305,6 +304,7 @@ export default class MenuPage extends Vue {
         });
     } else {
       this.menu.Id = "";
+      this.menu.ParentId = this.root;
       this.$axios.post("/" + this.$route.query.siteId + "/menu", this.menu, {headers: {'Content-Type': "application/json;charset=utf-8"}})
         .then((response: IResponseMenu) => {
           if (response.data.success) {
@@ -323,15 +323,30 @@ export default class MenuPage extends Vue {
   }
 
   async load() {
-    this.menus = [];
-    this.$axios.get("/" + this.$route.query.siteId + "/menu")
+    await this.$axios.get("/" + this.$route.query.siteId + "/menu")
       .then((response: IResponseMenu) => {
         this.menus = [];
         if (response.data.success) {
           for (let index in response.data.menu) {
-            response.data.menu[index].Name = JSON.parse(response.data.menu[index].Name.toString());
-            this.menus.push(response.data.menu[index]);
+            response.data.menu[index].Name = JSON.parse(response.data.menu[index].Name);
           }
+          this.menus = response.data.menu
+          this.getRoot();
+          this.getPages();
+          this.getPosts();
+        } else {
+          this.updateText(response.data.message);
+          this.updateColor('red')
+          this.updateShow(true);
+        }
+      });
+  }
+
+  getRoot() {
+    this.$axios.get("/" + this.$route.query.siteId + "/menu/root")
+      .then((response: IResponseMenuRoot) => {
+        if (response.data.success) {
+            this.root = response.data.menu.Id
         } else {
           this.updateText(response.data.message);
           this.updateColor('red')

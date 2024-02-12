@@ -218,10 +218,10 @@ func GetPostDetailPublic(w http.ResponseWriter, r *http.Request, c utils.ClientD
 	if auth, _ := utils.IsAuthorizedByApiKey(w, r, apiToken, c); auth == true {
 		response := simplejson.New()
 
-		postId := vars["postId"]
+		title := vars["title"]
 
 		var post model.Post
-		c.Db.First(&model.Post{}, "id = ?", postId).Scan(&post)
+		c.Db.First(&model.Post{}, "LOWER(REPLACE(title, ' ', '-')) = ?", title).Scan(&post)
 		response.Set("success", true)
 		response.Set("post", post)
 

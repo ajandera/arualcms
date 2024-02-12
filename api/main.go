@@ -688,7 +688,7 @@ func main() {
 		endpoints.GetPostsPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 
-	public.HandleFunc("/{apiToken}/posts/{postId}", func(w http.ResponseWriter, r *http.Request) {
+	public.HandleFunc("/{apiToken}/posts/{title}", func(w http.ResponseWriter, r *http.Request) {
 		endpoints.GetPostDetailPublic(w, r, client)
 	}).Methods(http.MethodGet, http.MethodOptions)
 

@@ -191,7 +191,7 @@ func GetPostDetail(w http.ResponseWriter, r *http.Request, c utils.ClientData) {
 		postId := vars["postId"]
 
 		var post model.Post
-		c.Db.First(&model.Post{}, "id = ?", postId).First(&post)
+		c.Db.First(&model.Post{}, "id = ?", postId).Scan(&post)
 		response.Set("success", true)
 		response.Set("post", post)
 
@@ -221,7 +221,7 @@ func GetPostDetailPublic(w http.ResponseWriter, r *http.Request, c utils.ClientD
 		title := vars["title"]
 
 		var post model.Post
-		c.Db.First(&model.Post{}, "LOWER(REPLACE(title, ' ', '-')) = ?", "%"+title+"%").Scan(&post)
+		c.Db.First(&model.Post{}, "LOWER(REPLACE(title, ' ', '-')) LIKE ?", "%"+title+"%").Scan(&post)
 		response.Set("success", true)
 		response.Set("post", post)
 
